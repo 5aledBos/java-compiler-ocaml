@@ -1,5 +1,5 @@
 {
-  open parseClass
+  open ParseClass
 }
 
 let space = [' ' '\t' '\n']
