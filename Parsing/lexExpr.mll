@@ -12,5 +12,8 @@ rule nexttoken = parse
   | space+        { nexttoken lexbuf }
   | eof           { EOF }
   | "+"           { PLUS }
+  | "-"           { MINUS }
+  | "*"           { TIMES }
+  | "/"           { DIV }
   | real as nb    { FLOAT (float_of_string nb) }
 

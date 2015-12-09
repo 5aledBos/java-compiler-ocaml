@@ -1,23 +1,27 @@
 %{
-
+    open Expr
 %}
 
-%token EOF PLUS
+%token EOF PLUS MINUS TIMES DIV
 %token <float> FLOAT
 
 %start expression
-%type <string> expression
+%type <Expr.expression> expression
+
+%left PLUS MINUS
+%left TIMES DIV
 
 %%
 
 expression:
-    | c = operation EOF { c }
-    | c = nombre        { c }
-operation:
-    | d = nombre PLUS e = nombre { d^" + "^e }
-    | d = operation PLUS e = nombre { d^" + "^e }
-nombre:
-    | a = FLOAT { string_of_float a }
+    | e = expr EOF                    { e }
+
+expr:
+    | e1 = expr o = PLUS e2 = expr    { Sum(e1, e2) }
+    | e1 = expr o = MINUS e2 = expr   { Sub(e1, e2) }
+    | e1 = expr o = TIMES e2 = expr   { Mul(e1, e2) }
+    | e1 = expr o = DIV e2 = expr     { Div(e1, e2) }
+    | f = FLOAT                       { Const f }
 
 %%
 
