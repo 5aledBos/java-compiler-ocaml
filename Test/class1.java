@@ -1,1 +1,3 @@
-class Test{}
+package tests;
+import test;
+class test {}

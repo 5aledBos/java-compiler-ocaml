@@ -4,6 +4,6 @@ let execute lexbuf verbose =
   print_endline "Parsing...";
   (*print_endline (ParseClass.classe LexClass.nexttoken lexbuf )*)
     
-  let exp = ParseClass.classe LexClass.nexttoken lexbuf in
+  let exp = ParseClass.filecontent LexClass.nexttoken lexbuf in
   print_endline (exp)
   
