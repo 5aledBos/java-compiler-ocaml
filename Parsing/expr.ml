@@ -10,6 +10,8 @@ type unop =
 type expression =
   | Const of float
   | Var of string
+  | String of string
+  | Char of string
   | Binop of binop * expression * expression
   | Bool of bool
   | Unop of unop * expression
@@ -37,6 +39,8 @@ let rec string_of_expr expr =
   match expr with
   | Const c -> string_of_float c
   | Var v -> v
+  | String s -> "\"" ^ s ^ "\""
+  | Char c -> "'" ^ c ^ "'"
   | Binop(op, e1, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
   | Bool true -> "true"
   | Bool false -> "false"
