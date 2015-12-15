@@ -1,3 +1,5 @@
 package tests;
-import test;
-class test {}
+
+public class test {
+    int i;
+}
