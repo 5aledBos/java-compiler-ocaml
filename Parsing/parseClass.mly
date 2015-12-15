@@ -19,7 +19,9 @@
 %token <string> IDENT
 %token CLASS
 %token PUBLIC PROTECTED PRIVATE
-%token IMPORT PACKAGE	
+%token IMPORT PACKAGE
+%token PRIMITIVE
+%token INT FLOAT DOUBLE BOOLEAN
 
 
 %start filecontent
@@ -31,7 +33,7 @@
 %%
 
 filecontent: 
-  | st=packageDeclaration importDeclaration str=classDeclaration { st }
+  | st=packageDeclaration importDeclaration str=classDeclaration { str }
   | packageDeclaration str=classDeclaration { str }
   | importDeclaration str=classDeclaration { str }
   | str=classDeclaration   { str }
@@ -57,8 +59,17 @@ modifier:
   | PRIVATE {}
 
 content:
-  | content str=IDENT SC { str }
-  | str=IDENT { str }	
+  | str=declaration { str }
 
+declaration:
+  | str=attributDeclaration { str }
 
+attributDeclaration:
+  | attributDeclaration primitive str=IDENT SC { str }
+  | primitive str=IDENT SC	{ str }
+
+primitive:
+  | INT {} | FLOAT {}
+
+(*attribut*)
 

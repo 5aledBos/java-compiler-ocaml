@@ -19,6 +19,7 @@ rule nexttoken = parse
   | "private"		{ PRIVATE }
   | "package" 		{ PACKAGE }
   | "import"		{ IMPORT }
+  | "int"		{ INT }
   | ident as str 	{ IDENT str }
   | semicolon		{ SC }
 
