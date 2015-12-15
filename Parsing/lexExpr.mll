@@ -11,6 +11,8 @@ let space = [' ' '\t' '\n']
 rule nexttoken = parse
   | space+        { nexttoken lexbuf }
   | eof           { EOF }
+  | "("           { LPAR }
+  | ")"           { RPAR }
   | "+"           { PLUS }
   | "-"           { MINUS }
   | "*"           { TIMES }
@@ -18,4 +20,15 @@ rule nexttoken = parse
   | "%"           { MOD }
   | real as nb    { FLOAT (float_of_string nb) }
   | ident         { IDENT (Lexing.lexeme lexbuf) }
+  | "true"        { TRUE } 
+  | "false"       { FALSE } 
+  | "&&"          { AND }
+  | "||"          { OR }
+  | "!"           { NOT }
+  | "=="          { EQ }
+  | "!="          { NEQ }
+  | ">"           { GT }
+  | ">="          { GE }
+  | "<"           { LT }
+  | "<="          { LE }
 
