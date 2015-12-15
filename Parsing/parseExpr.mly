@@ -2,28 +2,54 @@
     open Expr
 %}
 
-%token EOF PLUS MINUS TIMES DIV
+/**********/
+/* Tokens */
+/**********/
+
+/* Separators */
+%token EOF
+
+/* Operators */
+%token PLUS MINUS TIMES DIV MOD
+
+/* Literal values */
 %token <float> FLOAT
 %token <string> IDENT
 
-%start expression
-%type <Expr.expression> expression
+/********************************/
+/* Priorities and associativity */
+/********************************/
 
 %left PLUS MINUS
 %left TIMES DIV
 
+/******************************/
+/* Entry points of the parser */
+/******************************/
+
+%start expression
+%type <Expr.expression> expression
+
 %%
 
+/*********/
+/* Rules */
+/*********/
+
 expression:
-    | e = expr EOF                    { e }
+    | e = expr EOF                      { e }
 
 expr:
-    | e1 = expr o = PLUS e2 = expr    { Sum(e1, e2) }
-    | e1 = expr o = MINUS e2 = expr   { Sub(e1, e2) }
-    | e1 = expr o = TIMES e2 = expr   { Mul(e1, e2) }
-    | e1 = expr o = DIV e2 = expr     { Div(e1, e2) }
-    | f = FLOAT                       { Const f }
-    | id = IDENT                      { Var id }
+    | e1 = expr op = binop e2 = expr    { Binop(op, e1, e2) }
+    | f = FLOAT                         { Const f }
+    | id = IDENT                        { Var id }
+
+%inline binop:
+    | PLUS      { Badd }
+    | MINUS     { Bsub }
+    | TIMES     { Bmul }
+    | DIV       { Bdiv }
+    | MOD       { Bmod }
 
 %%
 
