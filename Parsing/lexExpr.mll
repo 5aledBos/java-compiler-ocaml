@@ -16,4 +16,5 @@ rule nexttoken = parse
   | "*"           { TIMES }
   | "/"           { DIV }
   | real as nb    { FLOAT (float_of_string nb) }
+  | ident         { IDENT (Lexing.lexeme lexbuf) }
 
