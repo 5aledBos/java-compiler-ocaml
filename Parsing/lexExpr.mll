@@ -8,6 +8,8 @@ let real = digit* ('.' digit*)?
 let ident = letter (letter | digit | '_')*
 let space = [' ' '\t' '\n']
 
+let boolean = ("true" | "false")
+
 rule nexttoken = parse
   | space+        { nexttoken lexbuf }
   | eof           { EOF }
@@ -20,8 +22,7 @@ rule nexttoken = parse
   | "%"           { MOD }
   | real as nb    { FLOAT (float_of_string nb) }
   | ident         { IDENT (Lexing.lexeme lexbuf) }
-  | "true"        { TRUE } 
-  | "false"       { FALSE } 
+  | boolean as b  { BOOL (bool_of_string b) }
   | "&&"          { AND }
   | "||"          { OR }
   | "!"           { NOT }

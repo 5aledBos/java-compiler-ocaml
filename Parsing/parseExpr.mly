@@ -16,7 +16,7 @@
 
 /* Literal values */
 %token <float> FLOAT
-%token TRUE FALSE
+%token <bool> BOOL
 
 /* Identifiers */
 %token <string> IDENT
@@ -54,8 +54,7 @@ expr:
   | e1 = expr op = binop e2 = expr    { Binop(op, e1, e2) }
   | f = FLOAT                         { Const f }
   | id = IDENT                        { Var id }
-  | TRUE                              { Bool true }
-  | FALSE                             { Bool false }
+  | b = BOOL                              { Bool b }
   | NOT e = expr                      { Unop(Unot, e) }
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
 
