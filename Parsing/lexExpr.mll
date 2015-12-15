@@ -47,10 +47,11 @@ rule nexttoken = parse
   | "*"                      { TIMES }
   | "/"                      { DIV }
   | "%"                      { MOD }
+  | integer as nb            { INT (int_of_string nb) }
   | floating_point as nb     { FLOAT (float_of_string nb) }
   | ident                    { IDENT (Lexing.lexeme lexbuf) }
   | '"' (str_char* as s) '"' { STRING s }
-  | character as c { CHAR c }
+  | character as c           { CHAR c }
   | boolean as b             { BOOL (bool_of_string b) }
   | "&&"                     { AND }
   | "||"                     { OR }

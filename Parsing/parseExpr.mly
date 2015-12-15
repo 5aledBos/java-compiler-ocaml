@@ -16,6 +16,7 @@
 
 /* Literal values */
 %token <float> FLOAT
+%token <int> INT
 %token <bool> BOOL
 %token <string> STRING
 %token <string> CHAR
@@ -54,7 +55,8 @@ expression:
 expr:
   | LPAR e = expr RPAR                { e }
   | e1 = expr op = binop e2 = expr    { Binop(op, e1, e2) }
-  | f = FLOAT                         { Const f }
+  | f = FLOAT                         { Float f }
+  | i = INT                           { Int i }
   | id = IDENT                        { Var id }
   | str = STRING                      { String str }
   | c = CHAR                          { Char c }

@@ -8,7 +8,8 @@ type unop =
   | Unot
 
 type expression =
-  | Const of float
+  | Float of float
+  | Int of int
   | Var of string
   | String of string
   | Char of string
@@ -37,7 +38,8 @@ let string_of_unop = function
 
 let rec string_of_expr expr =
   match expr with
-  | Const c -> string_of_float c
+  | Float f -> string_of_float f
+  | Int i -> string_of_int i
   | Var v -> v
   | String s -> "\"" ^ s ^ "\""
   | Char c -> "'" ^ c ^ "'"

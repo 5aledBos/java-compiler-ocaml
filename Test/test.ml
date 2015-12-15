@@ -7,6 +7,8 @@ let string_of_token t =
     | ParseExpr.TIMES -> "*"
     | ParseExpr.DIV -> "/"
     | ParseExpr.FLOAT f -> string_of_float f
+    | ParseExpr.INT i -> string_of_int i
+    | ParseExpr.BOOL b -> string_of_bool b
     | ParseExpr.IDENT s -> s
 
 let pp_print_token f t =
@@ -36,6 +38,8 @@ let div () =
   Alcotest.(check token) "token div"  ParseExpr.DIV (To_test.lex (Lexing.from_string "/"))
 let fl () =
   Alcotest.(check token) "token float" (ParseExpr.FLOAT 3.4) (To_test.lex (Lexing.from_string "3.4"))
+let integer () =
+  Alcotest.(check token) "token integer" (ParseExpr.INT 32) (To_test.lex (Lexing.from_string "32"))
 
 
 let simple_token = [
@@ -44,6 +48,7 @@ let simple_token = [
   "Times" , `Quick, times;
   "Div" , `Quick, div;
   "Float", `Quick, fl;
+  "Int", `Quick, integer;
 ]
 
 (* Run it *)
