@@ -20,6 +20,6 @@ rule nexttoken = parse
   | "package" 		{ PACKAGE }
   | "import"		{ IMPORT }
   | ident as str 	{ IDENT str }
-  | semicolon		{ SEMICOLON }
+  | semicolon		{ SC }
 
 

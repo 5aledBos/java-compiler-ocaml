@@ -10,7 +10,7 @@
 /**************/
 
 /* Separators */
-%token EOF EOL LBRACE RBRACE SEMICOLON
+%token EOF EOL LBRACE RBRACE SC
 
 /* Literal values */
 
@@ -31,7 +31,7 @@
 %%
 
 filecontent: 
-  | packageDeclaration importDeclaration str=classDeclaration { str }
+  | st=packageDeclaration importDeclaration str=classDeclaration { st }
   | packageDeclaration str=classDeclaration { str }
   | importDeclaration str=classDeclaration { str }
   | str=classDeclaration   { str }
@@ -41,10 +41,12 @@ classe:
    | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { str }
 
 packageDeclaration:
-  | PACKAGE str=IDENT SEMICOLON { str }
+  | packageDeclaration PACKAGE str=IDENT SC { str }
+  | PACKAGE str=IDENT SC { str }
 
 importDeclaration:
-  | IMPORT str=IDENT SEMICOLON {}
+  | importDeclaration IMPORT str=IDENT SC { str }
+  | IMPORT str=IDENT SC { str }
 
 classDeclaration:
   | str=classe { str }
@@ -55,5 +57,5 @@ modifier:
   | PRIVATE {}
 
 content:
-  | content str=IDENT SEMICOLON { str }
+  | content str=IDENT SC { str }
   | str=IDENT { str }	
