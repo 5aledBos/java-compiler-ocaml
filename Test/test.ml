@@ -1,4 +1,4 @@
-(* Build with `ocamlbuild -pkg alcotest simple.byte` *)
+(* Build with `ocamlbuild -pkg alcotest test.byte` *)
 
 let string_of_token t =
     match t with
