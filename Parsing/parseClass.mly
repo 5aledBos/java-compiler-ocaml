@@ -20,8 +20,8 @@
 %token CLASS
 %token PUBLIC PROTECTED PRIVATE
 %token IMPORT PACKAGE
-%token PRIMITIVE
-%token INT FLOAT DOUBLE BOOLEAN
+%token EXTENDS IMPLEMENTS
+%token INT FLOAT DOUBLE BOOLEAN VOID
 
 
 %start filecontent
@@ -39,8 +39,11 @@ filecontent:
   | str=classDeclaration   { str }
 
 classe:
-   | CLASS id=IDENT LBRACE RBRACE EOF    { id }
-   | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { str }
+  | CLASS id=IDENT LBRACE RBRACE EOF    { id }
+  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    { id }
+  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { str }
+  | modifier CLASS id=IDENT legacy  LBRACE str=content RBRACE EOF    { str }
+  | CLASS id=IDENT LBRACE str=content RBRACE EOF    { id }
 
 packageDeclaration:
   | packageDeclaration PACKAGE str=IDENT SC { str }
@@ -57,6 +60,11 @@ modifier:
   | PUBLIC {}
   | PROTECTED {}
   | PRIVATE {}
+
+legacy:
+  | EXTENDS str=IDENT {}
+  | IMPLEMENTS str=IDENT {}
+
 
 content:
   | str=declaration { str }

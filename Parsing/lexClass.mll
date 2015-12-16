@@ -20,7 +20,11 @@ rule nexttoken = parse
   | "package" 		{ PACKAGE }
   | "import"		{ IMPORT }
   | "int"		{ INT }
+  | "void"		{ VOID }
+  | "extends"		{ EXTENDS }
+  | "implements"	{ IMPLEMENTS }
   | ident as str 	{ IDENT str }
   | semicolon		{ SC }
+
 
 
