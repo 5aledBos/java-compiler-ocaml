@@ -34,20 +34,26 @@
 %%
 
 filecontent: 
+
   | st=packageDeclaration importDeclaration str=classDeclaration { { classename=str } }
   | packageDeclaration str=classDeclaration { { classename=str } }
   | importDeclaration str=classDeclaration { { classename=str } }
   | str=classDeclaration   { { classename=str } }
 
 
+(*=======*)
+(*  | st=packageDeclaration imp=importDeclaration str=classDeclaration { st^ "\n" ^ imp^ "\n" ^ str }*)
+(*  | pa=packageDeclaration str=classDeclaration { pa^ "\n" ^ str }*)
+(*  | imp=importDeclaration str=classDeclaration { imp^ "\n" ^ str }*)
+(*  | str=classDeclaration   { str }*)
 
 packageDeclaration:
-  | packageDeclaration PACKAGE str=IDENT SC { str }
-  | PACKAGE str=IDENT SC { str }
+  | p=packageDeclaration PACKAGE str=IDENT SC { p^"\n"^"package " ^str }
+  | PACKAGE str=IDENT SC { "package " ^str }
 
 importDeclaration:
-  | importDeclaration IMPORT str=IDENT SC { str }
-  | IMPORT str=IDENT SC { str }
+  | p=importDeclaration IMPORT str=IDENT SC {p^"\n"^"import " ^str }
+  | IMPORT str=IDENT SC { "import " ^str }
 
 classDeclaration:
   | str=classe { str }
@@ -58,19 +64,26 @@ classe:
   | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { str }
   | modifier CLASS id=IDENT legacy  LBRACE str=content RBRACE EOF    { str }
   | CLASS id=IDENT LBRACE str=content RBRACE EOF    { id }
+(*=======*)
+(*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
+(*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
+(*  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+(*  | modifier CLASS id=IDENT legacy  LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+(*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+(*>>>>>>> 7f18f222f894ac8b42a2e980a063769fe12b8a15*)
 
 content:
   | str=declaration { str }
 
 declaration:
-  | declaration str=attributDeclaration { str }
-  | declaration str=methodeDeclaration { str }
+  | d=declaration str=attributDeclaration { d ^ "\n" ^ str }
+  | d=declaration str=methodeDeclaration { d ^ "\n" ^ str }
   | str=methodeDeclaration { str }
   | str=attributDeclaration { str }
 
 attributDeclaration:
-  | attributDeclaration primitive str=IDENT SC { str }
-  | primitive str=IDENT SC	{ str }
+  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }
+  | primitive str=IDENT SC	{ "primitive " ^str }
 
 methodeDeclaration:
   | modifier primitive str=IDENT LBRACKET RBRACKET SC { str }
@@ -81,8 +94,16 @@ methodeDeclaration:
 methode:
   | methode str=boucle {str}
   | methode str=contenuMethode {str}
-  | str=boucle {str}
-  | str=contenuMethode {str}
+  | modifier primitive str=IDENT LBRACKET RBRACKET SC {"methode " ^ str }
+  | modifier primitive str=IDENT LBRACKET primitive stri=IDENT  RBRACKET SC {"methode " ^ stri ^ "\n" ^ str }
+  | modifier primitive id=IDENT LBRACKET RBRACKET  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }
+  | modifier primitive id=IDENT LBRACKET primitive stri=IDENT RBRACKET  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }
+
+(*methode:*)
+(*  | m=methode str=boucle {m^ "\n" ^ str}*)
+(*  | m=methode str=contenuMethode {m ^ "\n" ^ str}*)
+(*  | str=boucle {str}*)
+(*  | str=contenuMethode {str}*)
 
 boucle:
   | IF LBRACKET stri=condition RBRACKET  LBRACE str=contenuMethode RBRACE { str}
@@ -98,11 +119,24 @@ contenuMethode:
 condition:
   | str=IDENT { str } 
   | EPOINT  str=IDENT { str } 
+(* Caracteres speciaux *)
+  | c=contenuMethode  str=egalite {c^ "\n" ^ str}
+  | c=contenuMethode  RETURN str=IDENT SC  { c^ "\n " ^"return " ^ str}
+  | str=egalite {"egalite " ^ str}
+  | RETURN str=IDENT SC  {"return " ^  str}
+
+(*egalite:*)
+(*  | str=IDENT EQUAL stri=IDENT SC {stri}*)
+
+
+(*condition:*)
+(*  | str=IDENT { str } *)
+(*  | EPOINT  str=IDENT { str } *)
 
 (* Caracteres speciaux *)
 
 egalite:
-  | str=IDENT EQUAL stri=IDENT SC {stri}
+  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}
 
 modifier:
   | PUBLIC {}
