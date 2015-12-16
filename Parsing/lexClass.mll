@@ -13,6 +13,8 @@ rule nexttoken = parse
   | eof			{ EOF }
   | "{"			{ LBRACE }
   | "}"			{ RBRACE }
+  | "("			{ LBRACKET }
+  | ")"			{ RBRACKET }
   | "class"		{ CLASS }
   | "public"		{ PUBLIC }
   | "protected"		{ PROTECTED }
@@ -23,6 +25,7 @@ rule nexttoken = parse
   | "void"		{ VOID }
   | "extends"		{ EXTENDS }
   | "implements"	{ IMPLEMENTS }
+  | "return"		{ RETURN }
   | ident as str 	{ IDENT str }
   | semicolon		{ SC }
 

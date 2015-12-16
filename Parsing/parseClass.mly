@@ -10,7 +10,7 @@
 /**************/
 
 /* Separators */
-%token EOF EOL LBRACE RBRACE SC
+%token EOF EOL LBRACE RBRACE LBRACKET RBRACKET SC 
 
 /* Literal values */
 
@@ -20,7 +20,7 @@
 %token CLASS
 %token PUBLIC PROTECTED PRIVATE
 %token IMPORT PACKAGE
-%token EXTENDS IMPLEMENTS
+%token EXTENDS IMPLEMENTS RETURN
 %token INT FLOAT DOUBLE BOOLEAN VOID
 
 
@@ -69,12 +69,28 @@ legacy:
 content:
   | str=declaration { str }
 
+
+return:
+  | RETURN str=IDENT SC  { str}
+
 declaration:
+  | declaration str=attributDeclaration { str }
+  | declaration str=methodeDeclaration { str }
+  | str=methodeDeclaration { str }
   | str=attributDeclaration { str }
 
 attributDeclaration:
   | attributDeclaration primitive str=IDENT SC { str }
   | primitive str=IDENT SC	{ str }
+
+methodeDeclaration:
+  | modifier primitive str=IDENT LBRACKET RBRACKET SC { str }
+  | modifier primitive str=IDENT LBRACKET primitive stri=IDENT  RBRACKET SC { stri }
+  | modifier primitive IDENT LBRACKET RBRACKET  LBRACE str=return RBRACE  { str }
+  | modifier primitive IDENT LBRACKET primitive stri=IDENT RBRACKET  LBRACE str=return RBRACE  { str }
+ 
+
+
 
 primitive:
   | INT {} | FLOAT {}
