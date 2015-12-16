@@ -35,9 +35,9 @@
 
 filecontent: 
   | st=packageDeclaration importDeclaration str=classDeclaration { { classename=str } }
-  | packageDeclaration str=classDeclaration { { classename=str } }
-  | importDeclaration str=classDeclaration { { classename=str } }
-  | str=classDeclaration   { { classename=str } }
+  | packageDeclaration str=classDeclaration { str }
+  | importDeclaration str=classDeclaration { str }
+  | str=classDeclaration   { str }
 
 
 
