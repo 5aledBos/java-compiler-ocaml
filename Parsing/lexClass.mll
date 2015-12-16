@@ -7,14 +7,20 @@ let digit = ['0'-'9']
 let letter = ['a'-'z' 'A'-'Z']
 let ident = letter (letter | digit | '_')*
 let semicolon = ';'
+let commentaires1 ='/''/' (ident | ' ')* '\n'
+let commentaires2 ='/''*' (ident | space )* '*''/'
 
 rule nexttoken = parse
   | space+		{ nexttoken lexbuf }
+  | commentaires1	{ nexttoken lexbuf }
+  | commentaires2	{ nexttoken lexbuf }
   | eof			{ EOF }
   | "{"			{ LBRACE }
   | "}"			{ RBRACE }
   | "("			{ LBRACKET }
   | ")"			{ RBRACKET }
+  | "="			{ EQUAL }
+  | "!="		{ EPOINT }
   | "class"		{ CLASS }
   | "public"		{ PUBLIC }
   | "protected"		{ PROTECTED }
@@ -25,6 +31,7 @@ rule nexttoken = parse
   | "void"		{ VOID }
   | "extends"		{ EXTENDS }
   | "implements"	{ IMPLEMENTS }
+  | "if"		{ IF }
   | "return"		{ RETURN }
   | ident as str 	{ IDENT str }
   | semicolon		{ SC }
