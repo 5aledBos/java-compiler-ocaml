@@ -18,9 +18,10 @@
 /* Identifiers */
 %token <string> IDENT
 %token CLASS
-%token PUBLIC PROTECTED PRIVATE
+%token PUBLIC PROTECTED PRIVATE 
 %token IMPORT PACKAGE
-%token EXTENDS IMPLEMENTS RETURN
+%token EXTENDS IMPLEMENTS ABSTRACT
+%token RETURN
 %token INT FLOAT DOUBLE BOOLEAN VOID
 %token IF WHILE FOR ELSE
 
@@ -53,11 +54,11 @@ classDeclaration:
   | str=classe { str }
 
 classe:
-  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }
-  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }
-  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }
-  | modifier CLASS id=IDENT legacy  LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }
-  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }
+(*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
+(*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
+(*  | modifier? CLASS id=IDENT LBRACE str=content? RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+  | modifier* CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }
+(*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
 
 content:
   | str=declaration { str }
