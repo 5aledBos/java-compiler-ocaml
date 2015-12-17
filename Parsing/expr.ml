@@ -5,7 +5,11 @@ type binop =
 
 type unop =
   | Uminus
+  | Uplus
+  | Uincr
+  | Udecr
   | Unot
+  | Ubit
 
 type expression =
   | Float of float
@@ -35,6 +39,10 @@ let string_of_binop = function
 let string_of_unop = function
   | Unot -> "not"
   | Uminus -> "-"
+  | Uplus -> "+"
+  | Uincr -> "++"
+  | Udecr -> "--"
+  | Ubit -> "~"
 
 let rec string_of_expr expr =
   match expr with
