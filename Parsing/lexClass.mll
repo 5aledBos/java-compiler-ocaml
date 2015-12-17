@@ -5,11 +5,12 @@
 let space = [' ' '\t' '\n']
 let digit = ['0'-'9']
 let letter = ['a'-'z' 'A'-'Z']
+let caracteres = ['[''{''}''('')''['']''=''!''&''|']
 let ident = letter (letter | digit | '_')*
 let semicolon = ';'
-let commentaires1 ='/''/' (ident | ' ' | '\t' | digit | semicolon )* '\n'
-let commentaires2 ='/''*' (ident | space | digit | semicolon )* '*''/'
 (*let commentaires1 ='/''/' [^'\n']* '\n'*)
+let commentaires1 ='/''/' (ident | ' ' | semicolon | caracteres )* '\n'
+let commentaires2 ='/''*' (ident | space | semicolon | caracteres)* '*''/'
 
 rule nexttoken = parse
   | space+		{ nexttoken lexbuf }
