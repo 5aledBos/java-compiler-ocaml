@@ -42,6 +42,8 @@ rule nexttoken = parse
   | eof                      { EOF }
   | "("                      { LPAR }
   | ")"                      { RPAR }
+  | "++"                     { INCR }
+  | "--"                     { DECR }
   | "+"                      { PLUS }
   | "-"                      { MINUS }
   | "*"                      { TIMES }
@@ -53,6 +55,7 @@ rule nexttoken = parse
   | '"' (str_char* as s) '"' { STRING s }
   | character as c           { CHAR c }
   | boolean as b             { BOOL (bool_of_string b) }
+  | "null"                   { NULL }
   | "&&"                     { AND }
   | "||"                     { OR }
   | "!"                      { NOT }
@@ -62,4 +65,5 @@ rule nexttoken = parse
   | ">="                     { GE }
   | "<"                      { LT }
   | "<="                     { LE }
+  | "~"                      { BITWISE }
 

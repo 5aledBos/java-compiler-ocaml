@@ -13,6 +13,8 @@
 %token PLUS MINUS TIMES DIV MOD
 %token AND OR NOT
 %token GT GE LT LE EQ NEQ
+%token NULL
+%token INCR DECR BITWISE
 
 /* Literal values */
 %token <float> FLOAT
@@ -34,7 +36,7 @@
 %left GT GE LT LE
 %left PLUS MINUS
 %left TIMES DIV MOD
-%right UMINUS NOT
+%right UMINUS UPLUS NOT INCR DECR BITWISE
 
 /******************************/
 /* Entry points of the parser */
@@ -61,8 +63,9 @@ expr:
   | str = STRING                      { String str }
   | c = CHAR                          { Char c }
   | b = BOOL                          { Bool b }
-  | NOT e = expr                      { Unop(Unot, e) }
+  | op = unop e = expr                { Unop(op, e) }
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
+  | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
 
 %inline binop:
   | PLUS      { Badd }
@@ -78,6 +81,12 @@ expr:
   | GE        { Bge }
   | LT        { Blt }
   | LE        { Ble }
+
+%inline unop:
+  | NOT       { Unot }
+  | INCR      { Uincr }
+  | DECR      { Udecr }
+  | BITWISE   { Ubit }
 
 %%
 
