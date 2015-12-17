@@ -1,14 +1,24 @@
 {
-    open Parseur
+    open Parser
 }
 
 let letter = ['a'-'z' 'A'-'Z']
 let non_zero_digit = ['1'-'9']
 let digit = ('0' | non_zero_digit)
 let digits = digit+
+let space = [' ' '\t' '\n']
 
 let input_character = (letter | digit | ' ')  (* a completer *)
 let escape_sequence = ('\b')(* | "\t" | "\n" | "\r" | "\"" | "\'" | "\\")*)
+
+let caracteres = ['[''{''}''('')''['']''=''!''&''|']
+
+(* Identifier *)
+let ident = letter (letter | digit | '_')*
+
+(* Comments *)
+let comment_single ='/''/' (ident | ' ' | ';' | caracteres )* '\n'
+let comment_mul ='/''*' (ident | space | ';' | caracteres)* '*''/'
 
 (* Integer *)
 let integer = ('0' | non_zero_digit digits?) 'L'?
@@ -32,16 +42,28 @@ let character = "'" (input_character | escape_sequence) "'"
 let str_char = (input_character | escape_sequence)
 let str = '"' str_char* '"'
 
-(* Identifier *)
-let ident = letter (letter | digit | '_')*
-
-let space = [' ' '\t' '\n']
-
 rule nexttoken = parse
   | space+                   { nexttoken lexbuf }
   | eof                      { EOF }
+  | comment_single         	 { nexttoken lexbuf }
+  | comment_mul  	           { nexttoken lexbuf }
+  | "class"		               { CLASS }
+  | "public"		             { PUBLIC }
+  | "protected"		           { PROTECTED }
+  | "private"		             { PRIVATE }
+  | "package" 		           { PACKAGE }
+  | "import"		             { IMPORT }
+  | "extends"		             { EXTENDS }
+  | "implements"	           { IMPLEMENTS }
+  | "abstract"		           { ABSTRACT }
+  | "if"		                 { IF }
+  | "return"		             { RETURN }
+  | "int"                    { PINT }
+  | ";"		                   { SC }
   | "("                      { LPAR }
   | ")"                      { RPAR }
+  | "{"			                 { LBRACE }
+  | "}"			                 { RBRACE }
   | "++"                     { INCR }
   | "--"                     { DECR }
   | "+"                      { PLUS }
@@ -59,8 +81,8 @@ rule nexttoken = parse
   | "&&"                     { AND }
   | "||"                     { OR }
   | "!"                      { NOT }
-  | "=="                     { EQ }
-  | "!="                     { NEQ }
+  | "=="                     { EQUAL }
+  | "!="                     { NEQUAL }
   | ">"                      { GT }
   | ">="                     { GE }
   | "<"                      { LT }

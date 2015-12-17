@@ -21,17 +21,17 @@ public class test extends aa {
  	
 	//Coucou=j;
 
-	Salut=j;
+	//Salut=j;
 	return Coucou ;
 	}	
 
     public int getI(){
 
-	k = coucou;
+	//k = coucou;
 
-	if(j){
+	/*if(j){
 	return i;
-	}
+	}*/
 	return coucou;	
 	}
 

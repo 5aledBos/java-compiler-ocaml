@@ -1,6 +1,5 @@
 %{
-  open AstClass 
-  open Expr
+  open AstClass
 %}	
 
 
@@ -11,7 +10,7 @@
 /**************/
 
 /* Separators */
-%token EOF EOL LBRACE RBRACE LBRACKET RBRACKET SC EQUAL EPOINT
+%token EOF EOL LBRACE RBRACE LPAR RPAR SC EQUAL NEQUAL
 
 /* Literal values */
 
@@ -74,10 +73,10 @@ attributDeclaration:
   | primitive str=IDENT SC	{ "primitive " ^str }
 
 methodeDeclaration:
-  | modifier primitive str=IDENT LBRACKET RBRACKET SC {"methode " ^ str }
-  | modifier primitive str=IDENT LBRACKET primitive stri=IDENT  RBRACKET SC {"methode " ^ stri ^ "\n" ^ str }
-  | modifier primitive id=IDENT LBRACKET RBRACKET  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }
-  | modifier primitive id=IDENT LBRACKET primitive stri=IDENT RBRACKET  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }
+  | modifier primitive str=IDENT LPAR RPAR SC {"methode " ^ str }
+  | modifier primitive str=IDENT LPAR primitive stri=IDENT  RPAR SC {"methode " ^ stri ^ "\n" ^ str }
+  | modifier primitive id=IDENT LPAR RPAR  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }
+  | modifier primitive id=IDENT LPAR primitive stri=IDENT RPAR  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }
 
 methode:
   | m=methode str=boucle {m^ "\n" ^ str}
@@ -86,7 +85,7 @@ methode:
   | str=contenuMethode {str}
 
 boucle:
-  | IF LBRACKET stri=condition RBRACKET  LBRACE str=contenuMethode RBRACE { str}
+  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}
    
  
 contenuMethode:
@@ -98,7 +97,7 @@ contenuMethode:
 
 condition:
   | str=IDENT { str } 
-  | EPOINT  str=IDENT { str } 
+  | NEQUAL  str=IDENT { str } 
 
 (* Caracteres speciaux *)
 

@@ -6,9 +6,6 @@
 /* Tokens */
 /**********/
 
-/* Separators */
-%token LPAR RPAR
-
 /* Operators */
 %token PLUS MINUS TIMES DIV MOD
 %token AND OR NOT
