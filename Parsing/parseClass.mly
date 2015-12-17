@@ -1,5 +1,5 @@
 %{
-
+  open AstClass
 %}
 
 
@@ -29,16 +29,16 @@
 %start filecontent
 
 %type < AstClass.classAst > filecontent
-%type < string > classe
+%type <AstClass.classAst > classe
 %type < string > content
 
 %%
 
 filecontent: 
-  | st=packageDeclaration imp=importDeclaration str=classDeclaration { { classename = st^ "\n" ^ imp^ "\n" ^ str } }
-  | pa=packageDeclaration str=classDeclaration { { classename =pa^ "\n" ^ str } }
-  | imp=importDeclaration str=classDeclaration { { classename =imp^ "\n" ^ str } }
-  | str=classDeclaration   {{ classename = str }}
+  | st=packageDeclaration imp=importDeclaration str=classDeclaration { str }
+(*  | pa=packageDeclaration str=classDeclaration { { classename =pa^ "\n" ^ str } }*)
+(*  | imp=importDeclaration str=classDeclaration { { classename =imp^ "\n" ^ str } }*)
+(*  | str=classDeclaration   {{ classename = str }}*)
 
 
 
@@ -56,8 +56,8 @@ classDeclaration:
 classe:
 (*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
 (*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
-(*  | modifier? CLASS id=IDENT LBRACE str=content? RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
-  | modifier* CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }
+(*  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { { classename = "\n" ^ str; access = modi } }
 (*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
 
 content:
@@ -106,9 +106,9 @@ egalite:
   | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}
 
 modifier:
-  | PUBLIC {}
-  | PROTECTED {}
-  | PRIVATE {}
+  | PUBLIC { AstClass.Public }
+  | PROTECTED { AstClass.Protected }
+  | PRIVATE { AstClass.Public }
 
 legacy:
   | EXTENDS str=IDENT {}
