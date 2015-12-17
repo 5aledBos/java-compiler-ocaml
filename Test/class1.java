@@ -1,7 +1,5 @@
 package tests;
 
-package tests;
-package testssss;
 import  test;
 
 public class test extends aa {
@@ -11,6 +9,7 @@ public class test extends aa {
     public int getJ(){
     //Salut je suis un commentaire la pour embeter le test
 
+	//encore un
 
 	 /* Moi 
 		aussi */
@@ -20,7 +19,8 @@ public class test extends aa {
 
     public int getJ(int j){
  	
-	Coucou=j;
+	//Coucou=j;
+
 	Salut=j;
 	return Coucou ;
 	}	

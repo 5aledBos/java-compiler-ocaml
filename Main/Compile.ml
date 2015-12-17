@@ -8,6 +8,6 @@ let execute lexbuf verbose =
   (*let exp = ParseClass.filecontent LexClass.nexttoken lexbuf in
   print_endline (exp)*)
 
-  let exp = ParseClass.filecontent LexClass.nexttoken lexbuf in
+  let exp = Parseur.filecontent LexClass.nexttoken lexbuf in
   AstClass.printClassAst (exp)
   

@@ -1,5 +1,6 @@
 %{
-  open AstClass
+  open AstClass 
+  open Expr
 %}	
 
 
@@ -22,9 +23,8 @@
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS ABSTRACT
 %token RETURN
-%token INT FLOAT DOUBLE BOOLEAN VOID
 %token IF WHILE FOR ELSE
-
+%token PINT
 
 %start filecontent
 
@@ -115,7 +115,7 @@ legacy:
   | IMPLEMENTS str=IDENT {}
 
 primitive:
-  | INT {} | FLOAT {}
+  | PINT {} 
 
 
 

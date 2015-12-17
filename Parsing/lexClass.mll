@@ -1,5 +1,5 @@
 {
-  open ParseClass
+  open Parseur
 }
 
 let space = [' ' '\t' '\n']
@@ -29,8 +29,7 @@ rule nexttoken = parse
   | "private"		{ PRIVATE }
   | "package" 		{ PACKAGE }
   | "import"		{ IMPORT }
-  | "int"		{ INT }
-  | "void"		{ VOID }
+  | "int"		{ PINT }
   | "extends"		{ EXTENDS }
   | "implements"	{ IMPLEMENTS }
   | "abstract"		{ ABSTRACT }

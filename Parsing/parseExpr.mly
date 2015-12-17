@@ -7,7 +7,7 @@
 /**********/
 
 /* Separators */
-%token EOF LPAR RPAR
+%token LPAR RPAR
 
 /* Operators */
 %token PLUS MINUS TIMES DIV MOD
@@ -24,7 +24,7 @@
 %token <string> CHAR
 
 /* Identifiers */
-%token <string> IDENT
+(*%token <string> IDENT*)
 
 /********************************/
 /* Priorities and associativity */
@@ -66,6 +66,7 @@ expr:
   | op = unop e = expr                { Unop(op, e) }
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
   | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
+
 
 %inline binop:
   | PLUS      { Badd }

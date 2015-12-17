@@ -1,5 +1,5 @@
 {
-    open ParseExpr
+    open Parseur
 }
 
 let letter = ['a'-'z' 'A'-'Z']
