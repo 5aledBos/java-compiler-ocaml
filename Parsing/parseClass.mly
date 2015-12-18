@@ -22,7 +22,7 @@
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS ABSTRACT
 %token RETURN
-%token IF WHILE FOR ELSE
+%token IF
 %token PINT
 
 %start filecontent

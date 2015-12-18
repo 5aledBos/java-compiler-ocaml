@@ -12,7 +12,7 @@
 %token GT GE LT LE EQ NEQ
 %token NULL
 %token INCR DECR BITWISE
-%token  ASS MULASS DIVASS MODASS PLUSASS MINUSASS
+%token ASS MULASS DIVASS MODASS PLUSASS MINUSASS
 
 /* Literal values */
 %token <float> FLOAT
@@ -40,8 +40,8 @@
 /* Entry points of the parser */
 /******************************/
 
-%start expression
-%type <Expr.expression> expression
+%start expressions
+%type <Expr.expression list> expressions
 
 %%
 
@@ -49,8 +49,9 @@
 /* Rules */
 /*********/
 
-expression:
-  | e = expr EOL* EOF                 { e }
+expressions:
+  | e = expr SC EOF                   { [e] }
+  | e = expr SC rest = expressions    { e::rest }
 
 expr:
   | LPAR e = expr RPAR                { e }

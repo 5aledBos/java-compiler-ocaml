@@ -45,7 +45,6 @@ let str = '"' str_char* '"'
 rule nexttoken = parse
   | space+                   { nexttoken lexbuf }
   | eof                      { EOF }
-  | '\n'                     { EOL }
   | comment_single         	 { nexttoken lexbuf }
   | comment_mul  	           { nexttoken lexbuf }
   | "class"		               { CLASS }
