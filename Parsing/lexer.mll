@@ -12,21 +12,25 @@
     let raise_error err lexbuf =
       raise (Error(err, lexeme_start_p lexbuf, lexeme_end_p lexbuf))
     
+    let string_of_error err =
+      match err with
+      | Illegal_character c -> "illegal"
+    
     let report_error = function
       | Illegal_character c ->
     print_string "Illegal character '";
 	  print_char c;
 	  print_string "' "
 	  
-	  let print_position start finish =
-      if (start.pos_lnum = finish.pos_lnum) then
+	  let print_position start fin =
+      if (start.pos_lnum = fin.pos_lnum) then
         begin
 	  print_string "line ";
 	  print_int start.pos_lnum;
 	  print_string " characters ";
 	  print_int (start.pos_cnum - start.pos_bol);
 	  print_string "-";
-	  print_int (finish.pos_cnum - finish.pos_bol)
+	  print_int (fin.pos_cnum - fin.pos_bol)
         end
       else
         begin
@@ -35,9 +39,9 @@
 	  print_string " character ";
 	  print_int (start.pos_cnum - start.pos_bol);
 	  print_string " to line ";
-	  print_int finish.pos_lnum;
+	  print_int fin.pos_lnum;
 	  print_string " character ";
-	  print_int (finish.pos_cnum - finish.pos_bol)
+	  print_int (fin.pos_cnum - fin.pos_bol)
         end
 
     let incr_line lexbuf =
@@ -56,7 +60,8 @@ let letter = ['a'-'z' 'A'-'Z']
 let non_zero_digit = ['1'-'9']
 let digit = ('0' | non_zero_digit)
 let digits = digit+
-let space = [' ' '\t' '\n']
+let space = [' ' '\t']
+let newline = ('\010' | '\013' | "\013\010")
 
 let input_character = (letter | digit | ' ')  (* a completer *)
 let escape_sequence = ('\b')(* | "\t" | "\n" | "\r" | "\"" | "\'" | "\\")*)
@@ -68,7 +73,7 @@ let ident = letter (letter | digit | '_')*
 
 (* Comments *)
 let comment_single ='/''/' (ident | ' ' | ';' | caracteres )* '\n'
-let comment_mul ='/''*' (ident | space | ';' | caracteres)* '*''/'
+let comment_mul ='/''*' (ident | space | newline | ';' | caracteres)* '*''/'
 
 (* Integer *)
 let integer = ('0' | non_zero_digit digits?) 'L'?
@@ -96,6 +101,7 @@ let str = '"' str_char* '"'
 (* RULE NEXTTOKEN *)
 
 rule nexttoken = parse
+  | newline                  { incr_line lexbuf; nexttoken lexbuf }
   | space+                   { nexttoken lexbuf }
   | eof                      { EOF }
   | comment_single         	 { nexttoken lexbuf }
@@ -178,5 +184,5 @@ rule nexttoken = parse
   | boolean as b             { BOOL (bool_of_string b) }
   
   (* Other => error *)
-  | _ as c                   { raise_error (Illegal_character(c)) lexbuf }  (* TODO: check and fix *)
+  | _ as c                   { raise_error (Illegal_character(c)) lexbuf }
 
