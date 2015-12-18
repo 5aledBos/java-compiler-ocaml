@@ -1,6 +1,56 @@
 {
     open Parser
+    
+    open Lexing
+    exception Eof
+    
+    (* ERRORS *)
+    type error =
+      | Illegal_character of char
+    exception Error of error * position * position
+    
+    let raise_error err lexbuf =
+      raise (Error(err, lexeme_start_p lexbuf, lexeme_end_p lexbuf))
+    
+    let report_error = function
+      | Illegal_character c ->
+    print_string "Illegal character '";
+	  print_char c;
+	  print_string "' "
+	  
+	  let print_position start finish =
+      if (start.pos_lnum = finish.pos_lnum) then
+        begin
+	  print_string "line ";
+	  print_int start.pos_lnum;
+	  print_string " characters ";
+	  print_int (start.pos_cnum - start.pos_bol);
+	  print_string "-";
+	  print_int (finish.pos_cnum - finish.pos_bol)
+        end
+      else
+        begin
+	  print_string "from line ";
+	  print_int start.pos_lnum;
+	  print_string " character ";
+	  print_int (start.pos_cnum - start.pos_bol);
+	  print_string " to line ";
+	  print_int finish.pos_lnum;
+	  print_string " character ";
+	  print_int (finish.pos_cnum - finish.pos_bol)
+        end
+
+    let incr_line lexbuf =
+      let pos = lexbuf.lex_curr_p in
+        lexbuf.lex_curr_p <- 
+	  { 
+	    pos with 
+	      pos_lnum = pos.pos_lnum + 1; 
+	      pos_bol = pos.pos_cnum;
+	  }
 }
+
+(* REGULAR EXPRESSIONS *)
 
 let letter = ['a'-'z' 'A'-'Z']
 let non_zero_digit = ['1'-'9']
@@ -42,11 +92,16 @@ let character = "'" (input_character | escape_sequence) "'"
 let str_char = (input_character | escape_sequence)
 let str = '"' str_char* '"'
 
+
+(* RULE NEXTTOKEN *)
+
 rule nexttoken = parse
   | space+                   { nexttoken lexbuf }
   | eof                      { EOF }
   | comment_single         	 { nexttoken lexbuf }
   | comment_mul  	           { nexttoken lexbuf }
+  
+  (* Classes *)
   | "class"		               { CLASS }
   | "public"		             { PUBLIC }
   | "protected"		           { PROTECTED }
@@ -56,42 +111,72 @@ rule nexttoken = parse
   | "extends"		             { EXTENDS }
   | "implements"	           { IMPLEMENTS }
   | "abstract"		           { ABSTRACT }
-  | "if"		                 { IF }
   | "return"		             { RETURN }
   | "int"                    { PINT }
   | ";"		                   { SC }
+  
+  (* Statements *)
+  | "if"		                 { IF }
+  | "then"		               { THEN }
+  | "else"		               { ELSE }
+  | "while"		               { WHILE }
+  | "for"		                 { FOR }
+  
+  (*  *)
   | "("                      { LPAR }
   | ")"                      { RPAR }
   | "{"			                 { LBRACE }
   | "}"			                 { RBRACE }
+    
+  (* Unary operators *)
   | "++"                     { INCR }
   | "--"                     { DECR }
-  | "+"                      { PLUS }
-  | "-"                      { MINUS }
+  (* TODO: ++ and -- are also postfix expressions to handle - 15.14 *)
+  | "!"                      { NOT }
+  | "~"                      { BITWISE }
+  
+  (* Multiplicative and additive operators *)
   | "*"                      { TIMES }
   | "/"                      { DIV }
   | "%"                      { MOD }
-  | integer as nb            { INT (int_of_string nb) }
-  | floating_point as nb     { FLOAT (float_of_string nb) }
-  | ident                    { IDENT (Lexing.lexeme lexbuf) }
-  | '"' (str_char* as s) '"' { STRING s }
-  | character as c           { CHAR c }
-  | boolean as b             { BOOL (bool_of_string b) }
-  | "null"                   { NULL }
-  | "&&"                     { AND }
-  | "||"                     { OR }
-  | "!"                      { NOT }
-  | "=="                     { EQUAL }
-  | "!="                     { NEQUAL }
+  | "+"                      { PLUS }
+  | "-"                      { MINUS }
+  
+  (* TODO: Shift operators - 15.19 *)
+  
+  (* Relational and equality operators *)
   | ">"                      { GT }
   | ">="                     { GE }
   | "<"                      { LT }
   | "<="                     { LE }
-  | "~"                      { BITWISE }
+  | "=="                     { EQUAL }
+  | "!="                     { NEQUAL }
+  
+  (* TODO: Bitwise and logical operators - 15.22 *)
+  
+  (* Conditional operators *)
+  | "&&"                     { AND }
+  | "||"                     { OR }
+  (* TODO: Conditional operator ? : - 15.25 *)
+  
+  (* Assignment operators *)
   | "="                      { ASS }
   | "*="                     { MULASS }
   | "/="                     { DIVASS }
   | "%="                     { MODASS }
   | "+="                     { PLUSASS }
   | "-="                     { MINUSASS }
+  (* TODO: Assignment operators <<= >>= >>>= &= ^= |= - 15.26 *)
+    
+  (* Literals *)
+  | "null"                   { NULL }
+  | integer as nb            { INT (int_of_string nb) }
+  | floating_point as nb     { FLOAT (float_of_string nb) }
+  | ident                    { IDENT (Lexing.lexeme lexbuf) }
+  | '"' (str_char* as s) '"' { STRING s }
+  | character as c           { CHAR c }       (* TODO: Fix *)
+  | boolean as b             { BOOL (bool_of_string b) }
+  
+  (* Other => error *)
+  | _ as c                   { raise_error (Illegal_character(c)) lexbuf }  (* TODO: check and fix *)
 

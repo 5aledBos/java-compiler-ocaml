@@ -14,6 +14,9 @@
 %token INCR DECR BITWISE
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS
 
+/* Statements */
+%token IF THEN ELSE WHILE FOR
+
 /* Literal values */
 %token <float> FLOAT
 %token <int> INT

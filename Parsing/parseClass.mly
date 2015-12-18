@@ -10,7 +10,7 @@
 /**************/
 
 /* Separators */
-%token EOF EOL LBRACE RBRACE LPAR RPAR SC EQUAL NEQUAL
+%token EOF LBRACE RBRACE LPAR RPAR SC EQUAL NEQUAL
 
 /* Literal values */
 
@@ -22,7 +22,6 @@
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS ABSTRACT
 %token RETURN
-%token IF
 %token PINT
 
 %start filecontent
