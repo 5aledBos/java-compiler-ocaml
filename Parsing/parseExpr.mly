@@ -12,6 +12,7 @@
 %token GT GE LT LE EQ NEQ
 %token NULL
 %token INCR DECR BITWISE
+%token  ASS MULASS DIVASS MODASS PLUSASS MINUSASS
 
 /* Literal values */
 %token <float> FLOAT
@@ -49,11 +50,11 @@
 /*********/
 
 expression:
-  | e = expr EOF                      { e }
+  | e = expr EOL* EOF                 { e }
 
 expr:
   | LPAR e = expr RPAR                { e }
-  | e1 = expr op = binop e2 = expr    { Binop(op, e1, e2) }
+  | e1 = expr op = binop e2 = expr    { Binop(e1, op, e2) }
   | f = FLOAT                         { Float f }
   | i = INT                           { Int i }
   | id = IDENT                        { Var id }
@@ -63,7 +64,7 @@ expr:
   | op = unop e = expr                { Unop(op, e) }
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
   | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
-
+  | e1 = expr ass = assign e2 = expr  { Assign(e1, ass, e2) }
 
 %inline binop:
   | PLUS      { Badd }
@@ -85,6 +86,14 @@ expr:
   | INCR      { Uincr }
   | DECR      { Udecr }
   | BITWISE   { Ubit }
+
+%inline assign:
+  | ASS       { Ass }
+  | MULASS    { Assmul }
+  | DIVASS    { Assdiv }
+  | MODASS    { Assmod }
+  | PLUSASS   { Assplus }
+  | MINUSASS  { Assminus }
 
 %%
 

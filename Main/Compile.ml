@@ -2,9 +2,9 @@
 
 let execute lexbuf verbose = 
   print_endline "Parsing...";
-  (*let exp = Parser.expression Lexer.nexttoken lexbuf in
-  print_endline (Expr.string_of_expr exp)*)
+  let exp = Parser.expression Lexer.nexttoken lexbuf in
+  print_endline (Expr.string_of_expr exp)
   
-  let exp = Parser.filecontent Lexer.nexttoken lexbuf in
-  AstClass.printClassAst (exp)
+  (*let exp = Parser.filecontent Lexer.nexttoken lexbuf in
+  AstClass.printClassAst (exp)*)
   

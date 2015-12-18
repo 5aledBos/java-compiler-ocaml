@@ -11,15 +11,24 @@ type unop =
   | Unot
   | Ubit
 
+type assign =
+  | Ass
+  | Assmul
+  | Assdiv
+  | Assmod
+  | Assplus
+  | Assminus
+
 type expression =
   | Float of float
   | Int of int
   | Var of string
   | String of string
   | Char of string
-  | Binop of binop * expression * expression
+  | Binop of expression * binop * expression
   | Bool of bool
   | Unop of unop * expression
+  | Assign of expression * assign * expression
 
 let string_of_binop = function
   | Badd -> "+"
@@ -44,6 +53,14 @@ let string_of_unop = function
   | Udecr -> "--"
   | Ubit -> "~"
 
+let string_of_assign = function
+  | Ass -> "="
+  | Assmul -> "*="
+  | Assdiv -> "/="
+  | Assmod -> "%="
+  | Assplus -> "+="
+  | Assminus -> "-="
+
 let rec string_of_expr expr =
   match expr with
   | Float f -> string_of_float f
@@ -51,8 +68,9 @@ let rec string_of_expr expr =
   | Var v -> v
   | String s -> "\"" ^ s ^ "\""
   | Char c -> "'" ^ c ^ "'"
-  | Binop(op, e1, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
+  | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
   | Bool true -> "true"
   | Bool false -> "false"
   | Unop(op, e) -> "(" ^ (string_of_unop op) ^ (string_of_expr e) ^ ")"
+  | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
 
