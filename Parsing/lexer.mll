@@ -1,8 +1,6 @@
 {
     open Parser
-    
     open Lexing
-    exception Eof
     
     (* ERRORS *)
     type error =
@@ -11,10 +9,6 @@
     
     let raise_error err lexbuf =
       raise (Error(err, lexeme_start_p lexbuf, lexeme_end_p lexbuf))
-    
-    let string_of_error err =
-      match err with
-      | Illegal_character c -> "illegal"
     
     let report_error = function
       | Illegal_character c ->
@@ -63,17 +57,15 @@ let digits = digit+
 let space = [' ' '\t']
 let newline = ('\010' | '\013' | "\013\010")
 
-let input_character = (letter | digit | ' ')  (* a completer *)
+let input_character = (letter | digit |  [' ''[''{''}''('')''['']''=''!''&''|'';'])  (* a completer *)
 let escape_sequence = ('\b')(* | "\t" | "\n" | "\r" | "\"" | "\'" | "\\")*)
-
-let caracteres = ['[''{''}''('')''['']''=''!''&''|']
 
 (* Identifier *)
 let ident = letter (letter | digit | '_')*
 
 (* Comments *)
-let comment_single ='/''/' (ident | ' ' | ';' | caracteres )* '\n'
-let comment_mul ='/''*' (ident | space | newline | ';' | caracteres)* '*''/'
+let comment_single ='/''/' input_character* '\n'
+let comment_mul ='/''*' (space | newline | input_character)* '*''/'
 
 (* Integer *)
 let integer = ('0' | non_zero_digit digits?) 'L'?
@@ -90,11 +82,9 @@ let floating_point = (digits '.' digits? exponent_part? float_type_suffix?
 (* Boolean *)
 let boolean = ("true" | "false")
 
-(* Character *)
-let character = "'" (input_character | escape_sequence) "'"
-
-(* String *)
+(* Character and string *)
 let str_char = (input_character | escape_sequence)
+let character = "'" str_char "'"
 let str = '"' str_char* '"'
 
 
@@ -123,12 +113,11 @@ rule nexttoken = parse
   
   (* Statements *)
   | "if"		                 { IF }
-  | "then"		               { THEN }
   | "else"		               { ELSE }
   | "while"		               { WHILE }
   | "for"		                 { FOR }
   
-  (*  *)
+  (* Brackets *)
   | "("                      { LPAR }
   | ")"                      { RPAR }
   | "{"			                 { LBRACE }
@@ -137,7 +126,7 @@ rule nexttoken = parse
   (* Unary operators *)
   | "++"                     { INCR }
   | "--"                     { DECR }
-  (* TODO: ++ and -- are also postfix expressions to handle - 15.14 *)
+  (* TODO: ++ and -- can also be postfix expressions - 15.14 *)
   | "!"                      { NOT }
   | "~"                      { BITWISE }
   
@@ -173,14 +162,14 @@ rule nexttoken = parse
   | "+="                     { PLUSASS }
   | "-="                     { MINUSASS }
   (* TODO: Assignment operators <<= >>= >>>= &= ^= |= - 15.26 *)
-    
+      
   (* Literals *)
   | "null"                   { NULL }
   | integer as nb            { INT (int_of_string nb) }
   | floating_point as nb     { FLOAT (float_of_string nb) }
   | ident                    { IDENT (Lexing.lexeme lexbuf) }
   | '"' (str_char* as s) '"' { STRING s }
-  | character as c           { CHAR c }       (* TODO: Fix *)
+  | "'" (str_char as c) "'"  { CHAR (String.make 1 c) }
   | boolean as b             { BOOL (bool_of_string b) }
   
   (* Other => error *)

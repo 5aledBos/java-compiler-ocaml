@@ -15,7 +15,7 @@
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS
 
 /* Statements */
-%token IF THEN ELSE WHILE FOR
+%token IF ELSE WHILE FOR
 
 /* Literal values */
 %token <float> FLOAT
@@ -23,9 +23,6 @@
 %token <bool> BOOL
 %token <string> STRING
 %token <string> CHAR
-
-/* Identifiers */
-(*%token <string> IDENT*)
 
 /********************************/
 /* Priorities and associativity */
@@ -53,8 +50,11 @@
 /*********/
 
 expressions:
-  | e = expr SC EOF                   { [e] }
+  | e = expr SC                       { [e] }
   | e = expr SC rest = expressions    { e::rest }
+(* For now, and expression file must end with a statement *)
+  | s = statement EOF                 { [s] }
+  | s = statement rest = expressions  { s::rest }
 
 expr:
   | LPAR e = expr RPAR                { e }
@@ -69,6 +69,13 @@ expr:
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
   | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
   | e1 = expr ass = assign e2 = expr  { Assign(e1, ass, e2) }
+
+statement:
+(* TODO: Maybe get the `LBRACE e = expressions RBRACE` in a reusable block *)
+  | IF LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE      { If(e1, e2) }
+  | IF LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE ELSE LBRACE e3 = expressions RBRACE      
+      { Ifelse(e1, e2, e3) }
+  | WHILE LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE   { While(e1, e2) }
 
 %inline binop:
   | PLUS      { Badd }
