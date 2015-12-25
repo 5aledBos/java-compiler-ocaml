@@ -1,0 +1,203 @@
+Primary:
+  PrimaryNoNewArray
+  ArrayCreationExpression
+
+PrimaryNoNewArray:
+  Literal
+  Type . class
+  void . class
+  this
+  ClassName .this
+  ( Expression )
+  ClassInstanceCreationExpression
+  FieldAccess
+  MethodInvocation
+  ArrayAccess
+
+
+Literal:
+  IntegerLiteral
+  FloatingPointLiteral
+  BooleanLiteral
+  CharacterLiteral
+  StringLiteral
+  NullLiteral
+
+
+ClassInstanceCreationExpression:
+  new TypeArguments opt ClassOrInterfaceType ( ArgumentList opt ) ClassBody opt
+  Primary. new TypeArguments opt Identifier TypeArguments opt ( ArgumentList opt ) ClassBody opt
+
+ArgumentList:
+  Expression
+  ArgumentList , Expression
+
+
+ArrayCreationExpression:
+  new PrimitiveType DimExprs Dims opt
+  new ClassOrInterfaceType DimExprs Dims opt
+  new PrimitiveType Dims ArrayInitializer
+  new ClassOrInterfaceType Dims ArrayInitializer
+
+DimExprs:
+  DimExpr
+  DimExprs DimExpr
+
+DimExpr:
+  [ Expression ]
+
+Dims:
+  [ ]
+  Dims [ ]
+
+
+FieldAccess:
+  Primary . Identifier
+  super . Identifier
+  ClassName .super . Identifier
+
+
+MethodInvocation:
+  MethodName ( ArgumentList opt )
+  Primary . NonWildTypeArguments opt Identifier ( ArgumentList opt )
+  super . NonWildTypeArguments opt Identifier ( ArgumentList opt )
+  ClassName . super . NonWildTypeArguments opt Identifier ( ArgumentList opt )
+  TypeName . NonWildTypeArguments Identifier ( ArgumentList opt )
+
+ArgumentList:
+  Expression
+  ArgumentList , Expression
+
+
+ArrayAccess:
+  ExpressionName [ Expression ]
+  PrimaryNoNewArray [ Expression ]
+
+
+PostfixExpression:
+  Primary
+  ExpressionName
+  PostIncrementExpression
+  PostDecrementExpression
+
+PostIncrementExpression:
+  PostfixExpression ++
+
+PostDecrementExpression:
+  PostfixExpression --
+
+
+UnaryExpression :
+  PreIncrementExpression
+  PreDecrementExpression
+  + UnaryExpression
+  - UnaryExpression
+  UnaryExpressionNotPlusMinus
+
+PreIncrementExpression:
+  ++ UnaryExpression
+
+PreDecrementExpression:
+  -- UnaryExpression
+
+UnaryExpressionNotPlusMinus :
+  PostfixExpression
+  ~ UnaryExpression
+  ! UnaryExpression
+  CastExpression
+
+CastExpression:
+  ( PrimitiveType ) UnaryExpression
+  ( ReferenceType ) UnaryExpressionNotPlusMinus
+
+CastExpression:
+  ( PrimitiveType Dims opt ) UnaryExpression
+  ( ReferenceType ) UnaryExpressionNotPlusMinus
+
+
+MultiplicativeExpression:
+  UnaryExpression
+  MultiplicativeExpression * UnaryExpression
+  MultiplicativeExpression / UnaryExpression
+  MultiplicativeExpression % UnaryExpression
+
+
+AdditiveExpression:
+  MultiplicativeExpression
+  AdditiveExpression + MultiplicativeExpression
+  AdditiveExpression - MultiplicativeExpression
+
+
+ShiftExpression:
+  AdditiveExpression
+  ShiftExpression << AdditiveExpression
+  ShiftExpression >> AdditiveExpression
+  ShiftExpression >>> AdditiveExpression
+
+
+RelationalExpression:
+  ShiftExpression
+  RelationalExpression < ShiftExpression
+  RelationalExpression > ShiftExpression
+  RelationalExpression <= ShiftExpression
+  RelationalExpression >= ShiftExpression
+  RelationalExpression instanceof ReferenceType
+
+
+EqualityExpression:
+  RelationalExpression
+  EqualityExpression == RelationalExpression
+  EqualityExpression != RelationalExpression
+
+
+AndExpression:
+  EqualityExpression
+  AndExpression & EqualityExpression
+
+ExclusiveOrExpression:
+  AndExpression
+  ExclusiveOrExpression ^ AndExpression
+
+InclusiveOrExpression:
+  ExclusiveOrExpression
+  InclusiveOrExpression | ExclusiveOrExpression
+
+
+ConditionalAndExpression:
+  InclusiveOrExpression
+  ConditionalAndExpression && InclusiveOrExpression
+
+ConditionalOrExpression:
+  ConditionalAndExpression
+  ConditionalOrExpression || ConditionalAndExpression
+
+
+ConditionalExpression:
+  ConditionalOrExpression
+  ConditionalOrExpression ? Expression : ConditionalExpression
+
+
+AssignmentExpression:
+  ConditionalExpression
+  Assignment
+
+Assignment:
+  LeftHandSide AssignmentOperator AssignmentExpression
+
+LeftHandSide:
+  ExpressionName
+  FieldAccess
+  ArrayAccess
+
+AssignmentOperator: one of
+  = *= /= %= += -= <<= >>= >>>= &= ^= |=
+
+
+Expression:
+  AssignmentExpression
+
+
+ConstantExpression:
+  Expression
+
+

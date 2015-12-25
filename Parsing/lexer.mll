@@ -116,6 +116,9 @@ rule nexttoken = parse
   | "else"		               { ELSE }
   | "while"		               { WHILE }
   | "for"		                 { FOR }
+  | "switch"                 { SWITCH }
+  | "case"                   { CASE }
+  (* TODO: for and switch statement *)
   
   (* Brackets *)
   | "("                      { LPAR }

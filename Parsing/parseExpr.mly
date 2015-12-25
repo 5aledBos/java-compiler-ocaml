@@ -15,7 +15,7 @@
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS
 
 /* Statements */
-%token IF ELSE WHILE FOR
+%token IF ELSE WHILE FOR SWITCH CASE
 
 /* Literal values */
 %token <float> FLOAT
@@ -59,23 +59,39 @@ expressions:
 expr:
   | LPAR e = expr RPAR                { e }
   | e1 = expr op = binop e2 = expr    { Binop(e1, op, e2) }
-  | f = FLOAT                         { Float f }
+  | l = literal                       { l }
+  | u = unary                         { u }
+  | ass = assignment                  { ass }
+
+literal:
   | i = INT                           { Int i }
-  | id = IDENT                        { Var id }
-  | str = STRING                      { String str }
-  | c = CHAR                          { Char c }
+  | f = FLOAT                         { Float f }
   | b = BOOL                          { Bool b }
+  | c = CHAR                          { Char c }
+  | str = STRING                      { String str }
+  | NULL                              { Null }
+  | id = IDENT                        { Var id }
+
+unary:
   | op = unop e = expr                { Unop(op, e) }
   | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
   | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
+
+assignment:
   | e1 = expr ass = assign e2 = expr  { Assign(e1, ass, e2) }
 
 statement:
-(* TODO: Maybe get the `LBRACE e = expressions RBRACE` in a reusable block *)
-  | IF LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE      { If(e1, e2) }
-  | IF LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE ELSE LBRACE e3 = expressions RBRACE      
-      { Ifelse(e1, e2, e3) }
-  | WHILE LPAR e1 = expr RPAR LBRACE e2 = expressions RBRACE   { While(e1, e2) }
+  | IF LPAR e = expr RPAR b = block                   { If(e, b) }
+  (* TODO: Add else if *)
+  | IF LPAR e = expr RPAR b1 = block ELSE b2 = block  { Ifelse(e, b1, b2) }
+  | WHILE LPAR e = expr RPAR b = block                { While(e, b) }
+  | FOR f = forstat b = block                         { For(f, b) }
+
+block:
+  | LBRACE e = expressions RBRACE   { e }
+
+forstat:
+  | LPAR ass = assignment SC e1 = expr SC e2 = expr RPAR  { [ass; e1; e2] }
 
 %inline binop:
   | PLUS      { Badd }
