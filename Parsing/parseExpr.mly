@@ -17,6 +17,8 @@
 /* Statements */
 %token IF ELSE WHILE FOR SWITCH CASE
 
+%token QUESTMARK COLUMN PIPE CIRCUMFLEX AMP
+
 /* Literal values */
 %token <float> FLOAT
 %token <int> INT
@@ -50,18 +52,14 @@
 /*********/
 
 expressions:
-  | e = expr SC                       { [e] }
-  | e = expr SC rest = expressions    { e::rest }
-(* For now, and expression file must end with a statement *)
-  | s = statement EOF                 { [s] }
-  | s = statement rest = expressions  { s::rest }
+  | p = primary SC EOF                 { [p] }
+  | p = primary SC rest = expressions  { p::rest }
+  (*| s = statement EOF                 { [s] }
+  | s = statement rest = expressions  { s::rest }*)
 
-expr:
-  | LPAR e = expr RPAR                { e }
-  | e1 = expr op = binop e2 = expr    { Binop(e1, op, e2) }
+primary:
   | l = literal                       { l }
-  | u = unary                         { u }
-  | ass = assignment                  { ass }
+  | LPAR e = expression RPAR          { e }
 
 literal:
   | i = INT                           { Int i }
@@ -70,17 +68,93 @@ literal:
   | c = CHAR                          { Char c }
   | str = STRING                      { String str }
   | NULL                              { Null }
-  | id = IDENT                        { Var id }
+
+expression:
+  | c = conditional     { c }
+  | ass = assignment    { ass }
+
+conditional:
+  | co = condor         { co }
+  (*| co = condor QUESTMARK e = expression COLUMN c = conditional*)
+
+condor:
+  | ca = condand                              { ca }
+  | co = condor OR ca = condand               { Binop(co, Bor, ca) }
+
+condand:
+  | io = inclusiveor                          { io }
+  | ca = condand AND io = inclusiveor         { Binop(ca, Band, io) }
+
+inclusiveor:
+  | eo = exclusiveor                          { eo }
+  | io = inclusiveor PIPE eo = exclusiveor    { Binop(io, Bpipe, eo) }
+
+exclusiveor:
+  | ae = andexpr                              { ae }
+  | eo = exclusiveor CIRCUMFLEX ae = andexpr  { Binop(eo, Bcirc, ae) }
+
+andexpr:
+  | ee = equalexpr                            { ee }
+  | ae = andexpr AMP ee = equalexpr           { Binop(ae, Bamp, ee) }
+
+equalexpr:
+  | re = relationalexpr                         { re }
+  | ee = equalexpr EQUAL re = relationalexpr    { Binop(ee, Beq, re) }
+  | ee = equalexpr NEQUAL re = relationalexpr   { Binop(ee, Bneq, re) }
+
+relationalexpr:
+  | se = shiftexpr                          { se }
+  | re = relationalexpr LT se = shiftexpr   { Binop(re, Blt, se) }
+  | re = relationalexpr GT se = shiftexpr   { Binop(re, Bgt, se) }
+  | re = relationalexpr LE se = shiftexpr   { Binop(re, Ble, se) }
+  | re = relationalexpr GE se = shiftexpr   { Binop(re, Bge, se) }
+  (*| re = relationalexpr INSTANCEOF rt = referencetype*)
+
+shiftexpr:
+  | ae = addexpr    { ae }
+  (*| se = shiftexpr "<<" ae = addexpr
+  | se = shiftexpr ">>" ae = addexpr
+  | se = shiftexpr ">>>" ae = addexpr*)
+
+addexpr:
+  | me = multexpr                      { me }
+  | ae = addexpr PLUS me = multexpr    { Binop(ae, Badd, me) }
+  | ae = addexpr MINUS me = multexpr   { Binop(ae, Bsub, me) }
+
+multexpr:
+  | ue = unary                      { ue }
+  | me = multexpr PLUS ue = unary   { Binop(me, Badd, ue) }
+  | me = multexpr DIV ue = unary    { Binop(me, Bdiv, ue) }
+  | me = multexpr MOD ue = unary    { Binop(me, Bmod, ue) }
 
 unary:
-  | op = unop e = expr                { Unop(op, e) }
-  | MINUS e = expr %prec UMINUS       { Unop(Uminus, e) }
-  | PLUS e = expr %prec UPLUS         { Unop(Uplus, e) }
+  | INCR u = unary    { Unop(Uincr, u) }
+  | DECR u = unary    { Unop(Udecr, u) }
+  | PLUS u = unary    { Unop(Uplus, u) }
+  | MINUS u = unary   { Unop(Uminus, u) }
+  | u = unarynot      { u }
+
+unarynot:
+  | pe = postfix      { pe }
+  (*| BITWISE u = unary
+  | NOT u = unary
+  | ca = castexpr*)
+
+postfix:
+  | p = primary      { p }
+  | id = IDENT       { Var id }
+  (*| p = postfix INCR 
+  | p = postfix DECR*)
 
 assignment:
-  | e1 = expr ass = assign e2 = expr  { Assign(e1, ass, e2) }
+  | l = leftside ass = assign e = expression  { Assign(l, ass, e) }
 
-statement:
+leftside:
+  | id = IDENT                        { Var id }
+  (*| fa = fieldaccess  { fa }
+  | aa = arrayaccess  { aa }*)
+
+(*statement:
   | IF LPAR e = expr RPAR b = block                   { If(e, b) }
   (* TODO: Add else if *)
   | IF LPAR e = expr RPAR b1 = block ELSE b2 = block  { Ifelse(e, b1, b2) }
@@ -91,9 +165,9 @@ block:
   | LBRACE e = expressions RBRACE   { e }
 
 forstat:
-  | LPAR ass = assignment SC e1 = expr SC e2 = expr RPAR  { [ass; e1; e2] }
+  | LPAR ass = assignment SC e1 = expr SC e2 = expr RPAR  { [ass; e1; e2] }*)
 
-%inline binop:
+(*%inline binop:
   | PLUS      { Badd }
   | MINUS     { Bsub }
   | TIMES     { Bmul }
@@ -101,8 +175,8 @@ forstat:
   | MOD       { Bmod }
   | AND       { Band }
   | OR        { Bor }
-  | EQ        { Beq }
-  | NEQ       { Bneq }
+  | EQUAL     { Beq }
+  | NEQUAL    { Bneq }
   | GT        { Bgt }
   | GE        { Bge }
   | LT        { Blt }
@@ -112,7 +186,7 @@ forstat:
   | NOT       { Unot }
   | INCR      { Uincr }
   | DECR      { Udecr }
-  | BITWISE   { Ubit }
+  | BITWISE   { Ubit }*)
 
 %inline assign:
   | ASS       { Ass }
@@ -121,6 +195,7 @@ forstat:
   | MODASS    { Assmod }
   | PLUSASS   { Assplus }
   | MINUSASS  { Assminus }
+  (* TODO: Add <<= >>= >>>= &= ^= and|= *)
 
 %%
 

@@ -1,6 +1,6 @@
 type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod
-  | Band | Bor
+  | Band | Bor | Bpipe | Bcirc | Bamp
   | Beq | Bneq | Bgt | Bge | Blt | Ble
 
 type unop =
@@ -43,6 +43,9 @@ let string_of_binop = function
   | Bmod -> "%"
   | Band -> "&&"
   | Bor  -> "||"
+  | Bpipe -> "|"
+  | Bcirc -> "^"
+  | Bamp -> "&"
   | Beq  -> "="
   | Bneq -> "!="
   | Bgt  -> ">"

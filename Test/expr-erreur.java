@@ -1,9 +1,5 @@
-1 + (-3.65) * acb - 6 / (++~ 9 + .4);
+5.8;
 
-true&&false||true;
+(test = $);
 
-5. < 6. && !true;
-
-test = ù;
-
-"test vdfb f xg x" ; abc -= 5 + 3;
+(abc *= 6.2 / 78.4 % 5.0);

@@ -170,11 +170,17 @@ rule nexttoken = parse
   | "null"                   { NULL }
   | integer as nb            { INT (int_of_string nb) }
   | floating_point as nb     { FLOAT (float_of_string nb) }
+  | boolean as b             { BOOL (bool_of_string b) }
   | ident                    { IDENT (Lexing.lexeme lexbuf) }
   | '"' (str_char* as s) '"' { STRING s }
   | "'" (str_char as c) "'"  { CHAR (String.make 1 c) }
-  | boolean as b             { BOOL (bool_of_string b) }
   
+  | "?"                      { QUESTMARK }
+  | ":"                      { COLUMN }
+  | "|"                      { PIPE }
+  | "^"                      { CIRCUMFLEX }
+  | "&"                      { AMP }
+
   (* Other => error *)
   | _ as c                   { raise_error (Illegal_character(c)) lexbuf }
 
