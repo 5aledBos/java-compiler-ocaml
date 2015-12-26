@@ -103,11 +103,8 @@ equalexpr:
   | ee = equalexpr NEQUAL re = relationalexpr   { Binop(ee, Bneq, re) }
 
 relationalexpr:
-  | se = shiftexpr                          { se }
-  | re = relationalexpr LT se = shiftexpr   { Binop(re, Blt, se) }
-  | re = relationalexpr GT se = shiftexpr   { Binop(re, Bgt, se) }
-  | re = relationalexpr LE se = shiftexpr   { Binop(re, Ble, se) }
-  | re = relationalexpr GE se = shiftexpr   { Binop(re, Bge, se) }
+  | se = shiftexpr                                     { se }
+  | re = relationalexpr op = binoprel se = shiftexpr   { Binop(re, op, se) }
   (*| re = relationalexpr INSTANCEOF rt = referencetype*)
 
 shiftexpr:
@@ -122,16 +119,11 @@ addexpr:
   | ae = addexpr MINUS me = multexpr   { Binop(ae, Bsub, me) }
 
 multexpr:
-  | ue = unary                      { ue }
-  | me = multexpr PLUS ue = unary   { Binop(me, Badd, ue) }
-  | me = multexpr DIV ue = unary    { Binop(me, Bdiv, ue) }
-  | me = multexpr MOD ue = unary    { Binop(me, Bmod, ue) }
+  | ue = unary                               { ue }
+  | me = multexpr op = binopmul ue = unary   { Binop(me, op, ue) }
 
 unary:
-  | INCR u = unary    { Unop(Uincr, u) }
-  | DECR u = unary    { Unop(Udecr, u) }
-  | PLUS u = unary    { Unop(Uplus, u) }
-  | MINUS u = unary   { Unop(Uminus, u) }
+  | op = unop u = unary   { Unop(op, u) }
   | u = unarynot      { u }
 
 unarynot:
@@ -167,26 +159,22 @@ block:
 forstat:
   | LPAR ass = assignment SC e1 = expr SC e2 = expr RPAR  { [ass; e1; e2] }*)
 
-(*%inline binop:
+%inline binopmul:
   | PLUS      { Badd }
-  | MINUS     { Bsub }
-  | TIMES     { Bmul }
   | DIV       { Bdiv }
   | MOD       { Bmod }
-  | AND       { Band }
-  | OR        { Bor }
-  | EQUAL     { Beq }
-  | NEQUAL    { Bneq }
+
+%inline binoprel:
   | GT        { Bgt }
   | GE        { Bge }
   | LT        { Blt }
   | LE        { Ble }
 
 %inline unop:
-  | NOT       { Unot }
   | INCR      { Uincr }
   | DECR      { Udecr }
-  | BITWISE   { Ubit }*)
+  | PLUS      { Uplus }
+  | MINUS     { Uminus }
 
 %inline assign:
   | ASS       { Ass }
