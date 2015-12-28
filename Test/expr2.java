@@ -1,13 +1,10 @@
-3;
 
-"test";
+if (true) {
 
-false;
+  test = 3 + 5;
+  abc *= 6.2 / 78.4 % 5.0;
+}
 
-(test = 3 + 5);
+test = 3 + 5;
 
-(abc *= 6.2 / 78.4 % 5.0);
-
-(true&&false||true);
-
-(test -= ++5);
+while (5 > 4) ++i;

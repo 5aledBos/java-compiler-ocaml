@@ -1,15 +1,15 @@
 (* verbose is a boolean that you can use to switch to a verbose output (for example, to dump all the ast) *)
 
-let print_expression exp =
-  print_string (Expr.string_of_expr exp);
+let print_statement stat =
+  print_string (Expr.string_of_statement stat);
   print_newline()
 
 let execute lexbuf verbose = 
   print_endline "Parsing...";
   
   try
-    let exp_list = Parser.expressions Lexer.nexttoken lexbuf in
-    List.iter print_expression exp_list;
+    let stat_list = Parser.statements Lexer.nexttoken lexbuf in
+    List.iter print_statement stat_list;
     print_newline()
   with
   | Lexer.Error (kind, start, fin) ->

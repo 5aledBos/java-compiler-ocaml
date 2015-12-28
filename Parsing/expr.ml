@@ -30,10 +30,15 @@ type expression =
   | Binop of expression * binop * expression
   | Unop of unop * expression
   | Assign of expression * assign * expression
-  | If of expression * expression list
-  | Ifelse of expression * expression list * expression list
-  | While of expression * expression list
-  | For of expression list * expression list
+
+type statement =
+  | Expression of expression
+  | Expressions of expression list
+  | Statements of statement list
+  | If of expression * statement
+  (*| Ifelse of expression * statement * statement*)
+  | While of expression * statement
+  (*| For of expression list * expression list*)
 
 let string_of_binop = function
   | Badd -> "+"
@@ -91,10 +96,14 @@ let rec string_of_expr expr =
   | Unop(op, e) -> "(" ^ (string_of_unop op) ^ (string_of_expr e) ^ ")"
   | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
 
-  (* Statements *)
-  | If(e1, e2) -> "if(" ^ (string_of_expr e1) ^ ") {" ^ (string_of_list string_of_expr e2) ^ "}"
-  | Ifelse(e1, e2, e3) -> "if(" ^ (string_of_expr e1) ^ ") {" ^ (string_of_list string_of_expr e2) ^ "}"
-                          ^ " else {" ^ (string_of_list string_of_expr e3) ^ "}"
-  | While(e1, e2) -> "while(" ^ (string_of_expr e1) ^ ") {" ^ (string_of_list string_of_expr e2) ^ "}"
-  | For(f, b) -> "for(" ^ (string_of_list string_of_expr f) ^ ") {" ^ (string_of_list string_of_expr b) ^ "}"
+let rec string_of_statement stat =
+  match stat with
+  | Expression e -> string_of_expr e
+  | Expressions e -> string_of_list string_of_expr e
+  | Statements s -> string_of_list string_of_statement s
+  | If(e, s) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
+  (*| Ifelse(e1, e2, e3) -> "if(" ^ (string_of_expr e1) ^ ") {" ^ (string_of_list string_of_expr e2) ^ "}"
+                          ^ " else {" ^ (string_of_list string_of_expr e3) ^ "}"*)
+  | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
+  (*| For(f, b) -> "for(" ^ (string_of_list string_of_expr f) ^ ") {" ^ (string_of_list string_of_expr b) ^ "}"*)
 

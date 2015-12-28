@@ -42,8 +42,8 @@
 /* Entry points of the parser */
 /******************************/
 
-%start expressions
-%type <Expr.expression list> expressions
+%start statements
+%type <Expr.statement list> statements
 
 %%
 
@@ -51,11 +51,9 @@
 /* Rules */
 /*********/
 
-expressions:
-  | p = primary SC EOF                 { [p] }
-  | p = primary SC rest = expressions  { p::rest }
-  (*| s = statement EOF                 { [s] }
-  | s = statement rest = expressions  { s::rest }*)
+statements:
+  | s = statement EOF                 { [s] }
+  | s = statement rest = statements   { s::rest }
 
 primary:
   | l = literal                       { l }
@@ -146,18 +144,57 @@ leftside:
   (*| fa = fieldaccess  { fa }
   | aa = arrayaccess  { aa }*)
 
-(*statement:
-  | IF LPAR e = expr RPAR b = block                   { If(e, b) }
-  (* TODO: Add else if *)
-  | IF LPAR e = expr RPAR b1 = block ELSE b2 = block  { Ifelse(e, b1, b2) }
-  | WHILE LPAR e = expr RPAR b = block                { While(e, b) }
-  | FOR f = forstat b = block                         { For(f, b) }
+
+(* BLOCKS AND STATEMENTS *)
 
 block:
-  | LBRACE e = expressions RBRACE   { e }
+  | LBRACE bs = blockstatements RBRACE    { bs }
 
-forstat:
-  | LPAR ass = assignment SC e1 = expr SC e2 = expr RPAR  { [ass; e1; e2] }*)
+blockstatements:
+  | bs = blockstatement                         { [bs] }
+  | bs = blockstatement rest = blockstatements  { bs::rest }
+
+blockstatement:
+  (*| lv = localvariable
+  | cd = classdeclar*)
+  | s = statement       { s }
+
+statement:
+  | s = statwithoutsubstat    { s }
+  (*| ls = labeledstatement*)
+  | i = ifstatement           { i }
+  (*| ie = ifelsestatement*)
+  | ws = whilestatement       { ws }
+  (*| fs = forstatement*)
+
+statwithoutsubstat:
+  | b = block                   { Statements(b) }
+  (*| es = emptystatement         { es }*)
+  | es = exprstatement          { Expression(es) }
+  (*| ast = assertstatement       { ast }
+  | ss = switchstatement        { ss }
+  | ds = dostatement            { ds }
+  | bs = breakstatement         { bs }
+  | cs = continuestatement      { cs }
+  | rs = returnstatement        { rs }
+  | ss = synchronizedstatement  { ss }
+  | ts = throwstatement         { ts }
+  | ts = trystatement           { ts }*)
+
+exprstatement:
+  | ass = assignment SC       { ass }
+  | INCR u = unary SC         { Unop(Uincr, u) }
+  | DECR u = unary SC         { Unop(Udecr, u) }
+  (*| p = postfix INCR SC
+  | p = postfix DECR SC
+  | MethodInvocation SC
+  | ClassInstanceCreationExpression SC*)
+
+ifstatement:
+  | IF LPAR e = expression RPAR s = statement     { If(e, s) }
+
+whilestatement:
+  | WHILE LPAR e = expression RPAR s = statement  { While(e, s) }
 
 %inline binopmul:
   | PLUS      { Badd }
