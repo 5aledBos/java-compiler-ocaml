@@ -1,25 +1,33 @@
-1 + (-3.65) * acb - 6 / (++~ 9 + .4);
 
-true&&false||true;
+if (true) {
 
-5. < 6. && !true;
+  test = 3 + 5;
+  abc *= 6.2 / 78.4 % 5.0;
+  break rest;
+}
+
+if (false) {
+  continue rest;
+}
+
+test = 3 + 5;  abc -= "test vdfb f xg x" ;
+
+while (5 > 4) ++i;
 
 variable *= 'e';
 
-"test vdfb f xg x" ; abc -= 5 + 3;
+if (false || true) {
 
-if (true && !false) {
-    test = a + 6.2;
-    another += 1;
-}
-
-while (5 > i) { abc; }
-
-if (-5 * 8.6) {
-    test % a;
+  compil = true;
+  ++j;
+  throw abc *= 5.3;
+  
 } else {
-    true;
-    !(5>8);
+
+  --j;
+  return false;
 }
 
-for (i = 0; i < 8; i += 1) { test; }
+Label : if(abc) abc = false;
+
+synchronized (test = true) { test = false; }

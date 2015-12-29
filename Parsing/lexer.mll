@@ -107,9 +107,14 @@ rule nexttoken = parse
   | "extends"		             { EXTENDS }
   | "implements"	           { IMPLEMENTS }
   | "abstract"		           { ABSTRACT }
+  | "break"		               { BREAK }
+  | "continue"               { CONTINUE }
   | "return"		             { RETURN }
+  | "throw"		               { THROW }
+  | "synchronized"           { SYNCHRONIZED }
   | "int"                    { PINT }
   | ";"		                   { SC }
+  | ","		                   { COMA }
   
   (* Statements *)
   | "if"		                 { IF }

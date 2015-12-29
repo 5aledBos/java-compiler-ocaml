@@ -16,8 +16,9 @@
 
 /* Statements */
 %token IF ELSE WHILE FOR SWITCH CASE
+%token BREAK CONTINUE THROW SYNCHRONIZED
 
-%token QUESTMARK COLUMN PIPE CIRCUMFLEX AMP
+%token QUESTMARK COLUMN PIPE CIRCUMFLEX AMP COMA
 
 /* Literal values */
 %token <float> FLOAT
@@ -155,31 +156,55 @@ blockstatements:
   | bs = blockstatement rest = blockstatements  { bs::rest }
 
 blockstatement:
-  (*| lv = localvariable
+  (*| lv = localvariabledeclstat
   | cd = classdeclar*)
   | s = statement       { s }
 
+(*localvariabledeclstat:
+  | lv = localvariabledecl SC     { lv }
+
+localvariabledecl:
+  | vm = variablemodifiers t = typ vd = variabledecls
+
+variablemodifiers:
+  | vm = variablemodifier                         { [vm] }
+  | vs = variablemodifiers vm = variablemodifier  { vs::vm }
+
+variablemodifier:
+  | (* TODO: Use the class parser? *)
+
+variabledecls:
+  | vd = variabledecl                             { [vd] }
+  | vs = variabledecls COMA vd = variabledecl     { vs::vd }*)
+
 statement:
   | s = statwithoutsubstat    { s }
-  (*| ls = labeledstatement*)
+  | ls = labeledstatement     { ls }
   | i = ifstatement           { i }
-  (*| ie = ifelsestatement*)
+  | ie = ifelsestatement      { ie }
   | ws = whilestatement       { ws }
-  (*| fs = forstatement*)
+  (*| fs = forstatement         { fs }*)
 
 statwithoutsubstat:
-  | b = block                   { Statements(b) }
+  | b = block                                         { Statements(b) }
   (*| es = emptystatement         { es }*)
-  | es = exprstatement          { Expression(es) }
+  | es = exprstatement                                { Expression(es) }
   (*| ast = assertstatement       { ast }
   | ss = switchstatement        { ss }
-  | ds = dostatement            { ds }
-  | bs = breakstatement         { bs }
-  | cs = continuestatement      { cs }
-  | rs = returnstatement        { rs }
-  | ss = synchronizedstatement  { ss }
-  | ts = throwstatement         { ts }
-  | ts = trystatement           { ts }*)
+  | ds = dostatement            { ds }*)
+  | BREAK id = IDENT SC                               { Break(id) }
+  (* TODO | BREAK SC *)
+  | CONTINUE id = IDENT SC                            { Continue(id) }
+  (* TODO | CONTINUE SC *)
+  | RETURN e = expression SC                          { Return(e) }
+  (* TODO: | RETURN SC*)
+  | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
+  | THROW e = expression SC                           { Throw(e) }
+  (*| ts = trystatement           { ts }*)
+
+exprstatements:
+  | es = exprstatement                         { [es] }
+  | es = exprstatement rest = exprstatements   { es::rest }
 
 exprstatement:
   | ass = assignment SC       { ass }
@@ -190,11 +215,28 @@ exprstatement:
   | MethodInvocation SC
   | ClassInstanceCreationExpression SC*)
 
+labeledstatement:
+  | id = IDENT COLUMN s = statement                                   { Label(id, s) }
+
 ifstatement:
-  | IF LPAR e = expression RPAR s = statement     { If(e, s) }
+  | IF LPAR e = expression RPAR s = statement                         { If(e, s) }
+
+ifelsestatement:
+  | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement    { Ifelse(e, s1, s2) }
 
 whilestatement:
-  | WHILE LPAR e = expression RPAR s = statement  { While(e, s) }
+  | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
+
+(*forstatement:
+  | bf = basicfor       { bf }
+  | ef = enhancedfor    { ef }*)
+
+(*basicfor:
+  | FOR LPAR fi = forinit SC e = expression SC es = exprstatements RPAR s = statement   { For() }
+
+forinit:
+  | es = exprstatements         { es }
+  | lv = localvariabledecl      { lv }*)
 
 %inline binopmul:
   | PLUS      { Badd }
