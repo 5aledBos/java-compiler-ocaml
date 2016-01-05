@@ -17,6 +17,6 @@ let execute lexbuf verbose =
      Lexer.print_position start fin;
      print_newline()
   
-  (*let exp = Parser.filecontent Lexer.nexttoken lexbuf in
-  AstClass.printClassAst (exp)*)
+(*  let exp = Parser.filecontent Lexer.nexttoken lexbuf in*)
+(*  AstClass.printClassTree (exp)*)
 

@@ -26,8 +26,8 @@
 
 %start filecontent
 
-%type < AstClass.classAst > filecontent
-%type <AstClass.classAst > classe
+%type < AstClass.classTree > filecontent
+%type <AstClass.classTree > classe
 %type < string > content
 
 %%
@@ -55,7 +55,7 @@ classe:
 (*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
 (*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
 (*  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
-  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { { classename = "\n" ^ str; access = modi } }
+  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { ClassTree{classename = id; access = modi} }
 (*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
 
 content:
