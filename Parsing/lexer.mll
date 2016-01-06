@@ -99,6 +99,7 @@ rule nexttoken = parse
   
   (* Classes *)
   | "class"		               { CLASS }
+  | "interface"			{ INTERFACE }
   | "public"		             { PUBLIC }
   | "protected"		           { PROTECTED }
   | "private"		             { PRIVATE }

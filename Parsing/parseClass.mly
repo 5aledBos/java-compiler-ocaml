@@ -17,7 +17,7 @@
 
 /* Identifiers */
 %token <string> IDENT
-%token CLASS
+%token CLASS INTERFACE
 %token PUBLIC PROTECTED PRIVATE 
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS ABSTRACT
@@ -34,7 +34,7 @@
 %%
 
 filecontent: 
-  | packname=packageDeclaration? imp=importDeclaration? str=classDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
+  | packname=packageDeclaration? imp=importDeclaration? str=classOrElseDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
 
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
@@ -51,11 +51,15 @@ importDeclaration:
 
 
 
+classOrElseDeclaration:
+  | decl = classDeclaration { decl }
+  | decl = interfaceDeclaration { decl }
+
 classDeclaration:
   | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE content? RBRACE EOF    { ClassType{classename = id; access = modi; } }
 
-(*interfaceDeclaration:*)
-(*  | modi=modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }*)
+interfaceDeclaration:
+  | modi=modifier? INTERFACE id=IDENT LBRACE str=content? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
 
 content:
   | str=declaration {  }

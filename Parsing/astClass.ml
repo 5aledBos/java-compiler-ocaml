@@ -53,6 +53,7 @@ let printPackage p = match p with
 
 let printClassTree c = match c with
   | ClassType({classename=name; access=acc}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
+  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
 
 let printFileTree c = match c with
   | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printClassTree(classes)
