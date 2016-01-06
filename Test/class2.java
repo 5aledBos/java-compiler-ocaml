@@ -1,8 +1,8 @@
-package test;
 
-import test;
 
 public class test {
+
+
   if (true) {
 
   test = 3 + 5;

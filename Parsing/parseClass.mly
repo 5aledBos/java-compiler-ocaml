@@ -56,10 +56,63 @@ classOrElseDeclaration:
   | decl = interfaceDeclaration { decl }
 
 classDeclaration:
-  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE content? RBRACE EOF    { ClassType{classename = id; access = modi; } }
+  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE classBody? RBRACE EOF    { ClassType{classename = id; access = modi; } }
 
 interfaceDeclaration:
-  | modi=modifier? INTERFACE id=IDENT LBRACE str=content? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
+  | modi=modifier? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
+
+
+classBody:
+  | classBodyDeclarations { }
+(*  | statements		{ }*)
+
+classBodyDeclarations:
+  | classBodyDeclaration	{ }
+  | classBodyDeclarations classBodyDeclaration { }
+
+classBodyDeclaration:
+  | classMemberDeclaration	{}
+(*  | instanceInitializer		{}*)
+(*  | staticInitializer		{}*)
+(*  | constructorDeclaration	{}*)
+
+(*classMemberDeclaration*)
+
+classMemberDeclaration:
+(*  | nestedClass			{}*)
+(*  | nestedInterface		{}*)
+(*  | methodDeclaration		{}*)
+  | attributDeclaration		{}
+
+	(*declaration des attributs*)
+attributDeclaration:
+  | attributModifiers? typeDeclaration variableDeclarators SC	{}
+
+variableDeclarators:
+  | variableDeclarator					{}
+  | variableDeclarators COMA variableDeclarator 	{}
+
+variableDeclarator:
+  | str=IDENT 	{}
+  | str=IDENT EQUAL variableInitializer	{}
+
+variableInitializer:
+  | statements	{ }
+  
+typeDeclaration:
+  | primitive	{}
+  | str=IDENT	{}
+
+attributModifiers:
+  | modifier	{ }
+
+
+
+
+(*attributDeclaration:*)
+(*  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }*)
+(*  | primitive str=IDENT SC	{ "primitive " ^str }*)
+
 
 content:
   | str=declaration {  }
@@ -71,46 +124,43 @@ declaration:
 (*  | str=methodeDeclaration {  }*)
 (*  | str=attributDeclaration {}*)
 
-attributDeclaration:
-  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }
-  | primitive str=IDENT SC	{ "primitive " ^str }
 
-methodeDeclaration:
-  | modifier primitive str=IDENT LPAR RPAR SC {"methode " ^ str }
-  | modifier primitive str=IDENT LPAR primitive stri=IDENT  RPAR SC {"methode " ^ stri ^ "\n" ^ str }
-  | modifier primitive id=IDENT LPAR RPAR  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }
-  | modifier primitive id=IDENT LPAR primitive stri=IDENT RPAR  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }
+(*methodDeclaration:*)
+(*  | modifier primitive str=IDENT LPAR RPAR SC {"methode " ^ str }*)
+(*  | modifier primitive str=IDENT LPAR primitive stri=IDENT  RPAR SC {"methode " ^ stri ^ "\n" ^ str }*)
+(*  | modifier primitive id=IDENT LPAR RPAR  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }*)
+(*  | modifier primitive id=IDENT LPAR primitive stri=IDENT RPAR  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }*)
 
-methode:
-  | m=methode str=boucle {m^ "\n" ^ str}
-  | m=methode str=contenuMethode {m ^ "\n" ^ str}
-  | str=boucle {str}
-  | str=contenuMethode {str}
+(*methode:*)
+(*  | m=methode str=boucle {m^ "\n" ^ str}*)
+(*  | m=methode str=contenuMethode {m ^ "\n" ^ str}*)
+(*  | str=boucle {str}*)
+(*  | str=contenuMethode {str}*)
 
-boucle:
-  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}
-   
- 
-contenuMethode:
-  | c=contenuMethode  str=egalite {c^ "\n" ^ str}
-  | c=contenuMethode  RETURN str=IDENT SC  { c^ "\n " ^"return " ^ str}
-  | str=egalite {"egalite " ^ str}
-  | RETURN str=IDENT SC  {"return " ^  str}
+(*boucle:*)
+(*  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}*)
+(*   *)
+(* *)
+(*contenuMethode:*)
+(*  | c=contenuMethode  str=egalite {c^ "\n" ^ str}*)
+(*  | c=contenuMethode  RETURN str=IDENT SC  { c^ "\n " ^"return " ^ str}*)
+(*  | str=egalite {"egalite " ^ str}*)
+(*  | RETURN str=IDENT SC  {"return " ^  str}*)
 
 
-condition:
-  | str=IDENT { str } 
-  | NEQUAL  str=IDENT { str } 
+(*condition:*)
+(*  | str=IDENT { str } *)
+(*  | NEQUAL  str=IDENT { str } *)
 
 (* Caracteres speciaux *)
 
-egalite:
-  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}
+(*egalite:*)
+(*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
 modifier:
   | PUBLIC { AstClass.Public }
   | PROTECTED { AstClass.Protected }
-  | PRIVATE { AstClass.Public }
+  | PRIVATE { AstClass.Private }
 
 legacy:
   | EXTENDS str=IDENT {}
