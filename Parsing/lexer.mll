@@ -115,6 +115,7 @@ rule nexttoken = parse
   | "int"                    { PINT }
   | ";"		                   { SC }
   | ","		                   { COMA }
+  | "."				{ POINT }
   
   (* Statements *)
   | "if"		                 { IF }

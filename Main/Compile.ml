@@ -18,5 +18,5 @@ let execute lexbuf verbose =
      print_newline()
   
 (*  let exp = Parser.filecontent Lexer.nexttoken lexbuf in*)
-(*  AstClass.printClassTree (exp)*)
+(*  AstClass.printFileTree (exp)*)
 

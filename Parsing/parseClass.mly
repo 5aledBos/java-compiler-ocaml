@@ -23,40 +23,47 @@
 %token EXTENDS IMPLEMENTS ABSTRACT
 %token RETURN
 %token PINT
+%token POINT
 
 %start filecontent
 
-%type < AstClass.classTree > filecontent
-%type <AstClass.classTree > classe
+%type < AstClass.fileType > filecontent
+
 %type < string > content
 
 %%
 
 filecontent: 
-  | st=packageDeclaration imp=importDeclaration str=classDeclaration { str }
-(*  | pa=packageDeclaration str=classDeclaration { { classename =pa^ "\n" ^ str } }*)
-(*  | imp=importDeclaration str=classDeclaration { { classename =imp^ "\n" ^ str } }*)
-(*  | str=classDeclaration   {{ classename = str }}*)
-
+  | packname=packageDeclaration imp=importDeclaration str=classDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
+(*  | pa=packageDeclaration str=classDeclaration {  str  }*)
+(*  | imp=importDeclaration str=classDeclaration {  str  }*)
+(*  | str=classDeclaration   { str }*)
 
 
 packageDeclaration:
-  | p=packageDeclaration PACKAGE str=IDENT SC { p^"\n"^"package " ^str }
-  | PACKAGE str=IDENT SC { "package " ^str }
+  | PACKAGE str=packageName SC { Package(str) }
+
+packageName:
+  | pack=packageName str=IDENT { pack ^ str }
+  | str=IDENT p=POINT? 	{ match p with
+ 				| None -> str
+				| _ -> str ^ "." }
 
 importDeclaration:
-  | p=importDeclaration IMPORT str=IDENT SC {p^"\n"^"import " ^str }
-  | IMPORT str=IDENT SC { "import " ^str }
+  | p=importDeclaration IMPORT str=IDENT SC { Import(str) :: p }
+  | IMPORT str=IDENT SC { [Import(str)] }
+
+
 
 classDeclaration:
-  | str=classe { str }
-
-classe:
 (*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
 (*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
 (*  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
-  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { ClassTree{classename = id; access = modi} }
+  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }
 (*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+
+(*interfaceDeclaration:*)
+(*  | modi=modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }*)
 
 content:
   | str=declaration { str }
