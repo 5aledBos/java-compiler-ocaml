@@ -34,11 +34,7 @@
 %%
 
 filecontent: 
-  | packname=packageDeclaration imp=importDeclaration str=classDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
-(*  | pa=packageDeclaration str=classDeclaration {  str  }*)
-(*  | imp=importDeclaration str=classDeclaration {  str  }*)
-(*  | str=classDeclaration   { str }*)
-
+  | packname=packageDeclaration? imp=importDeclaration? str=classDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
 
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
@@ -56,11 +52,7 @@ importDeclaration:
 
 
 classDeclaration:
-(*  | CLASS id=IDENT LBRACE RBRACE EOF    { "classe " ^id }*)
-(*  | CLASS id=IDENT legacy  LBRACE RBRACE EOF    {"classe " ^ id }*)
-(*  | modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
-  | modi=modifier CLASS id=IDENT legacy?  LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }
-(*  | CLASS id=IDENT LBRACE str=content RBRACE EOF    {"classe " ^ id ^ "\n" ^ str }*)
+  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE str=content? RBRACE EOF    { ClassType{classename = id; access = modi} }
 
 (*interfaceDeclaration:*)
 (*  | modi=modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }*)
@@ -117,7 +109,13 @@ modifier:
 
 legacy:
   | EXTENDS str=IDENT {}
-  | IMPLEMENTS str=IDENT {}
+
+inheritance:
+  | IMPLEMENTS interfaces {}
+
+interfaces:
+  | interfaces str=IDENT {}
+  | str=IDENT COMA? {}
 
 primitive:
   | PINT {} 

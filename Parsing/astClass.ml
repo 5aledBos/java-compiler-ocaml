@@ -2,6 +2,9 @@
 type modifierAccess = 
   | Public | Protected | Private | Empty
 
+type modifier = 
+  | Static | Abstract | Final
+
 type package = Package of string
 
 
@@ -13,7 +16,7 @@ type importList = import list
 type classAst =
   {
     classename : string;
-    access : modifierAccess;
+    access : modifierAccess option
   }
 
 type classType = 
@@ -29,21 +32,22 @@ type interfaceAst =
 
 type fileAst =
 {
-  packagename: package;
-  listImport: importList;
+  packagename: package option;
+  listImport: importList option;
   listClass: classType;
 }
 
 type fileType = FileType of fileAst
 
 let string_of_modifieraccess c = match c with
-  | Public -> "public"
-  | Protected -> "protected"
-  | Private -> "private"
-  | Empty -> ""
+  | Some(Public) -> "public"
+  | Some(Protected) -> "protected"
+  | Some(Private) -> "private"
+  | None-> "none"
 
 let printPackage p = match p with
-  | Package(str) -> print_string("nom du package du fichier: " ^ str ^ "\n")
+  | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
+  | None -> print_string("file package name: none" ^ "\n")
 
 let printClassTree c = match c with
   | ClassType({classename=name; access=acc}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
