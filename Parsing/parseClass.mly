@@ -29,7 +29,7 @@
 
 %type < AstClass.fileType > filecontent
 
-%type < string > content
+(*%type < string > content*)
 
 %%
 
@@ -52,19 +52,20 @@ importDeclaration:
 
 
 classDeclaration:
-  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE str=content? RBRACE EOF    { ClassType{classename = id; access = modi} }
+  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE content? RBRACE EOF    { ClassType{classename = id; access = modi; } }
 
 (*interfaceDeclaration:*)
 (*  | modi=modifier CLASS id=IDENT LBRACE str=content RBRACE EOF    { ClassType{classename = id; access = modi} }*)
 
 content:
-  | str=declaration { str }
+  | str=declaration {  }
 
 declaration:
-  | d=declaration str=attributDeclaration { d ^ "\n" ^ str }
-  | d=declaration str=methodeDeclaration { d ^ "\n" ^ str }
-  | str=methodeDeclaration { str }
-  | str=attributDeclaration { str }
+  | statements {  }
+(*  | d=declaration str=attributDeclaration { }*)
+(*  | d=declaration str=methodeDeclaration {  }*)
+(*  | str=methodeDeclaration {  }*)
+(*  | str=attributDeclaration {}*)
 
 attributDeclaration:
   | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }

@@ -16,19 +16,21 @@ type importList = import list
 type classAst =
   {
     classename : string;
-    access : modifierAccess option
+    access : modifierAccess option;
+(*    modifier : modifier option;*)
   }
-
-type classType = 
-  | ClassType of classAst
-
-type classList = classType list
 
 type interfaceAst =
 { 
   interfacename : string;
-  access : modifierAccess;
+  access : modifierAccess option;
 }
+
+type classType = 
+  | ClassType of classAst
+  | InterfaceType of interfaceAst
+
+type classList = classType list
 
 type fileAst =
 {

@@ -53,7 +53,7 @@
 /*********/
 
 statements:
-  | s = statement EOF                 { [s] }
+  | s = statement                 { [s] }
   | s = statement rest = statements   { s::rest }
 
 primary:
