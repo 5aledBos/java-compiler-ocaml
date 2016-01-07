@@ -47,9 +47,8 @@ packageName:
 				| _ -> str ^ "." }
 
 importDeclaration:
-  | p=importDeclaration IMPORT str=IDENT SC { Import(str) :: p }
   | IMPORT str=IDENT SC { [Import(str)] }
-
+  | p=importDeclaration IMPORT str=IDENT SC { Import(str) :: p }
 
 
 classOrElseDeclaration:
@@ -69,7 +68,6 @@ interfaceDeclaration:
 
 classBody:
   | classBodyDeclarations { }
-(*  | statements		{ }*)
 
 classBodyDeclarations:
   | classBodyDeclaration	{ }
@@ -79,19 +77,19 @@ classBodyDeclaration:
   | classMemberDeclaration	{ }
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
-  | constructorDeclaration	{}
+  | constructorDeclaration	{ }
 
 (*classMemberDeclaration*)
 
 classMemberDeclaration:
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
-  | methodDeclaration		{}
-  | attribut = attributDeclaration		{ }
+  | methodDeclaration		{ }
+  | attribut = attributDeclaration		{  }
 
 	(*declaration des attributs*)
 attributDeclaration:
-  | modifier? typeDeclaration listDecl = variableDeclarators SC	{  }
+  | modifier? typeDeclaration listDecl = variableDeclarators SC	{ listDecl }
 
 variableDeclarators:
   | str=variableDeclarator					{ [str] }
@@ -139,7 +137,7 @@ methodModifiers:
   | modifier	{ }
 
 methodBody:
-  | statements { }
+  | statements { }	
 
 result:
   | VOID 	{}

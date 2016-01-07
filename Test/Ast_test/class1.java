@@ -1,6 +1,7 @@
 package tests;
 
-import  test;
+
+
 
 public class test  {
 	private int i;
