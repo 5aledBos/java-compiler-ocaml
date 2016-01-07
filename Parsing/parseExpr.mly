@@ -53,7 +53,7 @@
 /*********/
 
 statements:
-  | s = statement                 { [s] }
+  | s = statement                     { [s] }
   | s = statement rest = statements   { s::rest }
 
 primary:
@@ -123,7 +123,7 @@ multexpr:
 
 unary:
   | op = unop u = unary   { Unop(op, u) }
-  | u = unarynot      { u }
+  | u = unarynot          { u }
 
 unarynot:
   | pe = postfix      { pe }
