@@ -74,7 +74,7 @@ classBodyDeclaration:
   | classMemberDeclaration	{}
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
-(*  | constructorDeclaration	{}*)
+  | constructorDeclaration	{}
 
 (*classMemberDeclaration*)
 
@@ -86,7 +86,7 @@ classMemberDeclaration:
 
 	(*declaration des attributs*)
 attributDeclaration:
-  | attributModifiers? typeDeclaration variableDeclarators SC	{}
+  | modifier? typeDeclaration variableDeclarators SC	{}
 
 variableDeclarators:
   | variableDeclarator					{}
@@ -99,19 +99,40 @@ variableDeclarator:
 variableInitializer:
   | statements	{ }
   
-typeDeclaration:
-  | primitive	{}
-  | str=IDENT	{}
 
 attributModifiers:
   | modifier	{ }
 
+(*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
+constructorDeclaration:
+  | modifier? constructorDeclarator LBRACE constructorBody? RBRACE	{ }
+ 
+constructorDeclarator:
+  | str=IDENT LPAR parameterList? RPAR	{ }
 
+constructorModifiers:
+  | modifier		{ }
 
+parameterList:
+  | parameter			{}
+  | parameterList COMA parameter	{}
+
+parameter:
+  | typeDeclaration str=IDENT	{ }
+
+constructorBody:
+  | statements 	{ }
 
 (*attributDeclaration:*)
 (*  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }*)
 (*  | primitive str=IDENT SC	{ "primitive " ^str }*)
+
+
+
+(* utilisé par les ClassBody*)
+typeDeclaration:
+  | primitive	{}
+  | str=IDENT	{}
 
 
 content:
