@@ -55,6 +55,7 @@ importDeclaration:
 classOrElseDeclaration:
   | decl = classDeclaration { decl }
   | decl = interfaceDeclaration { decl }
+(*  | decl = enumDeclaration	{ }*)
 
 classDeclaration:
   | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE classBody? RBRACE EOF    { ClassType{classename = id; access = modi; } }
@@ -62,6 +63,9 @@ classDeclaration:
 interfaceDeclaration:
   | modi=modifier? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
 
+(*TODO*)
+(*enumDeclaration:*)
+(*  | *)
 
 classBody:
   | classBodyDeclarations { }
@@ -72,7 +76,7 @@ classBodyDeclarations:
   | classBodyDeclarations classBodyDeclaration { }
 
 classBodyDeclaration:
-  | classMemberDeclaration	{}
+  | classMemberDeclaration	{ }
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
   | constructorDeclaration	{}
@@ -83,19 +87,19 @@ classMemberDeclaration:
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
   | methodDeclaration		{}
-  | attributDeclaration		{}
+  | attribut = attributDeclaration		{ }
 
 	(*declaration des attributs*)
 attributDeclaration:
-  | modifier? typeDeclaration variableDeclarators SC	{}
+  | modifier? typeDeclaration listDecl = variableDeclarators SC	{  }
 
 variableDeclarators:
-  | variableDeclarator					{}
-  | variableDeclarators COMA variableDeclarator 	{}
+  | str=variableDeclarator					{ [str] }
+  | listdecl = variableDeclarators COMA str=variableDeclarator 	{ str :: listdecl }
 
 variableDeclarator:
-  | str=IDENT 	{}
-  | str=IDENT EQUAL variableInitializer	{}
+  | str=IDENT 	{ str }
+  | str=IDENT EQUAL variableInitializer	{ str }
 
 variableInitializer:
   | statements	{ }
@@ -141,6 +145,11 @@ result:
   | VOID 	{}
   | typeDeclaration	{ }
 
+(*instanceInitializer*)
+(*instanceInitializer:*)
+(*  | str=IDENT str=IDENT EQUAL *)
+
+
 (* utilisé par les ClassBody*)
 typeDeclaration:
   | primitive	{}
@@ -166,28 +175,10 @@ declaration:
 (*  | str=attributDeclaration {}*)
 
 
-(*methodDeclaration:*)
-(*  | modifier primitive str=IDENT LPAR RPAR SC {"methode " ^ str }*)
-(*  | modifier primitive str=IDENT LPAR primitive stri=IDENT  RPAR SC {"methode " ^ stri ^ "\n" ^ str }*)
-(*  | modifier primitive id=IDENT LPAR RPAR  LBRACE str=methode RBRACE  { "methode " ^ id ^ "\n" ^ str }*)
-(*  | modifier primitive id=IDENT LPAR primitive stri=IDENT RPAR  LBRACE str=methode RBRACE  {"methode " ^id^ "\n" ^  str }*)
-
-(*methode:*)
-(*  | m=methode str=boucle {m^ "\n" ^ str}*)
-(*  | m=methode str=contenuMethode {m ^ "\n" ^ str}*)
-(*  | str=boucle {str}*)
-(*  | str=contenuMethode {str}*)
-
 (*boucle:*)
 (*  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}*)
 (*   *)
 (* *)
-(*contenuMethode:*)
-(*  | c=contenuMethode  str=egalite {c^ "\n" ^ str}*)
-(*  | c=contenuMethode  RETURN str=IDENT SC  { c^ "\n " ^"return " ^ str}*)
-(*  | str=egalite {"egalite " ^ str}*)
-(*  | RETURN str=IDENT SC  {"return " ^  str}*)
-
 
 (*condition:*)
 (*  | str=IDENT { str } *)

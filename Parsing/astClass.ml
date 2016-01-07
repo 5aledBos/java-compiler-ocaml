@@ -8,10 +8,19 @@ type modifier =
 type package = Package of string
 
 
-
 type import = Import of string
 type importList = import list
 
+(*type attributType =*)
+(*  | String of string | Primitive of primitive*)
+(*and primitive = *)
+(*  | Int | Float | Double*)
+
+
+(*type attributAst = {*)
+(*  typeof : attributType;*)
+(*  name : string;*)
+(*}*)
 
 type classAst =
   {
@@ -25,6 +34,9 @@ type interfaceAst =
   interfacename : string;
   access : modifierAccess option;
 }
+
+type interfaceType = 
+  | InterfaceType of interfaceAst
 
 type classType = 
   | ClassType of classAst
@@ -40,6 +52,9 @@ type fileAst =
 }
 
 type fileType = FileType of fileAst
+
+
+(* affichage de l'AST *)
 
 let string_of_modifieraccess c = match c with
   | Some(Public) -> "public"
