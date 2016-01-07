@@ -113,6 +113,7 @@ rule nexttoken = parse
   | "return"		             { RETURN }
   | "throw"		               { THROW }
   | "synchronized"           { SYNCHRONIZED }
+  | "void"					{ VOID }
   | "int"                    { PINT }
   | ";"		                   { SC }
   | ","		                   { COMA }

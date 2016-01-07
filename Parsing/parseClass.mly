@@ -24,6 +24,7 @@
 %token RETURN
 %token PINT
 %token POINT
+%token VOID
 
 %start filecontent
 
@@ -81,7 +82,7 @@ classBodyDeclaration:
 classMemberDeclaration:
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
-(*  | methodDeclaration		{}*)
+  | methodDeclaration		{}
   | attributDeclaration		{}
 
 	(*declaration des attributs*)
@@ -113,13 +114,6 @@ constructorDeclarator:
 constructorModifiers:
   | modifier		{ }
 
-parameterList:
-  | parameter			{}
-  | parameterList COMA parameter	{}
-
-parameter:
-  | typeDeclaration str=IDENT	{ }
-
 constructorBody:
   | statements 	{ }
 
@@ -127,12 +121,38 @@ constructorBody:
 (*  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }*)
 (*  | primitive str=IDENT SC	{ "primitive " ^str }*)
 
+(* déclaration de méthodes*)
+methodDeclaration:
+  | methodHeader LBRACE methodBody? RBRACE {} 
 
+methodHeader:
+  | modifier? result methodDeclarator	{ }
+
+methodDeclarator:
+  | str=IDENT LPAR parameterList? RPAR	{}
+
+methodModifiers:
+  | modifier	{ }
+
+methodBody:
+  | statements { }
+
+result:
+  | VOID 	{}
+  | typeDeclaration	{ }
 
 (* utilisé par les ClassBody*)
 typeDeclaration:
   | primitive	{}
   | str=IDENT	{}
+
+parameterList:
+  | parameter			{}
+  | parameterList COMA parameter	{}
+
+parameter:
+  | typeDeclaration str=IDENT	{ }
+
 
 
 content:
