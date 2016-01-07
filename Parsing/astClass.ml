@@ -22,12 +22,50 @@ type attributAst = {
   name : string;
 }
 
+
+
 type attributList = attributAst list
+
+
+
+type methodClassType =
+{
+  name : string;
+  access : modifierAccess option
+}
+
+type classMemberType =
+  | MethodClass of methodClassType
+  | Attribut of attributAst
+
+type constructorAst =
+{
+  name : string;
+  access : modifierAccess option;
+}
+
+type constructorType = ConstructorType of constructorAst
+
+type classContentAst =
+{
+  listClassMember : classMemberType list;
+  listConstructors : constructorType list;
+}
+
+type classBodyDeclaration =
+  | ClassMemberType of classMemberType
+  | ConstructorType of constructorAst
+
+type classBodyAst = classBodyDeclaration list
+
+type classBodyType = 
+  | ClassBodyType of classBodyAst
 
 type classAst =
   {
     classename : string;
     access : modifierAccess option;
+	classbody : classBodyAst option;
 (*    modifier : modifier option;*)
   }
 
@@ -45,30 +83,6 @@ type classType =
   | InterfaceType of interfaceAst
 
 type classList = classType list
-
-type methodClassType =
-{
-  name : string;
-  access : modifierAccess option
-}
-
-type classMemberType =
-  | MethodClass of methodClassType
-  | Attribut of attributAst
-
-type constructeurAst =
-{
-  name : string;
-  access : modifierAccess;
-}
-
-type constructorType = ConstructorType of constructeurAst
-
-type classContentAst =
-{
-  listClassMember : classMemberType list;
-  listConstructors : constructorType list;
-}
 
 type fileAst =
 {
@@ -92,10 +106,12 @@ let string_of_modifieraccess c = match c with
 let string_of_import i = match i with
   | Import(str) -> str
 
-let rec string_of_listImport liste = match liste with
-  | Some([]) -> ""
-  | Some(x::xs) -> string_of_import(x) ^ ", " ^ string_of_listImport(Some(xs))
-  | None -> "No import in File"
+(*let string_of_constructor*)
+
+(*let rec string_of_listImport liste = match liste with*)
+(*  | Some([]) -> ""*)
+(*  | Some(x::xs) -> string_of_import(x) ^ ", " ^ string_of_listImport(Some(xs))*)
+(*  | None -> "No import in File"*)
 
 let rec printListImport liste = match liste with
   | Some([]) -> print_endline("End of Import")
@@ -106,9 +122,19 @@ let printPackage p = match p with
   | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
   | None -> print_string("file package name: none" ^ "\n")
 
+let string_of_constructor c = match c with
+  | { name=str; access= modi } -> "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi)
+
+let printClassDeclaration decl = match decl with
+  | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
+
+let rec printClassBodyDeclarations liste = match liste with
+  | [] -> print_endline("fin des declarations")
+  | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
+
 
 let printClassTree c = match c with
-  | ClassType({classename=name; access=acc}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
+  | ClassType({classename=name; access=acc; classbody=Some(body)}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc)); printClassBodyDeclarations(body)
   | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
 
 let printFileTree c = match c with

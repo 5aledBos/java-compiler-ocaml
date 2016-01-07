@@ -48,7 +48,7 @@ packageName:
 
 importDeclaration:
   | IMPORT str=IDENT SC { [Import(str)] }
-  | p=importDeclaration IMPORT str=IDENT SC { Import(str) :: p }
+  | p=importDeclaration IMPORT str=IDENT SC {  p @ [Import(str)] }
 
 
 classOrElseDeclaration:
@@ -57,7 +57,7 @@ classOrElseDeclaration:
 (*  | decl = enumDeclaration	{ }*)
 
 classDeclaration:
-  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE classBody? RBRACE EOF    { ClassType{classename = id; access = modi; } }
+  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body  } }
 
 interfaceDeclaration:
   | modi=modifier? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
@@ -67,17 +67,17 @@ interfaceDeclaration:
 (*  | *)
 
 classBody:
-  | classBodyDeclarations { }
+  | body=classBodyDeclarations { body }
 
 classBodyDeclarations:
-  | classBodyDeclaration	{ }
-  | classBodyDeclarations classBodyDeclaration { }
+  | decl = classBodyDeclaration	{ [decl] }
+  | decls = classBodyDeclarations decl = classBodyDeclaration { decls @ [decl] }
 
 classBodyDeclaration:
-  | classMemberDeclaration	{ }
+(*  | decl = classMemberDeclaration	{ }*) (*TODO* faire types pour celui là *)
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
-  | constructorDeclaration	{ }
+  | constructor = constructorDeclaration	{ constructor }
 
 (*classMemberDeclaration*)
 
@@ -93,7 +93,7 @@ attributDeclaration:
 
 variableDeclarators:
   | str=variableDeclarator					{ [str] }
-  | listdecl = variableDeclarators COMA str=variableDeclarator 	{ str :: listdecl }
+  | listdecl = variableDeclarators COMA str=variableDeclarator 	{ listdecl @ [str] }
 
 variableDeclarator:
   | str=IDENT 	{ str }
@@ -108,10 +108,11 @@ attributModifiers:
 
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
-  | modifier? constructorDeclarator LBRACE constructorBody? RBRACE	{ }
+  | modi=modifier? result=constructorDeclarator LBRACE constructorBody? RBRACE	{ match result with
+																					| (str, parameters) -> ConstructorType{name = str; access = modi;} }
  
 constructorDeclarator:
-  | str=IDENT LPAR parameterList? RPAR	{ }
+  | str=IDENT LPAR parameters = parameterList? RPAR	{ str, parameters  }
 
 constructorModifiers:
   | modifier		{ }

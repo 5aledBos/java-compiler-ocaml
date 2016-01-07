@@ -1,11 +1,11 @@
 package tests;
 
-
+import test;
+import test2;
 
 
 public class test  {
-	private int i;
-	private String name;
+
 	private test() {
 		i = 0;
 		if (true) {
@@ -18,10 +18,7 @@ public class test  {
 		}
 	}
 
-	public test(int i, int j) {
-	}
-	public void  getI() {
-		i = 0;
+	public test(int i) {
 	}
 
 
