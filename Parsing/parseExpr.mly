@@ -18,7 +18,7 @@
 %token IF ELSE WHILE FOR SWITCH CASE
 %token BREAK CONTINUE THROW SYNCHRONIZED
 
-%token QUESTMARK COLUMN PIPE CIRCUMFLEX AMP COMA
+%token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
 
 /* Literal values */
 %token <float> FLOAT
@@ -53,12 +53,14 @@
 /*********/
 
 statements:
-  | s = statement                     { [s] }
+  | s = statement EOF                    { [s] }
   | s = statement rest = statements   { s::rest }
 
 primary:
   | l = literal                       { l }
   | LPAR e = expression RPAR          { e }
+  | LPAR e = expression               { raise (Err(Illegal_bracket ')')) }
+  (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
 
 literal:
   | i = INT                           { Int i }
@@ -74,7 +76,7 @@ expression:
 
 conditional:
   | co = condor         { co }
-  (*| co = condor QUESTMARK e = expression COLUMN c = conditional*)
+  (*| co = condor QUESTMARK e = expression COLON c = conditional*)
 
 condor:
   | ca = condand                              { ca }
@@ -150,6 +152,8 @@ leftside:
 
 block:
   | LBRACE bs = blockstatements RBRACE    { bs }
+  | LBRACE bs = blockstatements           { raise (Err(Illegal_bracket '}')) }
+  (* TODO: | bs = blockstatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
 
 blockstatements:
   | bs = blockstatement                         { [bs] }
@@ -216,7 +220,7 @@ exprstatement:
   | ClassInstanceCreationExpression SC*)
 
 labeledstatement:
-  | id = IDENT COLUMN s = statement                                   { Label(id, s) }
+  | id = IDENT COLON s = statement                                    { Label(id, s) }
 
 ifstatement:
   | IF LPAR e = expression RPAR s = statement                         { If(e, s) }
