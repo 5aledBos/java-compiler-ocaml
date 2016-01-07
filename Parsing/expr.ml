@@ -1,3 +1,5 @@
+(* AST *)
+
 type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod
   | Band | Bor | Bpipe | Bcirc | Bamp
@@ -45,6 +47,23 @@ type statement =
   | Ifelse of expression * statement * statement
   | While of expression * statement
   (*| For of expression list * expression list*)
+
+
+(* ERRORS *)
+
+type error =
+  | Illegal_bracket of char
+
+exception Err of error
+
+let report_err = function
+      | Illegal_bracket c ->
+    print_string "'";
+	  print_char c;
+	  print_string "' expected"
+
+
+(* STRING_OF *)
 
 let string_of_binop = function
   | Badd -> "+"

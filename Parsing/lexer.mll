@@ -99,7 +99,7 @@ rule nexttoken = parse
   
   (* Classes *)
   | "class"		               { CLASS }
-  | "interface"			{ INTERFACE }
+  | "interface"		           { INTERFACE }
   | "public"		             { PUBLIC }
   | "protected"		           { PROTECTED }
   | "private"		             { PRIVATE }
@@ -113,11 +113,11 @@ rule nexttoken = parse
   | "return"		             { RETURN }
   | "throw"		               { THROW }
   | "synchronized"           { SYNCHRONIZED }
-  | "void"					{ VOID }
+  | "void"					         { VOID }
   | "int"                    { PINT }
   | ";"		                   { SC }
   | ","		                   { COMA }
-  | "."				{ POINT }
+  | "."				               { POINT }
   
   (* Statements *)
   | "if"		                 { IF }
@@ -184,7 +184,7 @@ rule nexttoken = parse
   | "'" (str_char as c) "'"  { CHAR (String.make 1 c) }
   
   | "?"                      { QUESTMARK }
-  | ":"                      { COLUMN }
+  | ":"                      { COLON }
   | "|"                      { PIPE }
   | "^"                      { CIRCUMFLEX }
   | "&"                      { AMP }
