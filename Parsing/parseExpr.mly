@@ -8,11 +8,12 @@
 
 /* Operators */
 %token PLUS MINUS TIMES DIV MOD
+%token LSHIFT SRSHIFT URSHIFT
 %token AND OR NOT
 %token GT GE LT LE EQ NEQ
 %token NULL
 %token INCR DECR BITWISE
-%token ASS MULASS DIVASS MODASS PLUSASS MINUSASS
+%token ASS MULASS DIVASS MODASS PLUSASS MINUSASS LSHIFTASS SRSHIFTASS URSHIFTASS AMPASS CIRCASS PIPEASS
 
 /* Statements */
 %token IF ELSE WHILE FOR SWITCH CASE
@@ -109,10 +110,8 @@ relationalexpr:
   (*| re = relationalexpr INSTANCEOF rt = referencetype*)
 
 shiftexpr:
-  | ae = addexpr    { ae }
-  (*| se = shiftexpr "<<" ae = addexpr
-  | se = shiftexpr ">>" ae = addexpr
-  | se = shiftexpr ">>>" ae = addexpr*)
+  | ae = addexpr                                 { ae }
+  | se = shiftexpr op = binopshift ae = addexpr  { Binop(se, op, ae) }
 
 addexpr:
   | me = multexpr                      { me }
@@ -253,6 +252,11 @@ forinit:
   | LT        { Blt }
   | LE        { Ble }
 
+%inline binopshift:
+  | LSHIFT    { Blshift }
+  | SRSHIFT   { Bsrshift }
+  | URSHIFT   { Burshift }
+
 %inline unop:
   | INCR      { Uincr }
   | DECR      { Udecr }
@@ -260,13 +264,18 @@ forinit:
   | MINUS     { Uminus }
 
 %inline assign:
-  | ASS       { Ass }
-  | MULASS    { Assmul }
-  | DIVASS    { Assdiv }
-  | MODASS    { Assmod }
-  | PLUSASS   { Assplus }
-  | MINUSASS  { Assminus }
-  (* TODO: Add <<= >>= >>>= &= ^= and|= *)
+  | ASS         { Ass }
+  | MULASS      { Assmul }
+  | DIVASS      { Assdiv }
+  | MODASS      { Assmod }
+  | PLUSASS     { Assplus }
+  | MINUSASS    { Assminus }
+  | LSHIFTASS   { Asslshift }
+  | SRSHIFTASS  { Asssrshift }
+  | URSHIFTASS  { Assurshift }
+  | AMPASS      { Assamp }
+  | CIRCASS     { Asscirc }
+  | PIPEASS     { Asspipe }
 
 %%
 

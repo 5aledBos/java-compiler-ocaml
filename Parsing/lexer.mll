@@ -126,7 +126,6 @@ rule nexttoken = parse
   | "for"		                 { FOR }
   | "switch"                 { SWITCH }
   | "case"                   { CASE }
-  (* TODO: for and switch statement *)
   
   (* Brackets *)
   | "("                      { LPAR }
@@ -148,7 +147,10 @@ rule nexttoken = parse
   | "+"                      { PLUS }
   | "-"                      { MINUS }
   
-  (* TODO: Shift operators - 15.19 *)
+  (* Shift operators *)
+  | "<<"                     { LSHIFT }
+  | ">>"                     { SRSHIFT }
+  | ">>>"                    { URSHIFT }
   
   (* Relational and equality operators *)
   | ">"                      { GT }
@@ -163,7 +165,6 @@ rule nexttoken = parse
   (* Conditional operators *)
   | "&&"                     { AND }
   | "||"                     { OR }
-  (* TODO: Conditional operator ? : - 15.25 *)
   
   (* Assignment operators *)
   | "="                      { ASS }
@@ -172,7 +173,12 @@ rule nexttoken = parse
   | "%="                     { MODASS }
   | "+="                     { PLUSASS }
   | "-="                     { MINUSASS }
-  (* TODO: Assignment operators <<= >>= >>>= &= ^= |= - 15.26 *)
+  | "<<="                    { LSHIFTASS }
+  | ">>="                    { SRSHIFTASS }
+  | ">>>="                   { URSHIFTASS }
+  | "&="                     { AMPASS }
+  | "^="                     { CIRCASS }
+  | "|="                     { PIPEASS }
       
   (* Literals *)
   | "null"                   { NULL }

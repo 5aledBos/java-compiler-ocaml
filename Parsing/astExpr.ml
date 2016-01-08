@@ -4,6 +4,7 @@ type binop =
   | Badd | Bsub | Bmul | Bdiv | Bmod
   | Band | Bor | Bpipe | Bcirc | Bamp
   | Beq | Bneq | Bgt | Bge | Blt | Ble
+  | Blshift | Bsrshift | Burshift
 
 type unop =
   | Uminus
@@ -20,6 +21,12 @@ type assign =
   | Assmod
   | Assplus
   | Assminus
+  | Asslshift
+  | Asssrshift
+  | Assurshift
+  | Assamp
+  | Asscirc
+  | Asspipe
 
 type expression =
   | Int of int
@@ -82,6 +89,9 @@ let string_of_binop = function
   | Bge  -> ">="
   | Blt  -> "<"
   | Ble  -> "<="
+  | Blshift -> "<<"
+  | Bsrshift -> ">>"
+  | Burshift -> ">>>"
 
 let string_of_unop = function
   | Unot -> "not"
@@ -98,6 +108,12 @@ let string_of_assign = function
   | Assmod -> "%="
   | Assplus -> "+="
   | Assminus -> "-="
+  | Asslshift -> "<<="
+  | Asssrshift -> ">>="
+  | Assurshift -> ">>>="
+  | Assamp -> "&="
+  | Asscirc -> "^="
+  | Asspipe -> "|="
 
 let rec string_of_list f l =
   match l with
@@ -114,7 +130,7 @@ let rec string_of_expr expr =
   | Null -> "null"
   | Var v -> v
   
-  (*  *)
+  (* Operations *)
   | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
   | Bool true -> "true"
   | Bool false -> "false"

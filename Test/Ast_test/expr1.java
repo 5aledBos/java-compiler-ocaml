@@ -10,7 +10,8 @@ if (false) {
   continue rest;
 }
 
-test = 3 + 5;  abc -= "test vdfb f xg x" ;
+test = 3 + 5;  abc <<= "test vdfb f xg x" ;
+abc -= "test vdfb f xg x" >>> "azerty" ;
 
 while (5 > 4) ++i;
 
