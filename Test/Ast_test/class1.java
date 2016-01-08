@@ -35,6 +35,14 @@ public class test  {
 	}
 
 	protected void getName() {
+		if (false || true) {
+
+  		compil = true;
+  		++j;
+  		throw abc *= 5.3++;
+  
+		}
+		
  	}
 
 } 

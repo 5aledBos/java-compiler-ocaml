@@ -123,8 +123,7 @@ constructorModifiers:
 constructorBody:
   | inv=explicitConstructorInvocation? stmts = blockstmts	{ { liststatements = stmts;  invocation=inv } }		(* blockstatements peut etre à redéfinir dans Expr*)
 
-blockstmts:
-  | stmts = statements	{ BlockStatements(stmts) }
+
 
 explicitConstructorInvocation: 
   | THIS LPAR liste=parameterList? RPAR SC	{ { invocator=This; parameters=liste } }
@@ -137,8 +136,8 @@ explicitConstructorInvocation:
 
 (* déclaration de méthodes*)
 methodDeclaration:
-  | decl=methodHeader LBRACE methodBody? RBRACE { match decl with
-													| (modi, temp) -> { name=temp; access=modi} } 
+  | decl=methodHeader LBRACE body=methodBody? RBRACE { match decl with
+													| (modi, temp) -> { name=temp; access=modi;methodbody=body} } 
 
 methodHeader:
   | modi=modifier? result temp=methodDeclarator	{ modi, temp }
@@ -150,9 +149,11 @@ methodModifiers:
   | modifier	{ }
 
 methodBody:
-  | statements { }	
+  | stmts = blockstmts { stmts }	
+(*  | SC {  }*)
 
-
+blockstmts:
+  | stmts = statements	{ BlockStatements(stmts) }
 
 result:
   | VOID 	{}

@@ -34,12 +34,13 @@ type attributAst = {
 
 type attributList = attributAst list
 
-
+type blockstmts = BlockStatements of AstExpr.statement list
 
 type methodClassType =
 {
   name : string;
-  access : modifierAccess option
+  access : modifierAccess option;
+  methodbody: blockstmts option
 }
 
 type classMemberType =
@@ -58,7 +59,7 @@ and constructorInvocation =
 }
 and thisOrSuper =
   |This | Super
-and blockstmts = BlockStatements of AstExpr.statement list
+
 
 type constructorAst =
 {
@@ -178,10 +179,10 @@ let string_of_constructorBody body = match body with
 
 
 let string_of_constructor c = match c with
-  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: \n" ^ string_of_constructorBody(body)
+  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: " ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi)
+  | MethodClass( { name=str; access=modi; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
