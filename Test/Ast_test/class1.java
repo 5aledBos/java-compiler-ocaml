@@ -7,6 +7,8 @@ import test2;
 public class test  {
 
 	private test() {
+				this();
+
 		i = 0;
 		if (true) {
   			test = 3 + 5;

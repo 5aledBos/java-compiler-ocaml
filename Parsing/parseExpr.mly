@@ -54,7 +54,7 @@
 /*********/
 
 statements:
-  | s = statement EOF                    { [s] }
+  | s = statement (*EOF*)                    { [s] }	(*je commente pour faire test des classes*)
   | s = statement rest = statements   { s::rest }
 
 primary:

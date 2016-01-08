@@ -22,12 +22,13 @@ let execute lexbuf verbose =
     AstExpr.report_err kind;
     print_newline()
 
-(*try
-  let exp = Parser.filecontent Lexer.nexttoken lexbuf in
-  AstClass.printFileTree (exp)
-with
-  | Lexer.Error (kind, start, fin) ->
-     Lexer.report_error kind;
-     Lexer.print_position start fin;
-     print_newline()*)
+
+(*try*)
+(*  let exp = Parser.filecontent Lexer.nexttoken lexbuf in*)
+(*  AstClass.printFileTree (exp)*)
+(*with*)
+(*  | Lexer.Error (kind, start, fin) ->*)
+(*     Lexer.report_error kind;*)
+(*     Lexer.print_position start fin;*)
+(*     print_newline()*)
 

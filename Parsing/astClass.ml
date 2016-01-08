@@ -38,11 +38,30 @@ type classMemberType =
   | MethodClass of methodClassType
   | Attribut of attributAst
 
+type constructorBodyAst =
+{
+(*  invocation : constructorInvocation option;*)
+  liststatements : blockstatements;
+}
+and constructorInvocation =
+  { 
+	invocator : thisOrSuper;
+}
+and thisOrSuper =
+  |This | Super
+and blockstatements = BlockStatements of Expr.statement list
+
 type constructorAst =
 {
   name : string;
   access : modifierAccess option;
+  constructorbody : constructorBodyAst option;
 }
+
+
+
+
+
 
 type constructorType = ConstructorType of constructorAst
 
@@ -106,32 +125,35 @@ let string_of_modifieraccess c = match c with
 let string_of_import i = match i with
   | Import(str) -> str
 
-(*let string_of_constructor*)
-
-(*let rec string_of_listImport liste = match liste with*)
-(*  | Some([]) -> ""*)
-(*  | Some(x::xs) -> string_of_import(x) ^ ", " ^ string_of_listImport(Some(xs))*)
-(*  | None -> "No import in File"*)
-
 let rec printListImport liste = match liste with
-  | Some([]) -> print_endline("End of Import")
+  | Some([]) -> print_endline("End of Import" ^ "\n")
   | Some(x::xs) -> print_endline("Import: " ^ string_of_import(x)); printListImport(Some(xs))
-  | None -> print_endline("No import in File")
+  | None -> print_endline("No import in file")
 
 let printPackage p = match p with
   | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
   | None -> print_string("file package name: none" ^ "\n")
 
+
+
+let rec string_of_statements stmts = match stmts with
+  | [] -> ""
+  | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ Expr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
+
+let string_of_constructorBody body = match body with
+  | Some( { liststatements=BlockStatements(stmts) } )-> string_of_statements stmts
+  | None -> "\t" ^ "\t" ^ "\t"  ^ "No body"
+
+
 let string_of_constructor c = match c with
-  | { name=str; access= modi } -> "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi)
+  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: \n" ^ string_of_constructorBody(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
 
 let rec printClassBodyDeclarations liste = match liste with
-  | [] -> print_endline("fin des declarations")
+  | [] -> print_endline("end of declarations")
   | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
-
 
 let printClassTree c = match c with
   | ClassType({classename=name; access=acc; classbody=Some(body)}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc)); printClassBodyDeclarations(body)
