@@ -49,7 +49,6 @@ type classMemberType =
 type constructorBodyAst =
 {
   invocation : constructorInvocation option;
-
   liststatements : blockstmts;
 }
 and constructorInvocation =
@@ -67,10 +66,6 @@ type constructorAst =
   access : modifierAccess option;
   constructorbody : constructorBodyAst option;
 }
-
-
-
-
 
 
 type constructorType = ConstructorType of constructorAst
@@ -185,8 +180,12 @@ let string_of_constructorBody body = match body with
 let string_of_constructor c = match c with
   | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: \n" ^ string_of_constructorBody(body)
 
+let string_of_classmember c = match c with
+  | MethodClass( { name=str; access=modi  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi)
+
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
+  | ClassMemberType(member) -> print_endline(string_of_classmember(member))
 
 let rec printClassBodyDeclarations liste = match liste with
   | [] -> print_endline("end of declarations")

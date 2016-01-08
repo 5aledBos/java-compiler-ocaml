@@ -77,7 +77,7 @@ classBodyDeclarations:
   | decls = classBodyDeclarations decl = classBodyDeclaration { decls @ [decl] }
 
 classBodyDeclaration:
-(*  | decl = classMemberDeclaration	{ }*) (*TODO* faire types pour celui là *)
+  | decl = classMemberDeclaration	{ ClassMemberType(decl) } (*TODO* faire types pour celui là *)
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
   | constructor = constructorDeclaration	{ constructor }
@@ -87,8 +87,8 @@ classBodyDeclaration:
 classMemberDeclaration:
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
-  | methodDeclaration		{ }
-  | attribut = attributDeclaration		{  }
+  | decl = methodDeclaration		{ MethodClass(decl) }
+(*  | attribut = attributDeclaration		{  }*)
 
 	(*declaration des attributs*)
 attributDeclaration:
@@ -137,13 +137,14 @@ explicitConstructorInvocation:
 
 (* déclaration de méthodes*)
 methodDeclaration:
-  | methodHeader LBRACE methodBody? RBRACE {} 
+  | decl=methodHeader LBRACE methodBody? RBRACE { match decl with
+													| (modi, temp) -> { name=temp; access=modi} } 
 
 methodHeader:
-  | modifier? result methodDeclarator	{ }
+  | modi=modifier? result temp=methodDeclarator	{ modi, temp }
 
 methodDeclarator:
-  | str=IDENT LPAR parameterList? RPAR	{}
+  | str=IDENT LPAR parameterList? RPAR	{ str }
 
 methodModifiers:
   | modifier	{ }

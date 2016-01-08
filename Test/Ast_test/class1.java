@@ -34,5 +34,8 @@ public class test  {
 		}
 	}
 
+	protected void getName() {
+ 	}
+
 } 
 
