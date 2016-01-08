@@ -1,22 +1,109 @@
-The minijavac compiler.
+The minijavac compiler
+======================
 
-A compilation project for Thrid year students of Telecom Bretagne.
+Description
+-----------
 
-'ocamlbuild Main.byte' (or native) to build the compiler. The main file
-is Main/Main.ml, it should not be modified. It opens the given file,
-creates a lexing buffer, initializes the location and call the compile
-function of the module Main/compile.ml. It is this function that you
-should modify to call your parser.
+This is a compilation project for third year students of Telecom Bretagne developed by Chloé Brouzes, Samuel Dusson, Vincent Gueguen and Maxime Lasserre.
 
-'ocamlbuild Main.byte -- <filename>' (or native) to build and then execute
-the compiler on the file given. By default, the program searches for
-file with the extension .java and append it to the given filename if
-it does not end with it.
+The goal of the first step is to implement a lexical and syntactical analyser for Java files. Therefore, we developed a lexer and a parser which return an abstracr syntax tree (AST) for a given .java file. During the second step, we will add the typing and evaluation phases of the compiler. The following figure represents the flow of the compiler.
 
-If you want to reuse an existing ocaml library. Start by installing it
-with opam. For example, to use colored terminal output you
-use 'opam install ANSITerminal'.
-Then you must inform ocamlbuild to use the ocamlfind tool :
-'ocamlbuild -use-ocamlfind Main.byte -- tests/UnFichierDeTest.java'
-et vous devez ajouter au fichier _tags la librarie en question par exemple :
-true: package(ANSITerminal)
+
+To automate the compilation of this project, we use the tool **ocamlbuild**. To build the compiler (which creates a `_build` folder containing all the needed files), simply run:
+
+```
+ocamlbuild Main.byte
+```
+
+A `Main.byte` file is created and allows to parse a Java file. By default, the program searches for file with the extension .java and append it to the given filename if it does not end with it. To execute the compiler on a file, use the following command:
+
+```
+./Main.byte <filename>
+```
+
+It is also possible to build and then execute the compiler on a given file in one command:
+
+```
+ocamlbuild Main.byte -- <filename>
+```
+
+
+Folders and files
+-----------------
+
+###Main
+
+The `Main` folder contains 2 files:
+
+ - the main file of the project, `Main.ml`. It opens the given file, creates a lexing buffer, initializes the location and call the compile function.
+ - and `Compile.ml` which contains the function that calls the parser of this project. The parser is described and documented in the `Documentation/Parser.md` file.
+
+###Parsing
+
+This folder contains 3 kind of files: the lexer, the parser and the abstract syntax tree of this compiler.
+
+The **lexer** is implemented in one unique file, `lexer.mll`. It contains:
+
+ - the regular expressions needed to define the lexemes of the parsed Java file such as integer, floating point, identifier, and so on
+ - and the nexttoken rule, allowing to lexically analyse the given file.
+
+The **parser** has been split into 2 files:
+
+ - the expression parser which parses all the statements, blocks and expressions of the Java file, that is everything that can be inside a method
+ - and the class parser parsing the class elements, that is the packages, imports, attributes, inheritence, and so on.
+
+Those 2 files are joined thanks to the *mlypack* tool in a `Parser.mlypack` file. That way, we can call one unique parser from the `Compile.ml` module.
+
+As well as the parser, the **AST** is defined in 2 files: one for the expressions and statements and another one for the class elements. This AST is described in the `Documentation/Ast.md` file.
+
+For more documentation about those files, use the `Documentation` folder.
+
+###Test
+
+The `Test` folder contains all the files allowing to test the minijavac compiler: example of Java files and unit tests.
+
+####Ast_test
+
+The `Ast_test` folder contains a set of Java files allowing to test our compiler.
+For instance, to parse a simple Java class containing methods, run from the root folder:
+
+```
+./Main.byte ./Test/Ast_test/class1.java
+```
+
+To parse a file containing an error and see how it is returned, run:
+
+```
+./Main.byte ./Test/Ast_test/error1.java
+```
+
+####Unit_test
+
+To unit test, we use the **Alcotest** library. For now, every file from the `Parsing` folder is unit test in a file with the same name in the `Test/Unit_test` folder.
+
+###Utils
+
+The `Utils` folder contains a set of files allowing to locate a lexeme:
+
+ - `Located.ml` and `Located.mli` help to create located elements, containing an element and a location.
+ - `Location.ml` and `Location.mli` help to create locations from the location of the buffer.
+
+###Documentation
+
+Some documentation files are written in the `Documentation` folder to describe and explain how do the lexer, the parser and the abstract syntax tree have been implemented.
+
+###Compiling
+
+TODO
+
+###Typing
+
+This folder will be used in the second part of the minijavac compiler project. It will contain the files allowing to browse the abstract syntax tree in order to:
+
+ - eliminate incorrect programs
+ - and enrich the AST with all its nodes type information.
+
+###Evaluator
+
+This folder will also be used in the second part of the minijavac compiler project. It will contain the files aiming to evaluate the typed AST in order to compute the values of the program.
+

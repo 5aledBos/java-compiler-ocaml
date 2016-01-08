@@ -1,9 +1,9 @@
-open Expr
+open AstExpr
 
 (* verbose is a boolean that you can use to switch to a verbose output (for example, to dump all the ast) *)
 
 let print_statement stat =
-  print_string (Expr.string_of_statement stat);
+  print_string (AstExpr.string_of_statement stat);
   print_newline()
 
 let execute lexbuf verbose = 
@@ -18,8 +18,8 @@ let execute lexbuf verbose =
     Lexer.report_error kind;
     Lexer.print_position start fin;
     print_newline()
-  | Expr.Err kind ->
-    Expr.report_err kind;
+  | AstExpr.Err kind ->
+    AstExpr.report_err kind;
     print_newline()
 
 (*try
