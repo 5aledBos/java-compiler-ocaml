@@ -1,5 +1,5 @@
 %{
-    open Expr
+    open AstExpr
 %}
 
 /**********/
@@ -44,7 +44,7 @@
 /******************************/
 
 %start statements
-%type <Expr.statement list> statements
+%type <AstExpr.statement list> statements
 
 %%
 
