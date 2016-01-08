@@ -119,14 +119,14 @@ constructorModifiers:
   | modifier		{ }
 
 constructorBody:
-  | explicitConstructorInvocation? stmts = blockstatements	{ { liststatements = stmts } }		(* blockstatements peut etre à redéfinir dans Expr*)
+  | inv=explicitConstructorInvocation? stmts = blockstatements	{ { liststatements = stmts; invocation=inv } }		(* blockstatements peut etre à redéfinir dans Expr*)
 
 blockstatements:
   | stmts = statements	{ BlockStatements(stmts) }
 
 explicitConstructorInvocation: 
-  | THIS LPAR parameterList? RPAR SC	{ }
-  | SUPER LPAR parameterList? RPAR SC		{ }
+  | THIS LPAR liste=parameterList? RPAR SC	{ { invocator=This; parameters=liste } }
+  | SUPER LPAR liste=parameterList? RPAR SC		{ {invocator=Super; parameters=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
 (*attributDeclaration:*)
@@ -149,6 +149,8 @@ methodModifiers:
 methodBody:
   | statements { }	
 
+
+
 result:
   | VOID 	{}
   | typeDeclaration	{ }
@@ -159,18 +161,18 @@ result:
 
 
 (* utilisé par les ClassBody*)
-typeDeclaration:
-  | primitive	{}
-  | str=IDENT	{}
+
 
 parameterList:
-  | parameter			{}
+  | parameter			{  }
   | parameterList COMA parameter	{}
 
 parameter:
-  | typeDeclaration str=IDENT	{ }
+  | t=typeDeclaration str=IDENT	{ {parametertype=t; name=str} }
 
-
+typeDeclaration:
+  | p=primitive	{ AstClass.Primitive(p) }
+  | str=IDENT	{ String(str) }
 
 content:
   | str=declaration {  }
@@ -213,7 +215,7 @@ interfaces:
   | str=IDENT COMA? {}
 
 primitive:
-  | PINT {} 
+  | PINT { AstClass.Int } 
 
 
 

@@ -21,8 +21,18 @@ public class test  {
 	}
 
 	public test(int i) {
-	}
+		if (false || true) {
 
+  		compil = true;
+  		++j;
+  		throw abc *= 5.3++;
+  
+		} else {
+
+  		--j;
+  			return false;
+		}
+	}
 
 } 
 

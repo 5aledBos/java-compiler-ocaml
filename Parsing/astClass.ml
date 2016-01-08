@@ -14,7 +14,15 @@ type importList = import list
 type attributType =
   | String of string | Primitive of primitive
 and primitive = 
-  | Int | Float | Double
+  | Int | Float | Double | Char | Boolean | Byte | Short | Long
+
+type parameter = 
+{
+  parametertype : attributType;
+  name : string
+}
+
+
 
 
 type attributAst = {
@@ -40,13 +48,13 @@ type classMemberType =
 
 type constructorBodyAst =
 {
-(*  invocation : constructorInvocation option;*)
+  invocation : constructorInvocation option;
   liststatements : blockstatements;
 }
 and constructorInvocation =
   { 
 	invocator : thisOrSuper;
-(*	parameters: parameterList;*)
+	parameters: parameter list option
 }
 and thisOrSuper =
   |This | Super
@@ -135,14 +143,36 @@ let printPackage p = match p with
   | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
   | None -> print_string("file package name: none" ^ "\n")
 
+let string_of_typeOf t = match t with
+  | String(str) -> str
+  | Primitive(Int) -> "int"
+  | Primitive(Float) -> "float"
+  | Primitive(Double) ->"double"
+  | Primitive(Boolean) -> "boolean"
+  | Primitive(Char) -> "Char"
+  | Primitive(Long) -> "long"
+  | Primitive(Byte) -> "byte"
+  | Primitive(Short) -> "short"
+
+let string_of_paramater p = match p with
+  | { parametertype=typeof; name=str } -> string_of_typeOf(typeof) ^ " " ^ str
 
 
 let rec string_of_statements stmts = match stmts with
   | [] -> ""
   | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ AstExpr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
 
+let string_of_thisorsuper str = match str with
+  | This -> "this"
+  | Super -> "super"
+
+let string_of_constructorinvocation inv = match inv with
+  | Some({ invocator = i  }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ ")"
+  | None -> ""
+
+
 let string_of_constructorBody body = match body with
-  | Some( { liststatements=BlockStatements(stmts) } )-> string_of_statements stmts
+  | Some( { liststatements=BlockStatements(stmts); invocation=inv } )-> string_of_constructorinvocation(inv) ^ "\n" ^ string_of_statements stmts
   | None -> "\t" ^ "\t" ^ "\t"  ^ "No body"
 
 
