@@ -115,6 +115,8 @@ rule nexttoken = parse
   | "return"		             { RETURN }
   | "throw"		               { THROW }
   | "synchronized"           { SYNCHRONIZED }
+  | "try"                    { TRY }
+  | "finally"                { FINALLY }
   | "void"					         { VOID }
   | "int"                    { PINT }
   | ";"		                   { SC }
@@ -134,6 +136,8 @@ rule nexttoken = parse
   | ")"                      { RPAR }
   | "{"			                 { LBRACE }
   | "}"			                 { RBRACE }
+  | "["                      { LBRACKET }
+  | "]"                      { RBRACKET }
     
   (* Unary operators *)
   | "++"                     { INCR }

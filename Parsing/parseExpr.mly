@@ -10,14 +10,14 @@
 %token PLUS MINUS TIMES DIV MOD
 %token LSHIFT SRSHIFT URSHIFT
 %token AND OR NOT
-%token GT GE LT LE EQ NEQ
+%token GT GE LT LE
 %token NULL
 %token INCR DECR BITWISE
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS LSHIFTASS SRSHIFTASS URSHIFTASS AMPASS CIRCASS PIPEASS
 
 /* Statements */
 %token IF ELSE WHILE FOR SWITCH CASE
-%token BREAK CONTINUE THROW SYNCHRONIZED
+%token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
 
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
 
@@ -54,14 +54,44 @@
 /*********/
 
 statements:
-  | s = statement (*EOF*)                    { [s] }	(*je commente pour faire test des classes*)
+  | s = statement                     { [s] }
   | s = statement rest = statements   { s::rest }
 
 primary:
+  | pna = primarynoarray              { pna }
+  (*| ac = arraycreation               { ac }*)
+
+primarynoarray:
   | l = literal                       { l }
+  (*| t = typ POINT c = clas            {}
+  | VOID POINT c = clas               {}
+  | THIS                              {}
+  | cn = classname POINT THIS         {}*)
   | LPAR e = expression RPAR          { e }
   | LPAR e = expression               { raise (Err(Illegal_bracket ')')) }
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
+  (*| cie = classinstexpr               { cie }
+  | fa = fieldaccess                  { fa }
+  | mi = methodinvoc                  { mi }
+  | aa = arrayaccess                  { aa }*)
+
+(*fieldaccess:
+  | p = primary POINT id = IDENT                  {}
+  | SUPER POINT id = IDENT                        {}
+  | cn = classname POINT SUPER POINT id = IDENT   {}
+
+methodinvoc:
+  | mn = methodname LPAR al = arglist? RPAR                                                 {}
+  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
+  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
+  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
+  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
+
+(* methodname in parseClass *)
+
+arglist:
+  | e = expression                    { [e] }
+  | al = arglist COMA e = expression  { al::e }*)
 
 literal:
   | i = INT                           { Int i }
@@ -209,7 +239,7 @@ statwithoutsubstat:
   (* TODO: | RETURN SC*)
   | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
   | THROW e = expression SC                           { Throw(e) }
-  (*| ts = trystatement           { ts }*)
+  (*| ts = trystatement                                 { ts }*)
 
 exprstatements:
   | es = exprstatement                         { [es] }
@@ -219,10 +249,28 @@ exprstatement:
   | ass = assignment SC       { ass }
   | INCR u = unary SC         { Unopleft(Ulincr, u) }
   | DECR u = unary SC         { Unopleft(Uldecr, u) }
-  (*| p = postfix INCR SC
-  | p = postfix DECR SC
-  | MethodInvocation SC
-  | ClassInstanceCreationExpression SC*)
+  | p = postfix INCR SC       { Unopright(p, Urincr) }
+  | p = postfix DECR SC       { Unopright(p, Urdecr) }
+  (*| mi = methodinvoc SC       { mi }
+  | cie = classinstexpr SC    { cie }*)
+
+(*trystatement:
+  | TRY b = block c = catches                      { Try(b, c) }
+  | TRY b = block c = catches? FINALLY b = block   { Tryfin(b, c, b) }
+
+catches:
+  | cc = catchclause                 { [cc] }
+  | c = catches cc = catchclause     { c::cc }
+
+catchclause:
+  | CATCH LPAR fp = formalparam RPAR b = block    {}
+
+formalparam:
+  | vm = variablemodifiers t = typ vdi = variabledeclid     {}
+
+variabledeclid:
+  | id = IDENT                        { Var id }
+  | variabledeclid LBRACKET RBRACKET  {}*)
 
 labeledstatement:
   | id = IDENT COLON s = statement                                    { Label(id, s) }
@@ -248,7 +296,7 @@ forinit:
   | lv = localvariabledecl      { lv }*)
 
 %inline binopmul:
-  | PLUS      { Badd }
+  | TIMES     { Bmul }
   | DIV       { Bdiv }
   | MOD       { Bmod }
 
