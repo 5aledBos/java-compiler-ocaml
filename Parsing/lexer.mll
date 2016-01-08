@@ -108,6 +108,8 @@ rule nexttoken = parse
   | "extends"		             { EXTENDS }
   | "implements"	           { IMPLEMENTS }
   | "abstract"		           { ABSTRACT }
+  | "this"					{ THIS }
+  | "super"						{ SUPER }
   | "break"		               { BREAK }
   | "continue"               { CONTINUE }
   | "return"		             { RETURN }

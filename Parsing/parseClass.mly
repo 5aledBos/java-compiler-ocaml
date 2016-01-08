@@ -21,6 +21,7 @@
 %token PUBLIC PROTECTED PRIVATE 
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS ABSTRACT
+%token THIS SUPER
 %token RETURN
 %token PINT
 %token POINT
@@ -57,7 +58,7 @@ classOrElseDeclaration:
 (*  | decl = enumDeclaration	{ }*)
 
 classDeclaration:
-  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body  } }
+  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body;  } }
 
 interfaceDeclaration:
   | modi=modifier? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
@@ -108,8 +109,8 @@ attributModifiers:
 
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
-  | modi=modifier? result=constructorDeclarator LBRACE constructorBody? RBRACE	{ match result with
-																					| (str, parameters) -> ConstructorType{name = str; access = modi;} }
+  | modi=modifier? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
+																					| (str, parameters) -> ConstructorType{name = str; access = modi; constructorbody = body } }
  
 constructorDeclarator:
   | str=IDENT LPAR parameters = parameterList? RPAR	{ str, parameters  }
@@ -118,7 +119,15 @@ constructorModifiers:
   | modifier		{ }
 
 constructorBody:
-  | statements 	{ }
+  | explicitConstructorInvocation? stmts = blockstatements	{ { liststatements = stmts } }		(* blockstatements peut etre à redéfinir dans Expr*)
+
+blockstatements:
+  | stmts = statements	{ BlockStatements(stmts) }
+
+explicitConstructorInvocation: 
+  | THIS LPAR parameterList? RPAR SC	{ }
+  | SUPER LPAR parameterList? RPAR SC		{ }
+(*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
 (*attributDeclaration:*)
 (*  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }*)
