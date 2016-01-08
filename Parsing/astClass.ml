@@ -14,7 +14,7 @@ type importList = import list
 type attributType =
   | String of string | Primitive of primitive
 and primitive = 
-  | Int | Float | Double | Char | Boolean | Byte | Short | Long
+  | PInt | Float | Double | Char | Boolean | Byte | Short | Long
 
 type parameter = 
 {
@@ -49,7 +49,8 @@ type classMemberType =
 type constructorBodyAst =
 {
   invocation : constructorInvocation option;
-  liststatements : blockstatements;
+
+  liststatements : blockstmts;
 }
 and constructorInvocation =
   { 
@@ -58,7 +59,7 @@ and constructorInvocation =
 }
 and thisOrSuper =
   |This | Super
-and blockstatements = BlockStatements of AstExpr.statement list
+and blockstmts = BlockStatements of AstExpr.statement list
 
 type constructorAst =
 {
@@ -145,7 +146,7 @@ let printPackage p = match p with
 
 let string_of_typeOf t = match t with
   | String(str) -> str
-  | Primitive(Int) -> "int"
+  | Primitive(PInt) -> "int"
   | Primitive(Float) -> "float"
   | Primitive(Double) ->"double"
   | Primitive(Boolean) -> "boolean"
@@ -157,6 +158,11 @@ let string_of_typeOf t = match t with
 let string_of_paramater p = match p with
   | { parametertype=typeof; name=str } -> string_of_typeOf(typeof) ^ " " ^ str
 
+let rec string_of_listparameters params = match params with
+  | Some([]) -> ""
+  | Some(x::xs)-> " " ^ string_of_paramater(x) ^" "^ string_of_listparameters(Some(xs))
+  | None -> ""
+
 
 let rec string_of_statements stmts = match stmts with
   | [] -> ""
@@ -167,7 +173,7 @@ let string_of_thisorsuper str = match str with
   | Super -> "super"
 
 let string_of_constructorinvocation inv = match inv with
-  | Some({ invocator = i  }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ ")"
+  | Some({ invocator = i ; parameters=params }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_listparameters(params) ^ ")"
   | None -> ""
 
 

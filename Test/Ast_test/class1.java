@@ -7,7 +7,7 @@ import test2;
 public class test  {
 
 	private test() {
-				this();
+				this(int i, int j);
 
 		i = 0;
 		if (true) {

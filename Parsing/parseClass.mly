@@ -119,9 +119,9 @@ constructorModifiers:
   | modifier		{ }
 
 constructorBody:
-  | inv=explicitConstructorInvocation? stmts = blockstatements	{ { liststatements = stmts; invocation=inv } }		(* blockstatements peut etre à redéfinir dans Expr*)
+  | inv=explicitConstructorInvocation? stmts = blockstmts	{ { liststatements = stmts;  invocation=inv } }		(* blockstatements peut etre à redéfinir dans Expr*)
 
-blockstatements:
+blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
 
 explicitConstructorInvocation: 
@@ -164,15 +164,15 @@ result:
 
 
 parameterList:
-  | parameter			{  }
-  | parameterList COMA parameter	{}
+  | p=parameter			{ [p] }
+  | params=parameterList COMA p=parameter	{ params @ [p] }
 
 parameter:
   | t=typeDeclaration str=IDENT	{ {parametertype=t; name=str} }
 
 typeDeclaration:
   | p=primitive	{ AstClass.Primitive(p) }
-  | str=IDENT	{ String(str) }
+  | str=IDENT	{ AstClass.String(str) }
 
 content:
   | str=declaration {  }
@@ -215,7 +215,7 @@ interfaces:
   | str=IDENT COMA? {}
 
 primitive:
-  | PINT { AstClass.Int } 
+  | PINT { AstClass.PInt } 
 
 
 
