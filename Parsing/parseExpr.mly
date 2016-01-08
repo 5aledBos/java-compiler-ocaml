@@ -123,20 +123,20 @@ multexpr:
   | me = multexpr op = binopmul ue = unary   { Binop(me, op, ue) }
 
 unary:
-  | op = unop u = unary   { Unop(op, u) }
+  | op = unop u = unary   { Unopleft(op, u) }
   | u = unarynot          { u }
 
 unarynot:
   | pe = postfix       { pe }
-  | BITWISE u = unary  { Unop(Ubitwise, u) }
-  | NOT u = unary      { Unop(Unot, u) }
+  | BITWISE u = unary  { Unopleft(Ubitwise, u) }
+  | NOT u = unary      { Unopleft(Unot, u) }
   (*| ca = castexpr      { ca }*)
 
 postfix:
-  | p = primary      { p }
-  | id = IDENT       { Var id }
-  (*| p = postfix INCR 
-  | p = postfix DECR*)
+  | p = primary        { p }
+  | id = IDENT         { Var id }
+  | p = postfix INCR   { Unopright(p, Urincr) }
+  | p = postfix DECR   { Unopright(p, Urdecr) }
 
 (*castexpr:
   | LPAR pt = primtype RPAR ue = unary
@@ -217,8 +217,8 @@ exprstatements:
 
 exprstatement:
   | ass = assignment SC       { ass }
-  | INCR u = unary SC         { Unop(Uincr, u) }
-  | DECR u = unary SC         { Unop(Udecr, u) }
+  | INCR u = unary SC         { Unopleft(Ulincr, u) }
+  | DECR u = unary SC         { Unopleft(Uldecr, u) }
   (*| p = postfix INCR SC
   | p = postfix DECR SC
   | MethodInvocation SC
@@ -264,8 +264,8 @@ forinit:
   | URSHIFT   { Burshift }
 
 %inline unop:
-  | INCR      { Uincr }
-  | DECR      { Udecr }
+  | INCR      { Ulincr }
+  | DECR      { Uldecr }
   | PLUS      { Uplus }
   | MINUS     { Uminus }
   | BITWISE   { Ubitwise }

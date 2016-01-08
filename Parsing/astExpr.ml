@@ -6,11 +6,14 @@ type binop =
   | Beq | Bneq | Bgt | Bge | Blt | Ble
   | Blshift | Bsrshift | Burshift
 
-type unop =
+type unopleft =
   | Uminus | Uplus
-  | Uincr | Udecr
+  | Ulincr | Uldecr
   | Unot
   | Ubitwise
+
+type unopright =
+  | Urincr | Urdecr
 
 type assign =
   | Ass
@@ -35,7 +38,8 @@ type expression =
   | Null
   | Var of string
   | Binop of expression * binop * expression
-  | Unop of unop * expression
+  | Unopleft of unopleft * expression
+  | Unopright of expression * unopright
   | Assign of expression * assign * expression
 
 type statement =
@@ -91,13 +95,17 @@ let string_of_binop = function
   | Bsrshift -> ">>"
   | Burshift -> ">>>"
 
-let string_of_unop = function
+let string_of_unopleft = function
   | Unot -> "not"
   | Uminus -> "-"
   | Uplus -> "+"
-  | Uincr -> "++"
-  | Udecr -> "--"
+  | Ulincr -> "++"
+  | Uldecr -> "--"
   | Ubitwise -> "~"
+
+let string_of_unopright = function
+  | Urincr -> "++"
+  | Urdecr -> "--"
 
 let string_of_assign = function
   | Ass -> "="
@@ -132,7 +140,8 @@ let rec string_of_expr expr =
   | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
   | Bool true -> "true"
   | Bool false -> "false"
-  | Unop(op, e) -> "(" ^ (string_of_unop op) ^ (string_of_expr e) ^ ")"
+  | Unopleft(op, e) -> "(" ^ (string_of_unopleft op) ^ (string_of_expr e) ^ ")"
+  | Unopright(e, op) -> "(" ^ (string_of_expr e) ^ (string_of_unopright op) ^ ")"
   | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
 
 let rec string_of_statement stat =

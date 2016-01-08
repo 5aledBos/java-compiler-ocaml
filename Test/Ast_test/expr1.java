@@ -21,7 +21,7 @@ if (false || true) {
 
   compil = true;
   ++j;
-  throw abc *= 5.3;
+  throw abc *= 5.3++;
   
 } else {
 
