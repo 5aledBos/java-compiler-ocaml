@@ -119,9 +119,9 @@ constructorModifiers:
   | modifier		{ }
 
 constructorBody:
-  | explicitConstructorInvocation? stmts = blockstatements	{ { liststatements = stmts } }		(* blockstatements peut etre à redéfinir dans Expr*)
+  | explicitConstructorInvocation? stmts = blockstmts	{ { liststatements = stmts } }		(* blockstatements peut etre à redéfinir dans Expr*)
 
-blockstatements:
+blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
 
 explicitConstructorInvocation: 

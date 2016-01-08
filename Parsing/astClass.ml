@@ -41,7 +41,7 @@ type classMemberType =
 type constructorBodyAst =
 {
 (*  invocation : constructorInvocation option;*)
-  liststatements : blockstatements;
+  liststatements : blockstmts;
 }
 and constructorInvocation =
   { 
@@ -50,7 +50,7 @@ and constructorInvocation =
 }
 and thisOrSuper =
   |This | Super
-and blockstatements = BlockStatements of AstExpr.statement list
+and blockstmts = BlockStatements of AstExpr.statement list
 
 type constructorAst =
 {
