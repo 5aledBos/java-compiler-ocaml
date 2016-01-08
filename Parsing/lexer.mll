@@ -136,7 +136,6 @@ rule nexttoken = parse
   (* Unary operators *)
   | "++"                     { INCR }
   | "--"                     { DECR }
-  (* TODO: ++ and -- can also be postfix expressions - 15.14 *)
   | "!"                      { NOT }
   | "~"                      { BITWISE }
   
@@ -159,9 +158,7 @@ rule nexttoken = parse
   | "<="                     { LE }
   | "=="                     { EQUAL }
   | "!="                     { NEQUAL }
-  
-  (* TODO: Bitwise and logical operators - 15.22 *)
-  
+    
   (* Conditional operators *)
   | "&&"                     { AND }
   | "||"                     { OR }

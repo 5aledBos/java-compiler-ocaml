@@ -32,3 +32,5 @@ if (false || true) {
 Label : if(abc) abc = false;
 
 synchronized (test = true) { test = false; }
+
+javac = ~test + !abc;

@@ -7,12 +7,10 @@ type binop =
   | Blshift | Bsrshift | Burshift
 
 type unop =
-  | Uminus
-  | Uplus
-  | Uincr
-  | Udecr
+  | Uminus | Uplus
+  | Uincr | Udecr
   | Unot
-  | Ubit
+  | Ubitwise
 
 type assign =
   | Ass
@@ -99,7 +97,7 @@ let string_of_unop = function
   | Uplus -> "+"
   | Uincr -> "++"
   | Udecr -> "--"
-  | Ubit -> "~"
+  | Ubitwise -> "~"
 
 let string_of_assign = function
   | Ass -> "="

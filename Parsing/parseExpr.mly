@@ -34,11 +34,11 @@
 
 %left OR
 %left AND
-%left EQ NEQ
-%left GT GE LT LE
+(*%left EQUAL NEQUAL
+%left GT GE LT LE*)
 %left PLUS MINUS
 %left TIMES DIV MOD
-%right UMINUS UPLUS NOT INCR DECR BITWISE
+(*%right UMINUS UPLUS NOT INCR DECR BITWISE*)
 
 /******************************/
 /* Entry points of the parser */
@@ -127,16 +127,22 @@ unary:
   | u = unarynot          { u }
 
 unarynot:
-  | pe = postfix      { pe }
-  (*| BITWISE u = unary
-  | NOT u = unary
-  | ca = castexpr*)
+  | pe = postfix       { pe }
+  | BITWISE u = unary  { Unop(Ubitwise, u) }
+  | NOT u = unary      { Unop(Unot, u) }
+  (*| ca = castexpr      { ca }*)
 
 postfix:
   | p = primary      { p }
   | id = IDENT       { Var id }
   (*| p = postfix INCR 
   | p = postfix DECR*)
+
+(*castexpr:
+  | LPAR pt = primtype RPAR ue = unary
+  | LPAR rt = reftype RPAR u = unarynot
+  | LPAR PrimitiveType d = dims? RPAR ue = unary
+  | LPAR rt = reftype RPAR u = unarynot*)
 
 assignment:
   | l = leftside ass = assign e = expression  { Assign(l, ass, e) }
@@ -262,6 +268,8 @@ forinit:
   | DECR      { Udecr }
   | PLUS      { Uplus }
   | MINUS     { Uminus }
+  | BITWISE   { Ubitwise }
+  | NOT       { Unot }
 
 %inline assign:
   | ASS         { Ass }
