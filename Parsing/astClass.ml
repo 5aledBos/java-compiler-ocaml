@@ -46,10 +46,11 @@ type constructorBodyAst =
 and constructorInvocation =
   { 
 	invocator : thisOrSuper;
+(*	parameters: parameterList;*)
 }
 and thisOrSuper =
   |This | Super
-and blockstatements = BlockStatements of Expr.statement list
+and blockstatements = BlockStatements of AstExpr.statement list
 
 type constructorAst =
 {
@@ -138,7 +139,7 @@ let printPackage p = match p with
 
 let rec string_of_statements stmts = match stmts with
   | [] -> ""
-  | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ Expr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
+  | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ AstExpr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
 
 let string_of_constructorBody body = match body with
   | Some( { liststatements=BlockStatements(stmts) } )-> string_of_statements stmts

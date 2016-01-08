@@ -9,26 +9,26 @@ let print_statement stat =
 let execute lexbuf verbose = 
   print_endline "Parsing...";
   
-  try
-    let stat_list = Parser.statements Lexer.nexttoken lexbuf in
-    List.iter print_statement stat_list;
-    print_newline()
-  with
-  | Lexer.Error (kind, start, fin) ->
-    Lexer.report_error kind;
-    Lexer.print_position start fin;
-    print_newline()
-  | AstExpr.Err kind ->
-    AstExpr.report_err kind;
-    print_newline()
-
-
-(*try*)
-(*  let exp = Parser.filecontent Lexer.nexttoken lexbuf in*)
-(*  AstClass.printFileTree (exp)*)
-(*with*)
+(*  try*)
+(*    let stat_list = Parser.statements Lexer.nexttoken lexbuf in*)
+(*    List.iter print_statement stat_list;*)
+(*    print_newline()*)
+(*  with*)
 (*  | Lexer.Error (kind, start, fin) ->*)
-(*     Lexer.report_error kind;*)
-(*     Lexer.print_position start fin;*)
-(*     print_newline()*)
+(*    Lexer.report_error kind;*)
+(*    Lexer.print_position start fin;*)
+(*    print_newline()*)
+(*  | AstExpr.Err kind ->*)
+(*    AstExpr.report_err kind;*)
+(*    print_newline()*)
+
+
+try
+  let exp = Parser.filecontent Lexer.nexttoken lexbuf in
+  AstClass.printFileTree (exp)
+with
+  | Lexer.Error (kind, start, fin) ->
+     Lexer.report_error kind;
+     Lexer.print_position start fin;
+     print_newline()
 
