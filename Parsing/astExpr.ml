@@ -51,6 +51,8 @@ type statement =
   | Return of expression
   | Throw of expression
   | Synchro of expression * statement list
+  | Try of statement * statement list
+  | Tryfin of statement * statement list * statement
   | Label of string * statement
   | If of expression * statement
   | Ifelse of expression * statement * statement

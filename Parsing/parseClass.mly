@@ -10,7 +10,9 @@
 /**************/
 
 /* Separators */
-%token EOF LBRACE RBRACE LPAR RPAR SC EQUAL NEQUAL
+%token EOF
+%token LBRACE RBRACE LPAR RPAR LBRACKET RBRACKET
+%token SC EQUAL NEQUAL
 
 /* Literal values */
 
