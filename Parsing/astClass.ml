@@ -30,8 +30,6 @@ type parameter =
 }
 
 
-
-
 type attributAst = {
   typeof : attributType;
   name : string;
@@ -47,6 +45,7 @@ type methodClassType =
 {
   name : string;
   access : modifiers option;
+  parameters : parameter list option;
   methodbody: blockstmts option
 }
 
@@ -72,6 +71,7 @@ type constructorAst =
 {
   name : string;
   access : modifiers option;
+  parameters : parameter list option;
   constructorbody : constructorBodyAst option;
 }
 
@@ -192,7 +192,7 @@ let rec string_of_statements stmts = match stmts with
 
 let rec string_of_expressions stmts = match stmts with
   | [] -> ""
-  | (x::xs) -> AstExpr.string_of_expr(x) ^ " " ^ string_of_expressions(xs)
+  | (x::xs) -> " " ^ AstExpr.string_of_expr(x) ^ string_of_expressions(xs)
 
 let string_of_thisorsuper str = match str with
   | This -> "this"
@@ -209,10 +209,10 @@ let string_of_constructorBody body = match body with
 
 
 let string_of_constructor c = match c with
-  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: " ^ string_of_constructorBody(body)
+  | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | MethodClass( { name=str; access=modi; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))

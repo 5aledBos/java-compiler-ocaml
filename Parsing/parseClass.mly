@@ -140,10 +140,10 @@ attributModifiers:
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
-																					| (str, parameters) -> ConstructorType{name = str; access = modi; constructorbody = body } }
+																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }
  
 constructorDeclarator:
-  | str=IDENT LPAR parameters = parameterList? RPAR	{ str, parameters  }
+  | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
 
 constructorModifiers:
   | modifier		{ }
@@ -165,13 +165,13 @@ explicitConstructorInvocation:
 (* déclaration de méthodes*)
 methodDeclaration:
   | decl=methodHeader LBRACE body=methodBody? RBRACE { match decl with
-													| (modi, temp) -> { name=temp; access=modi;methodbody=body} } 
+													| (modi, (str, liste) ) -> { name=str; access=modi;methodbody=body; parameters=liste} } 
 
 methodHeader:
   | modi=classModifiers? result temp=methodDeclarator	{ modi, temp }
 
 methodDeclarator:
-  | str=IDENT LPAR parameterList? RPAR	{ str }
+  | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
 
 methodModifiers:
   | modifier	{ }
@@ -194,6 +194,36 @@ result:
 
 (* utilisé par les ClassBody*)
 
+formalParameterList:
+  | p=lastFormalParameter 	{ [p] }
+  | liste = formalParameters COMA p=lastFormalParameter	{ liste @ [p] }
+
+formalParameters:
+  | p=formalParameter		{ [p] }
+  | liste=formalParameters COMA p=formalParameter		{ liste @ [p]}
+
+lastFormalParameter:
+  | variableModifiers? var=variableType POINT POINT POINT id=variableDeclaratorId	{ { name = id; parametertype=var} }
+  | p=formalParameter		{ p }
+
+formalParameter:
+  | variableModifiers? var=variableType id=variableDeclaratorId		{ { name = id; parametertype=var} }
+
+
+variableModifiers:
+  | variableModifier	{ }
+  | variableModifiers variableModifier		{}
+
+variableModifier:
+  | f = FINAL 	{ Final }
+
+variableDeclaratorId:
+  | str=IDENT		{ str }
+  | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
+
+variableType:
+  | str=typeDeclaration { str }
+
 
 parameterList:
   | p=parameter			{ [p] }
@@ -204,17 +234,17 @@ parameter:
   | t=typeDeclaration str=IDENT	{ {parametertype=t; name=str} }
 
 
+
+
 typeDeclaration:
   | p=primitive	{ AstClass.Primitive(p) }
   | str=IDENT	{ AstClass.String(str) }
 
 argumentList:
-  | e=expression2	{ [e] }
-  | liste=argumentList COMA e=expression2 { liste @ [e] }
+  | e=expression	{ [e] }
+  | liste=argumentList COMA e=expression { liste @ [e] }
 
-expression2:
-  | e=expression { e }
-(*  | e=IDENT 	{ String e}*)
+
 
 declaration:
   | statements {  }

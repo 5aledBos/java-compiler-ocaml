@@ -21,7 +21,7 @@ public abstract class test extends machin implements testable, truc  {
 		}
 	}
 
-	public test(int i) {
+	public test(string sss, int j) {
 		if (false || true) {
 
   		compil = true;
@@ -37,7 +37,7 @@ public abstract class test extends machin implements testable, truc  {
 
 	
 
-	protected void getName() {
+	protected void getName(String s, int i) {
 		if (false || true) {
 
   		compil = true;
