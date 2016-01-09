@@ -79,7 +79,7 @@ classOrElseDeclaration:
 (*  | decl = enumDeclaration	{ }*)
 
 classDeclaration:
-  | modi=classModifiers? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body;  } }
+  | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
 
 
 (*classModifiers:*)
@@ -231,6 +231,14 @@ declaration:
 (*egalite:*)
 (*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
+interfaceModifiers:
+  | m=interfaceModifier		{ [m]}
+  | liste=interfaceModifiers m=interfaceModifier	{ liste @ [m] }
+
+interfaceModifier:
+  | m=accessModifier	{ m }
+  | m=modifier		{ m }
+
 classModifiers:
   | m=classModifier		{ [m]}
   | liste=classModifiers m=classModifier	{ liste @ [m] }
@@ -238,6 +246,7 @@ classModifiers:
 classModifier:
   | m=accessModifier	{ m }
   | m=modifier		{ m }
+  | m=modifierFinal { m }
 
 accessModifier:
   | PUBLIC { AstClass.Public }
@@ -247,18 +256,34 @@ accessModifier:
 modifier:
   | ABSTRACT		{ Abstract }
   | STATIC			{ Static }
-  | FINAL			{ Final }
   | STRICTFP		{ Strictfp }
 
-legacy:
-  | EXTENDS str=IDENT {}
+modifierFinal:
+  | FINAL			{ Final }
 
-inheritance:
-  | IMPLEMENTS interfaces {}
+(*modifierStatic:*)
+(*  | STATIC 	{ Static }*)
+
+(*modifierAbstract:*)
+(*  | ABSTRACT { Abstract }*)
+
+
+
+super:
+  | EXTENDS str=classType { str }
 
 interfaces:
-  | interfaces str=IDENT {}
-  | str=IDENT COMA? {}
+  | IMPLEMENTS liste=interfaceTypeList  { liste }
+
+interfaceTypeList:
+  | str= interfaceType		{ [str] }
+  | liste=interfaceTypeList COMA str=interfaceType 	{ liste @ [str] }
+
+interfaceType:
+  | str=IDENT	{ str }
+
+classType:
+  | str=IDENT	{ str }
 
 primitive:
   | PINT { AstClass.Int } 

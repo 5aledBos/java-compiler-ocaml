@@ -97,6 +97,8 @@ type classAst =
   {
     classename : string;
     access : modifiers option;
+	inheritance : string option;
+ 	interfaces : string list option;
 	classbody : classBodyAst option;
 (*    modifier : modifier option;*)
   }
@@ -145,6 +147,15 @@ let rec string_of_modifiers liste = match liste with
 
 let string_of_import i = match i with
   | Import({ name=str; isStatic=b }) -> if(b) then "static " ^ str else str
+
+let string_of_inheritance i = match i with
+  | Some(i) -> "extends " ^ i
+  | None -> ""
+
+let rec string_of_interfaces liste = match liste with
+  | Some([]) -> ""
+  | Some(x::xs) -> x ^ " " ^ string_of_interfaces(Some(xs))
+  | None -> ""
 
 let rec printListImport liste = match liste with
   | Some([]) -> print_endline("End of Import" ^ "\n")
@@ -208,7 +219,7 @@ let rec printClassBodyDeclarations liste = match liste with
   | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
 
 let printClassTree c = match c with
-  | ClassType({classename=name; access=acc; classbody=Some(body)}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifiers(acc)); printClassBodyDeclarations(body)
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=Some(body)}) -> print_endline(string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); printClassBodyDeclarations(body)
   | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifiers(acc))
 
 let printFileTree c = match c with
