@@ -1,10 +1,11 @@
-package tests;
+package com.tus.test;
 
-import test;
-import test2;
+import static test.te;
+import java.lang.*;
+import static java.io.*;
 
 
-public class test  {
+public abstract class test  {
 
 	private test() {
 				this(int i, int j);
@@ -33,6 +34,8 @@ public class test  {
   			return false;
 		}
 	}
+
+	
 
 	protected void getName() {
 		if (false || true) {

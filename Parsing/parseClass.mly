@@ -20,9 +20,9 @@
 /* Identifiers */
 %token <string> IDENT
 %token CLASS INTERFACE
-%token PUBLIC PROTECTED PRIVATE 
+%token PUBLIC PROTECTED PRIVATE STATIC ABSTRACT FINAL STRICTFP
 %token IMPORT PACKAGE
-%token EXTENDS IMPLEMENTS ABSTRACT
+%token EXTENDS IMPLEMENTS
 %token THIS SUPER
 %token RETURN
 %token PINT
@@ -38,20 +38,39 @@
 %%
 
 filecontent: 
-  | packname=packageDeclaration? imp=importDeclaration? str=classOrElseDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
+  | packname=packageDeclaration? imp=importDeclarations? str=classOrElseDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
 
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
 
 packageName:
-  | pack=packageName str=IDENT { pack ^ str }
-  | str=IDENT p=POINT? 	{ match p with
- 				| None -> str
-				| _ -> str ^ "." }
+  | str = typeName { str }
+
+importDeclarations:
+  | str=importDeclaration { [Import(str)] }
+  | p=importDeclarations str=importDeclaration 	{ p @ [Import(str)] }
 
 importDeclaration:
-  | IMPORT str=IDENT SC { [Import(str)] }
-  | p=importDeclaration IMPORT str=IDENT SC {  p @ [Import(str)] }
+  | decl = 	singleTypeImportDeclaration			{ decl }
+  | decl = typeImportOnDemandDeclaration		{ decl }
+  | decl = singleStaticImportDeclaration		{ decl }
+  | decl = staticImportOnDemandDeclaration		{ decl }
+
+singleTypeImportDeclaration:
+  | IMPORT str=typeName SC { { name=str; isStatic=false } }
+
+typeImportOnDemandDeclaration:
+  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }
+
+singleStaticImportDeclaration:
+  | IMPORT STATIC p=typeName SC { { name=p; isStatic=true} }
+
+staticImportOnDemandDeclaration:
+  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p ^ ".*"; isStatic=true } }
+
+typeName:
+  | str=IDENT	{ str }
+  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }
 
 
 classOrElseDeclaration:
@@ -60,10 +79,19 @@ classOrElseDeclaration:
 (*  | decl = enumDeclaration	{ }*)
 
 classDeclaration:
-  | modi=modifier? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body;  } }
+  | modi=classModifiers? CLASS id=IDENT legacy? inheritance?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body;  } }
+
+
+(*classModifiers:*)
+(*  | m=classModifier		{ [m]}*)
+(*  | liste=classModifiers m=classModifier	{ liste @ [m] }*)
+
+(*classModifier:*)
+(*  | m=accessModifier	{ m }*)
+(*  | m=modifier		{ m }*)
 
 interfaceDeclaration:
-  | modi=modifier? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
+  | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
 
 (*TODO*)
 (*enumDeclaration:*)
@@ -111,7 +139,7 @@ attributModifiers:
 
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
-  | modi=modifier? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
+  | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameters) -> ConstructorType{name = str; access = modi; constructorbody = body } }
  
 constructorDeclarator:
@@ -140,7 +168,7 @@ methodDeclaration:
 													| (modi, temp) -> { name=temp; access=modi;methodbody=body} } 
 
 methodHeader:
-  | modi=modifier? result temp=methodDeclarator	{ modi, temp }
+  | modi=classModifiers? result temp=methodDeclarator	{ modi, temp }
 
 methodDeclarator:
   | str=IDENT LPAR parameterList? RPAR	{ str }
@@ -203,10 +231,24 @@ declaration:
 (*egalite:*)
 (*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
-modifier:
+classModifiers:
+  | m=classModifier		{ [m]}
+  | liste=classModifiers m=classModifier	{ liste @ [m] }
+
+classModifier:
+  | m=accessModifier	{ m }
+  | m=modifier		{ m }
+
+accessModifier:
   | PUBLIC { AstClass.Public }
   | PROTECTED { AstClass.Protected }
   | PRIVATE { AstClass.Private }
+
+modifier:
+  | ABSTRACT		{ Abstract }
+  | STATIC			{ Static }
+  | FINAL			{ Final }
+  | STRICTFP		{ Strictfp }
 
 legacy:
   | EXTENDS str=IDENT {}
@@ -219,7 +261,7 @@ interfaces:
   | str=IDENT COMA? {}
 
 primitive:
-  | PINT { AstClass.PInt } 
+  | PINT { AstClass.Int } 
 
 
 

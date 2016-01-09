@@ -108,6 +108,9 @@ rule nexttoken = parse
   | "extends"		             { EXTENDS }
   | "implements"	           { IMPLEMENTS }
   | "abstract"		           { ABSTRACT }
+  | "static"				{ STATIC }
+  | "final"					{ FINAL }
+  | "strictfp"			{ STRICTFP }
   | "this"					{ THIS }
   | "super"						{ SUPER }
   | "break"		               { BREAK }

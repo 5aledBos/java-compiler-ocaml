@@ -1,20 +1,27 @@
 
-type modifierAccess = 
-  | Public | Protected | Private | Empty
-
 type modifier = 
-  | Static | Abstract | Final
+  | Public | Protected | Private | Static | Abstract | Final | Strictfp
+
+type modifiers = modifier list
+
+(*type modifier = *)
+(*  | Static | Abstract | Final | Strictfp*)
 
 type package = Package of string
 
 
-type import = Import of string
+type import = Import of importType
+and importType =
+  {
+	isStatic : bool;
+ 	name : string;
+  }
 type importList = import list
 
 type attributType =
   | String of string | Primitive of primitive
 and primitive = 
-  | PInt | Float | Double | Char | Boolean | Byte | Short | Long
+  | Int | Float | Double | Char | Boolean | Byte | Short | Long
 
 type parameter = 
 {
@@ -39,7 +46,7 @@ type blockstmts = BlockStatements of AstExpr.statement list
 type methodClassType =
 {
   name : string;
-  access : modifierAccess option;
+  access : modifiers option;
   methodbody: blockstmts option
 }
 
@@ -64,7 +71,7 @@ and thisOrSuper =
 type constructorAst =
 {
   name : string;
-  access : modifierAccess option;
+  access : modifiers option;
   constructorbody : constructorBodyAst option;
 }
 
@@ -89,7 +96,7 @@ type classBodyType =
 type classAst =
   {
     classename : string;
-    access : modifierAccess option;
+    access : modifiers option;
 	classbody : classBodyAst option;
 (*    modifier : modifier option;*)
   }
@@ -97,7 +104,7 @@ type classAst =
 type interfaceAst =
 { 
   interfacename : string;
-  access : modifierAccess option;
+  access : modifiers option;
 }
 
 type interfaceType = 
@@ -122,14 +129,22 @@ type fileType = FileType of fileAst
 
 (* affichage de l'AST *)
 
-let string_of_modifieraccess c = match c with
-  | Some(Public) -> "public"
-  | Some(Protected) -> "protected"
-  | Some(Private) -> "private"
-  | None-> "none"
+let string_of_modifier c = match c with
+  | Public -> "public"
+  | Protected -> "protected"
+  | Private -> "private"
+  | Abstract -> "abstract"
+  | Static -> "static"
+  | Final -> "final"
+  | Strictfp -> "strictfp"
+
+let rec string_of_modifiers liste = match liste with
+  | Some([]) -> ""
+  | Some(x::xs) -> string_of_modifier(x) ^ " " ^ string_of_modifiers(Some(xs))
+  | None -> "No modifier"
 
 let string_of_import i = match i with
-  | Import(str) -> str
+  | Import({ name=str; isStatic=b }) -> if(b) then "static " ^ str else str
 
 let rec printListImport liste = match liste with
   | Some([]) -> print_endline("End of Import" ^ "\n")
@@ -142,7 +157,7 @@ let printPackage p = match p with
 
 let string_of_typeOf t = match t with
   | String(str) -> str
-  | Primitive(PInt) -> "int"
+  | Primitive(Int) -> "int"
   | Primitive(Float) -> "float"
   | Primitive(Double) ->"double"
   | Primitive(Boolean) -> "boolean"
@@ -179,10 +194,10 @@ let string_of_constructorBody body = match body with
 
 
 let string_of_constructor c = match c with
-  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: " ^ string_of_constructorBody(body)
+  | { name=str; access= modi; constructorbody=body } -> "\t" ^ "constructor de class: " ^ str ^ ", access: " ^ string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body: " ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifieraccess(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | MethodClass( { name=str; access=modi; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ ", access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
@@ -193,8 +208,8 @@ let rec printClassBodyDeclarations liste = match liste with
   | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
 
 let printClassTree c = match c with
-  | ClassType({classename=name; access=acc; classbody=Some(body)}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifieraccess(acc)); printClassBodyDeclarations(body)
-  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifieraccess(acc))
+  | ClassType({classename=name; access=acc; classbody=Some(body)}) -> print_endline( "Classe: " ^ name ^ ", " ^ string_of_modifiers(acc)); printClassBodyDeclarations(body)
+  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifiers(acc))
 
 let printFileTree c = match c with
   | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printListImport(imports); printClassTree(classes)
