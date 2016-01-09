@@ -154,8 +154,8 @@ constructorBody:
 
 
 explicitConstructorInvocation: 
-  | THIS LPAR liste=parameterList? RPAR SC	{ { invocator=This; parameters=liste } }
-  | SUPER LPAR liste=parameterList? RPAR SC		{ {invocator=Super; parameters=liste } }
+  | THIS LPAR liste=argumentList? RPAR SC	{ { invocator=This; argumentlist=liste } }
+  | SUPER LPAR liste=argumentList? RPAR SC		{ {invocator=Super; argumentlist=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
 (*attributDeclaration:*)
@@ -199,15 +199,22 @@ parameterList:
   | p=parameter			{ [p] }
   | params=parameterList COMA p=parameter	{ params @ [p] }
 
+
 parameter:
   | t=typeDeclaration str=IDENT	{ {parametertype=t; name=str} }
+
 
 typeDeclaration:
   | p=primitive	{ AstClass.Primitive(p) }
   | str=IDENT	{ AstClass.String(str) }
 
-content:
-  | str=declaration {  }
+argumentList:
+  | e=expression2	{ [e] }
+  | liste=argumentList COMA e=expression2 { liste @ [e] }
+
+expression2:
+  | e=expression { e }
+(*  | e=IDENT 	{ String e}*)
 
 declaration:
   | statements {  }

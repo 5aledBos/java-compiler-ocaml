@@ -47,6 +47,9 @@
 %start statements
 %type <AstExpr.statement list> statements
 
+%start expression
+%type <AstExpr.expression> expression
+
 %%
 
 /*********/

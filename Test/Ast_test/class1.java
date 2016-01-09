@@ -8,7 +8,7 @@ import static java.io.*;
 public abstract class test extends machin implements testable, truc  {
 
 	private test() {
-				this(int i, int j);
+				this(variable, "coucou", 120);
 
 		i = 0;
 		if (true) {

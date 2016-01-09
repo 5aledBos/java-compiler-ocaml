@@ -194,7 +194,7 @@ rule nexttoken = parse
   | ident                    { IDENT (Lexing.lexeme lexbuf) }
   | '"' (str_char* as s) '"' { STRING s }
   | "'" (str_char as c) "'"  { CHAR (String.make 1 c) }
-  
+
   | "?"                      { QUESTMARK }
   | ":"                      { COLON }
   | "|"                      { PIPE }

@@ -62,7 +62,7 @@ type constructorBodyAst =
 and constructorInvocation =
   { 
 	invocator : thisOrSuper;
-	parameters: parameter list option
+	argumentlist: AstExpr.expression list option
 }
 and thisOrSuper =
   |This | Super
@@ -190,12 +190,16 @@ let rec string_of_statements stmts = match stmts with
   | [] -> ""
   | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ AstExpr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
 
+let rec string_of_expressions stmts = match stmts with
+  | [] -> ""
+  | (x::xs) -> AstExpr.string_of_expr(x) ^ " " ^ string_of_expressions(xs)
+
 let string_of_thisorsuper str = match str with
   | This -> "this"
   | Super -> "super"
 
 let string_of_constructorinvocation inv = match inv with
-  | Some({ invocator = i ; parameters=params }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_listparameters(params) ^ ")"
+  | Some({ invocator = i ; argumentlist=Some(params) }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions(params) ^ ")"
   | None -> ""
 
 
