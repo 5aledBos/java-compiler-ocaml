@@ -165,10 +165,10 @@ explicitConstructorInvocation:
 (* déclaration de méthodes*)
 methodDeclaration:
   | decl=methodHeader LBRACE body=methodBody? RBRACE { match decl with
-													| (modi, (str, liste) ) -> { name=str; access=modi;methodbody=body; parameters=liste} } 
+													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} } 
 
 methodHeader:
-  | modi=classModifiers? result temp=methodDeclarator	{ modi, temp }
+  | modi=classModifiers? r=result temp=methodDeclarator	{ modi, temp, r }
 
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
@@ -184,8 +184,8 @@ blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
 
 result:
-  | VOID 	{}
-  | typeDeclaration	{ }
+  | VOID 	{ Void }
+  | str=variableType	{ AttributType(str) }
 
 (*instanceInitializer*)
 (*instanceInitializer:*)

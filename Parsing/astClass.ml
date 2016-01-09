@@ -19,9 +19,12 @@ and importType =
 type importList = import list
 
 type attributType =
-  | String of string | Primitive of primitive
+  | String of string | Primitive of primitive 
 and primitive = 
   | Int | Float | Double | Char | Boolean | Byte | Short | Long
+
+type resultTypeAst = 
+  | AttributType of attributType | Void
 
 type parameter = 
 {
@@ -46,6 +49,7 @@ type methodClassType =
   name : string;
   access : modifiers option;
   parameters : parameter list option;
+  resultType : resultTypeAst;
   methodbody: blockstmts option
 }
 
@@ -166,7 +170,7 @@ let printPackage p = match p with
   | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
   | None -> print_string("file package name: none" ^ "\n")
 
-let string_of_typeOf t = match t with
+let string_of_attributType t = match t with
   | String(str) -> str
   | Primitive(Int) -> "int"
   | Primitive(Float) -> "float"
@@ -178,7 +182,7 @@ let string_of_typeOf t = match t with
   | Primitive(Short) -> "short"
 
 let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> string_of_typeOf(typeof) ^ " " ^ str
+  | { parametertype=typeof; name=str } -> string_of_attributType(typeof) ^ " " ^ str
 
 let rec string_of_listparameters params = match params with
   | Some([]) -> ""
@@ -198,6 +202,11 @@ let string_of_thisorsuper str = match str with
   | This -> "this"
   | Super -> "super"
 
+
+let string_of_resultType t = match t with
+  | AttributType(attribut) -> string_of_attributType(attribut)
+  | Void -> "void"
+
 let string_of_constructorinvocation inv = match inv with
   | Some({ invocator = i ; argumentlist=Some(params) }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions(params) ^ ")"
   | None -> ""
@@ -212,7 +221,7 @@ let string_of_constructor c = match c with
   | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))

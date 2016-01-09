@@ -43,10 +43,12 @@ public abstract class test extends machin implements testable, truc  {
   		compil = true;
   		++j;
   		throw abc *= 5.3++;
-  
 		}
-		
  	}
+
+	public int getInt() {
+		return i;	
+	}
 
 } 
 
