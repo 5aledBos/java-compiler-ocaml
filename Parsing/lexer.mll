@@ -141,6 +141,7 @@ rule nexttoken = parse
   | "if"                     { IF }
   | "else"                   { ELSE }
   | "while"                  { WHILE }
+  | "do"                     { DO }
   | "for"                    { FOR }
   | "switch"                 { SWITCH }
   | "case"                   { CASE }
