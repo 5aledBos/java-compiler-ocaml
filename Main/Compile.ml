@@ -24,7 +24,7 @@ let execute lexbuf verbose =
 
 
 try
-  let exp = Parser.filecontent Lexer.nexttoken lexbuf in
+  let exp = Parser.compilationUnit Lexer.nexttoken lexbuf in
   AstClass.printFileTree (exp)
 with
   | Lexer.Error (kind, start, fin) ->

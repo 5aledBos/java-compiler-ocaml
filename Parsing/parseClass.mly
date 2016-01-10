@@ -29,17 +29,18 @@
 %token PINT PSHORT PDOUBLE PCHAR PBOOLEAN PFLOAT PLONG PBYTE
 %token POINT
 %token VOID
+%token THROWS
 
-%start filecontent
+%start compilationUnit
 
-%type < AstClass.fileType > filecontent
+%type < AstClass.fileType > compilationUnit
 
 (*%type < string > content*)
 
 %%
 
-filecontent: 
-  | packname=packageDeclaration? imp=importDeclarations? str=classOrElseDeclaration EOF { FileType({packagename=packname; listImport=imp; listClass=str; })}
+compilationUnit: 
+  | packname=packageDeclaration? imp=importDeclarations? liste=typeDeclarations? EOF { FileType({packagename=packname; listImport=imp; listClass=liste; })}
 
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
@@ -68,6 +69,15 @@ singleStaticImportDeclaration:
 
 staticImportOnDemandDeclaration:
   | IMPORT STATIC p=typeName POINT TIMES SC { { name=p ^ ".*"; isStatic=true } }
+
+typeDeclarations:
+  |  decl = typeDeclaration { [decl] }
+  | liste = typeDeclarations decl = typeDeclaration { liste @ [decl] }
+
+typeDeclaration:
+  | decl = classDeclaration		{ decl }
+  | decl = interfaceDeclaration	{ decl }
+  
 
 typeName:
   | str=IDENT	{ str }
@@ -132,10 +142,10 @@ classMemberDeclaration:
 
 	(*declaration des attributs*)
 (*attributDeclaration:*)
-(*  | classModifiers? str=typeDeclaration listDecl = variableDeclarators SC	{ { names=listeDecl; typeof=str } }*)
+(*  | classModifiers? str=typeDeclaration2 listDecl = variableDeclarators SC	{ { names=listeDecl; typeof=str } }*)
 
 attributDeclaration:
-  | modi=classModifiers? str=typeDeclaration n=variableDeclarator SC { { name=n; typeof=str; modifiers=modi } }
+  | modi=classModifiers? str=typeDeclaration2 n=variableDeclarator SC { { name=n; typeof=str; modifiers=modi } }
 
 variableDeclarators:
   | str=variableDeclarator					{ [str] }
@@ -187,10 +197,21 @@ methodDeclaration:
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} } 
 
 methodHeader:
-  | modi=classModifiers? r=result temp=methodDeclarator	{ modi, temp, r }
+  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }
 
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
+
+(*throws:*)
+(*  | THROWS exceptionTypeList { }*)
+
+(*exceptionTypeList:*)
+(*  | exceptionType			{ }*)
+(*  | exceptionTypeList COMA exceptionType	{ }*)
+
+(*exceptionType:*)
+(*  | classType		{ }*)
+(*  | typeVariable	{ }*)
 
 methodModifiers:
   | modifier	{ }
@@ -204,7 +225,7 @@ blockstmts:
 
 result:
   | VOID 	{ Void }
-  | str=variableType	{ AttributType(str) }
+  | str=typeDeclaration2	{ AttributType(str) }
 
 (*instanceInitializer*)
 (*instanceInitializer:*)
@@ -241,7 +262,7 @@ variableDeclaratorId:
   | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
 
 variableType:
-  | str=typeDeclaration { str }
+  | str=typeDeclaration2 { str }
 
 
 parameterList:
@@ -250,12 +271,12 @@ parameterList:
 
 
 parameter:
-  | t=typeDeclaration str=IDENT	{ {parametertype=t; name=str} }
+  | t=typeDeclaration2 str=IDENT	{ {parametertype=t; name=str} }
 
 
 
 
-typeDeclaration:
+typeDeclaration2:
   | p=primitive	{ AstUtil.Primitive(p) }
   | str=IDENT	{ AstUtil.String(str) }
 

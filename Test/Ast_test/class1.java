@@ -90,3 +90,13 @@ public class test extends machin implements testable, truc  {
 	}
 
 }
+
+
+public class secondClass {
+
+}
+
+
+public interface testable {
+
+}

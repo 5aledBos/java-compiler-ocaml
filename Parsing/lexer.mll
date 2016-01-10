@@ -120,6 +120,7 @@ rule nexttoken = parse
   | "continue"               { CONTINUE }
   | "return"                 { RETURN }
   | "throw"                  { THROW }
+  | "throws"				{ THROWS }
   | "synchronized"           { SYNCHRONIZED }
   | "try"                    { TRY }
   | "finally"                { FINALLY }

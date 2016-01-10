@@ -137,7 +137,7 @@ type fileAst =
 {
   packagename: package option;
   listImport: import list option;
-  listClass: classType;
+  listClass: classType list option;
 }
 
 type fileType = FileType of fileAst
@@ -248,10 +248,20 @@ let rec printClassBodyDeclarations liste = match liste with
   | Some(x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(Some(xs))
   | None -> print_endline("")
 
+let string_of_classTree classe = match classe with
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
+  | InterfaceType({interfacename=name; access=acc}) -> "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc)
+  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
+
+let rec string_of_classes classes = match classes with
+  | Some([]) -> ""
+  | Some(x::xs) -> string_of_classTree(x) ^ string_of_classes(Some(xs))
+  | None -> ""
+
 let printClassTree c = match c with
   | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_classDeclarations(body))
   | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc))
   | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_enumBody(body))
 
 let printFileTree c = match c with
-  | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printListImport(imports); printClassTree(classes)
+  | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printListImport(imports); print_endline(string_of_classes(classes))
