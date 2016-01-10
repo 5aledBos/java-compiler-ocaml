@@ -100,6 +100,7 @@ rule nexttoken = parse
   (* Classes *)
   | "class"                  { CLASS }
   | "interface"              { INTERFACE }
+  | "enum"					{ ENUM }
   | "public"                 { PUBLIC }
   | "protected"              { PROTECTED }
   | "private"                { PRIVATE }

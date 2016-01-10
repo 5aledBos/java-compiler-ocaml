@@ -1,9 +1,3 @@
-
-type modifier = 
-  | Public | Protected | Private | Static | Abstract | Final | Strictfp
-
-type modifiers = modifier list
-
 (*type modifier = *)
 (*  | Static | Abstract | Final | Strictfp*)
 
@@ -18,23 +12,20 @@ and importType =
   }
 type importList = import list
 
-type attributType =
-  | String of string | Primitive of primitive 
-and primitive = 
-  | Int | Float | Double | Char | Boolean | Byte | Short | Long
+
 
 type resultTypeAst = 
-  | AttributType of attributType | Void
+  | AttributType of AstUtil.attributType | Void
 
 type parameter = 
 {
-  parametertype : attributType;
+  parametertype : AstUtil.attributType;
   name : string
 }
 
 
 type attributAst = {
-  typeof : attributType;
+  typeof : AstUtil.attributType;
   name : string;
 }
 
@@ -47,7 +38,7 @@ type blockstmts = BlockStatements of AstExpr.statement list
 type methodClassType =
 {
   name : string;
-  access : modifiers option;
+  access : AstUtil.modifiers option;
   parameters : parameter list option;
   resultType : resultTypeAst;
   methodbody: blockstmts option
@@ -74,7 +65,7 @@ and thisOrSuper =
 type constructorAst =
 {
   name : string;
-  access : modifiers option;
+  access : AstUtil.modifiers option;
   parameters : parameter list option;
   constructorbody : constructorBodyAst option;
 }
@@ -100,7 +91,7 @@ type classBodyType =
 type classAst =
   {
     classename : string;
-    access : modifiers option;
+    access : AstUtil.modifiers option;
 	inheritance : string option;
  	interfaces : string list option;
 	classbody : classBodyAst option;
@@ -110,7 +101,7 @@ type classAst =
 type interfaceAst =
 { 
   interfacename : string;
-  access : modifiers option;
+  access : AstUtil.modifiers option;
 }
 
 type interfaceType = 
@@ -135,19 +126,6 @@ type fileType = FileType of fileAst
 
 (* affichage de l'AST *)
 
-let string_of_modifier c = match c with
-  | Public -> "public"
-  | Protected -> "protected"
-  | Private -> "private"
-  | Abstract -> "abstract"
-  | Static -> "static"
-  | Final -> "final"
-  | Strictfp -> "strictfp"
-
-let rec string_of_modifiers liste = match liste with
-  | Some([]) -> ""
-  | Some(x::xs) -> string_of_modifier(x) ^ " " ^ string_of_modifiers(Some(xs))
-  | None -> "No modifier"
 
 let string_of_import i = match i with
   | Import({ name=str; isStatic=b }) -> if(b) then "static " ^ str else str
@@ -170,19 +148,10 @@ let printPackage p = match p with
   | Some(Package(str)) -> print_string("File package name: " ^ str ^ "\n")
   | None -> print_string("file package name: none" ^ "\n")
 
-let string_of_attributType t = match t with
-  | String(str) -> str
-  | Primitive(Int) -> "int"
-  | Primitive(Float) -> "float"
-  | Primitive(Double) ->"double"
-  | Primitive(Boolean) -> "boolean"
-  | Primitive(Char) -> "Char"
-  | Primitive(Long) -> "long"
-  | Primitive(Byte) -> "byte"
-  | Primitive(Short) -> "short"
+
 
 let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> string_of_attributType(typeof) ^ " " ^ str
+  | { parametertype=typeof; name=str } -> AstUtil.string_of_attributType(typeof) ^ " " ^ str
 
 let rec string_of_listparameters params = match params with
   | Some([]) -> ""
@@ -204,8 +173,8 @@ let string_of_thisorsuper str = match str with
 
 
 let string_of_resultType t = match t with
-  | AttributType(attribut) -> string_of_attributType(attribut)
   | Void -> "void"
+  | AttributType(a) -> AstUtil.string_of_attributType(a)
 
 let string_of_constructorinvocation inv = match inv with
   | Some({ invocator = i ; argumentlist=Some(params) }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions(params) ^ ")"
@@ -218,10 +187,10 @@ let string_of_constructorBody body = match body with
 
 
 let string_of_constructor c = match c with
-  | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
+  | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
@@ -232,8 +201,8 @@ let rec printClassBodyDeclarations liste = match liste with
   | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
 
 let printClassTree c = match c with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=Some(body)}) -> print_endline(string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); printClassBodyDeclarations(body)
-  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ string_of_modifiers(acc))
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=Some(body)}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); printClassBodyDeclarations(body)
+  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc))
 
 let printFileTree c = match c with
   | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printListImport(imports); printClassTree(classes)

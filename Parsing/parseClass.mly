@@ -1,5 +1,6 @@
 %{
   open AstClass
+  open AstUtil
 %}	
 
 
@@ -19,7 +20,7 @@
 
 /* Identifiers */
 %token <string> IDENT
-%token CLASS INTERFACE
+%token CLASS INTERFACE ENUM
 %token PUBLIC PROTECTED PRIVATE STATIC ABSTRACT FINAL STRICTFP
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS
@@ -81,6 +82,9 @@ classOrElseDeclaration:
 classDeclaration:
   | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
 
+
+(*enumDeclaration:*)
+(*  | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody? RBRACE { }*)
 
 (*classModifiers:*)
 (*  | m=classModifier		{ [m]}*)
@@ -215,7 +219,7 @@ variableModifiers:
   | variableModifiers variableModifier		{}
 
 variableModifier:
-  | f = FINAL 	{ Final }
+  | f = FINAL 	{ AstUtil.Final }
 
 variableDeclaratorId:
   | str=IDENT		{ str }
@@ -237,8 +241,8 @@ parameter:
 
 
 typeDeclaration:
-  | p=primitive	{ AstClass.Primitive(p) }
-  | str=IDENT	{ AstClass.String(str) }
+  | p=primitive	{ AstUtil.Primitive(p) }
+  | str=IDENT	{ AstUtil.String(str) }
 
 argumentList:
   | e=expression	{ [e] }
@@ -286,17 +290,17 @@ classModifier:
   | m=modifierFinal { m }
 
 accessModifier:
-  | PUBLIC { AstClass.Public }
-  | PROTECTED { AstClass.Protected }
-  | PRIVATE { AstClass.Private }
+  | PUBLIC { Public }
+  | PROTECTED { Protected }
+  | PRIVATE { Private }
 
 modifier:
   | ABSTRACT		{ Abstract }
   | STATIC			{ Static }
-  | STRICTFP		{ Strictfp }
+  | STRICTFP		{ AstUtil.Strictfp }
 
 modifierFinal:
-  | FINAL			{ Final }
+  | FINAL			{ AstUtil.Final }
 
 (*modifierStatic:*)
 (*  | STATIC 	{ Static }*)
@@ -323,7 +327,7 @@ classType:
   | str=IDENT	{ str }
 
 primitive:
-  | PINT { AstClass.Int } 
+  | PINT { AstUtil.Int } 
 
 
 
