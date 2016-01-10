@@ -245,9 +245,9 @@ let rec printClassBodyDeclarations liste = match liste with
   | None -> print_endline("")
 
 let string_of_classTree classe = match classe with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
   | InterfaceType({interfacename=name; access=acc}) -> "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc)
-  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
+  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "enum " ^ name ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
 
 let rec string_of_classes classes = match classes with
   | Some([]) -> ""
@@ -258,10 +258,6 @@ let string_of_package pack = match pack with
   | Some(Package(expr)) -> AstExpr.string_of_expr(expr)
   | None -> "No package"
 
-let printClassTree c = match c with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_classDeclarations(body))
-  | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc))
-  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_enumBody(body))
 
 let printFileTree c = match c with
-  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_endline(string_of_package(package)); printListImport(imports); print_endline(string_of_classes(classes))
+  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_string("Package: "); print_endline(string_of_package(package)); printListImport(imports); print_endline(string_of_classes(classes))

@@ -24,8 +24,8 @@
 %start ambiguousName
 %type <AstExpr.expression> ambiguousName
 
-%start className
-%type <AstExpr.expression> className
+(*%start className*)
+(*%type <AstExpr.expression> className*)
 
 %%
 

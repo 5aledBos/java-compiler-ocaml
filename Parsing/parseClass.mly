@@ -62,10 +62,10 @@ typeImportOnDemandDeclaration:
   | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }
 
 singleStaticImportDeclaration:
-  | IMPORT STATIC p=typeName SC { { name=p; isStatic=true} }
+  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }
 
 staticImportOnDemandDeclaration:
-  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p ^ ".*"; isStatic=true } }
+  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }
 
 typeDeclarations:
   |  decl = typeDeclaration { [decl] }
@@ -81,14 +81,12 @@ typeName:
   | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }
 
 
-classOrElseDeclaration:
-  | decl = classDeclaration { decl }
-  | decl = interfaceDeclaration { decl }
-  | decl = enumDeclaration	{ decl }
-
 classDeclaration:
-  | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  body=classBody { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
+  | decl = normalClassDeclaration	{ decl }
+  | enum = enumDeclaration			{ enum }
 
+normalClassDeclaration:
+  | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  body=classBody { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
 
 enumDeclaration:
   | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody RBRACE { EnumType { enumname = id; access = modi; enumbody = body; interfaces = listeinterface  } }

@@ -143,6 +143,6 @@ public class secondClass {
 }
 
 
-public interface testable {
-
+public enum testable {
+	BLACK, RED, LIGHT
 }
