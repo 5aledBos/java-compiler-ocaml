@@ -46,6 +46,7 @@ type statement =
   | Expression of expression
   | Expressions of expression list
   | Statements of statement list
+  | EmptyStatement
   | Break of string
   | Continue of string
   | Return of expression
@@ -137,7 +138,7 @@ let rec string_of_expr expr =
   | String s -> "\"" ^ s ^ "\""
   | Null -> "null"
   | Var v -> v
-  
+
   (* Operations *)
   | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
   | Bool true -> "true"
@@ -151,6 +152,7 @@ let rec string_of_statement stat =
   | Expression e -> string_of_expr e
   | Expressions e -> string_of_list string_of_expr e
   | Statements s -> string_of_list string_of_statement s
+  | EmptyStatement -> "Empty statement"
   | Break(v) -> "(break " ^ v ^ ")"
   | Continue(v) -> "(continue " ^ v ^ ")"
   | Return(e) -> "(return " ^ (string_of_expr e) ^ ")"
@@ -162,4 +164,3 @@ let rec string_of_statement stat =
                           ^ " else {" ^ (string_of_statement s2) ^ "}"
   | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
   (*| For(f, b) -> "for(" ^ (string_of_list string_of_expr f) ^ ") {" ^ (string_of_list string_of_expr b) ^ "}"*)
-

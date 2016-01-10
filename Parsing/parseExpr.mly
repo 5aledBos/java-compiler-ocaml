@@ -229,7 +229,7 @@ statement:
 
 statwithoutsubstat:
   | b = block                                         { Statements(b) }
-  (*| es = emptystatement         { es }*)
+  | LBRACE RBRACE                                     { EmptyStatement }
   | es = exprstatement                                { Expression(es) }
   (*| ast = assertstatement       { ast }
   | ss = switchstatement        { ss }
@@ -337,4 +337,3 @@ forinit:
   | PIPEASS     { Asspipe }
 
 %%
-

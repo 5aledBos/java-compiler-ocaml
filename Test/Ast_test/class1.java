@@ -16,6 +16,9 @@ public abstract class test extends machin implements testable, truc  {
   			abc *= 6.2 / 78.4 % 5.0;
   			break rest;
 		}
+
+        if (true) {}
+
 		if (false) {
   			continue rest;
 		}
@@ -27,7 +30,7 @@ public abstract class test extends machin implements testable, truc  {
   		compil = true;
   		++j;
   		throw abc *= 5.3++;
-  
+
 		} else {
 
   		--j;
@@ -35,7 +38,7 @@ public abstract class test extends machin implements testable, truc  {
 		}
 	}
 
-	
+
 
 	protected void getName(String s, int i) {
 		if (false || true) {
@@ -47,8 +50,7 @@ public abstract class test extends machin implements testable, truc  {
  	}
 
 	public int getInt() {
-		return i;	
+		return i;
 	}
 
-} 
-
+}
