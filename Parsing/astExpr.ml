@@ -67,8 +67,9 @@ type statement =
   | Return of expression
   | Throw of expression
   | Synchro of expression * statement list
-  | Try of statement * statement list
-  | Tryfin of statement * statement list * statement
+  | Try of statement list * statement list
+  | Tryfin of statement list * statement list option * statement list
+  | CatchClause of expression * statement list
   | Label of string * statement
   | If of expression * statement
   | Ifelse of expression * statement * statement
@@ -193,6 +194,9 @@ let rec string_of_statement stat =
   | Switch(e, s) -> "(switch (" ^ (string_of_expr e) ^ ") " ^ (string_of_statement s) ^ ")"
   | SwitchBlock(s, e) -> "{" ^ (string_of_opt (string_of_list string_of_statement) s) ^ (string_of_opt (string_of_list string_of_expr) e) ^ "}"
   | SwitchGroup(e, s) -> (string_of_list string_of_expr e) ^ (string_of_list string_of_statement s)
+  | Try(b, c) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_list string_of_statement c)
+  | Tryfin(b, c, f) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_opt (string_of_list string_of_statement) c) ^ "finally {" ^ (string_of_list string_of_statement f) ^ "}"
+  | CatchClause(e, s) -> "catch ("^ (string_of_expr e) ^") {" ^ (string_of_list string_of_statement s) ^ "}"
   | Break(v) -> "(break " ^ v ^ ")"
   | Continue(v) -> "(continue " ^ v ^ ")"
   | Return(e) -> "(return " ^ (string_of_expr e) ^ ")"

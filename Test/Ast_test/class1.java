@@ -53,6 +53,36 @@ public class test extends machin implements testable, truc  {
             m = "get".table[j];
             ;
         } while (c);
+
+        try {
+            ++test;
+        } catch (e) {
+            ++bye;
+        }
+
+        try {
+            ++test;
+        } catch (e) {
+            ++bye;
+        } catch (e) {
+            ++bye;
+        } catch (e) {
+            ++bye;
+        }
+
+        try {
+            ++test;
+        } catch (e) {
+            ++bye;
+        } finally {
+            byebye++;
+        }
+
+        try {
+            ++test;
+        } finally {
+            byebye++;
+        }
 	}
 
 	public test(string sss, int j) {

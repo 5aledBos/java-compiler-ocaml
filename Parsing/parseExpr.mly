@@ -17,7 +17,7 @@
 
 /* Statements */
 %token IF ELSE WHILE DO FOR SWITCH CASE DEFAULT ASSERT
-%token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
+%token BREAK CONTINUE THROW SYNCHRONIZED TRY CATCH FINALLY
 
 %token NEW
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
@@ -322,7 +322,7 @@ statementWithoutTrailingSubstatement:
   (* TODO: | RETURN SC*)
   | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
   | THROW e = expression SC                           { Throw(e) }
-  (*| ts = tryStatement                                 { ts }*)
+  | ts = tryStatement                                 { ts }
 
 expressionStatements:
   | es = expressionStatement                         { [es] }
@@ -369,28 +369,32 @@ switchLabel:
 enumConstantName:
   | id = IDENT                                                         { Var id }
 
-(*tryStatement:
-  | TRY b = block c = catches                      { Try(b, c) }
-  | TRY b = block c = catches? FINALLY b = block   { Tryfin(b, c, b) }
+tryStatement:
+  | TRY b = block c = catches                                          { Try(b, c) }
+  | TRY b = block c = catches FINALLY f = block                        { Tryfin(b, Some(c), f) }
+  | TRY b = block FINALLY f = block                                    { Tryfin(b, None, f) }
+  (* Could be the following, but give the error: Error: do not know how to resolve a reduce/reduce conflict
+  | TRY b = block c = catches? FINALLY f = block                        { Tryfin(b, c, f) }*)
 
 catches:
-  | cc = catchClause                 { [cc] }
-  | c = catches cc = catchClause     { c::cc }
+  | cc = catchClause                                                   { [cc] }
+  | cc = catchClause c = catches                                       { cc::c }
 
 catchClause:
-  | CATCH LPAR fp = formalparam RPAR b = block    {}
+  | CATCH LPAR fp = formalParameter RPAR b = block                 { CatchClause(fp, b) }
 
 formalParameter:
-  | vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
+  | vdi = IDENT                                                        { Var vdi }
+  (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
 labeledStatement:
-  | id = IDENT COLON s = statement                                    { Label(id, s) }
+  | id = IDENT COLON s = statement                                     { Label(id, s) }
 
 ifThenStatement:
-  | IF LPAR e = expression RPAR s = statement                         { If(e, s) }
+  | IF LPAR e = expression RPAR s = statement                          { If(e, s) }
 
 ifThenElseStatement:
-  | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement    { Ifelse(e, s1, s2) }
+  | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement     { Ifelse(e, s1, s2) }
   (* TODO: replace previous by
   | IF LPAR e = expression RPAR s1 = statementNoShortIf ELSE s2 = statement    { Ifelse(e, s1, s2) }*)
 
