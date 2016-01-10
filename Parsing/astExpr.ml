@@ -41,6 +41,8 @@ type expression =
   | Unopleft of unopleft * expression
   | Unopright of expression * unopright
   | Assign of expression * assign * expression
+  | Fieldaccess of expression * string
+  | Fieldaccesssuper of string
 
 type statement =
   | Expression of expression
@@ -148,6 +150,8 @@ let rec string_of_expr expr =
   | Unopleft(op, e) -> "(" ^ (string_of_unopleft op) ^ (string_of_expr e) ^ ")"
   | Unopright(e, op) -> "(" ^ (string_of_expr e) ^ (string_of_unopright op) ^ ")"
   | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
+  | Fieldaccess(e, str) -> "(" ^ (string_of_expr e) ^ "." ^ str ^ ")"
+  | Fieldaccesssuper(str) -> "(super." ^ str ^ ")"
 
 let rec string_of_statement stat =
   match stat with

@@ -19,6 +19,7 @@
 %token IF ELSE WHILE FOR SWITCH CASE ASSERT
 %token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
 
+%token NEW
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
 
 /* Literal values */
@@ -73,28 +74,10 @@ primarynoarray:
   | LPAR e = expression RPAR          { e }
   | LPAR e = expression               { raise (Err(Illegal_bracket ')')) }
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
-  (*| cie = classinstexpr               { cie }
+  (*| cie = classinstexpr               { cie }*)
   | fa = fieldaccess                  { fa }
-  | mi = methodinvoc                  { mi }
+  (*| mi = methodinvoc                  { mi }
   | aa = arrayaccess                  { aa }*)
-
-(*fieldaccess:
-  | p = primary POINT id = IDENT                  {}
-  | SUPER POINT id = IDENT                        {}
-  | cn = classname POINT SUPER POINT id = IDENT   {}
-
-methodinvoc:
-  | mn = methodname LPAR al = arglist? RPAR                                                 {}
-  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
-  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
-  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
-  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
-
-(* methodname in parseClass *)
-
-arglist:
-  | e = expression                    { [e] }
-  | al = arglist COMA e = expression  { al::e }*)
 
 literal:
   | i = INT                           { Int i }
@@ -107,6 +90,33 @@ literal:
 expression:
   | c = conditional     { c }
   | ass = assignment    { ass }
+
+(*classinstexpr :
+  | NEW ta = typeargs? cit = classorinttype LPAR al = arglist? RPAR {}*)
+
+fieldaccess:
+  | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
+  | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
+  (*| cn = classname POINT SUPER POINT id = IDENT   { Fieldaccess(Fasupercn, cn, id) }*)
+
+(*methodinvoc:
+  | mn = methodname LPAR al = arglist? RPAR                                                 {}
+  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
+  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
+  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
+  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
+
+(* methodname in parseClass *)
+
+arglist:
+  | e = expression                    { [e] }
+  | al = arglist COMA e = expression  { al::e }*)
+
+(*arraycreation:
+  | NEW pt = primitivetype de = dimexprs d = dims?    {}
+  | NEW coi = classorinttype de = dimexprs d = dims?  {}
+  | NEW pt = primitivetype d = dims ai = arrayinit    {}
+  | NEW coi = classorinttype d = dims ai = arrayinit  {}*)
 
 conditional:
   | co = condor         { co }
