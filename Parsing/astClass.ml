@@ -27,6 +27,7 @@ type parameter =
 type attributAst = {
   typeof : AstUtil.attributType;
   name : string;
+  modifiers : AstUtil.modifiers option
 }
 
 
@@ -41,7 +42,7 @@ type methodClassType =
   access : AstUtil.modifiers option;
   parameters : parameter list option;
   resultType : resultTypeAst;
-  methodbody: blockstmts option
+  methodbody: blockstmts
 }
 
 type classMemberType =
@@ -83,7 +84,7 @@ type classBodyDeclaration =
   | ClassMemberType of classMemberType
   | ConstructorType of constructorAst
 
-type classBodyAst = classBodyDeclaration list
+type classBodyAst = classBodyDeclaration list option
 
 type classBodyType = 
   | ClassBodyType of classBodyAst
@@ -105,7 +106,7 @@ type classAst =
     access : AstUtil.modifiers option;
 	inheritance : string option;
  	interfaces : string list option;
-	classbody : classBodyAst option;
+	classbody : classBodyAst;
   }
 
 type enumAst =
@@ -156,7 +157,7 @@ let string_of_inheritance i = match i with
 let rec string_of_interfaces liste = match liste with
   | Some([]) -> ""
   | Some(x::xs) -> x ^ " " ^ string_of_interfaces(Some(xs))
-  | None -> ""
+  | None -> "nothing"
 
 let rec printListImport liste = match liste with
   | Some([]) -> print_endline("End of Import" ^ "\n")
@@ -214,7 +215,8 @@ let string_of_constructor c = match c with
   | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | Attribut( { typeof=a; name=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_attributType(a) ^ " " ^ str 
 
 let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)
@@ -242,11 +244,12 @@ let printClassDeclaration decl = match decl with
   | ClassMemberType(member) -> print_endline(string_of_classmember(member))
 
 let rec printClassBodyDeclarations liste = match liste with
-  | [] -> print_endline("end of declarations")
-  | (x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(xs)
+  | Some([]) -> print_endline("end of declarations")
+  | Some(x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(Some(xs))
+  | None -> print_endline("")
 
 let printClassTree c = match c with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=Some(body)}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); printClassBodyDeclarations(body)
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_classDeclarations(body))
   | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc))
   | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_enumBody(body))
 

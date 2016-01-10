@@ -1,5 +1,5 @@
 type modifier = 
-  | Public | Protected | Private | Static | Abstract | Final | Strictfp
+  | Public | Protected | Private | Static | Abstract | Final | Strictfp | Volatile | Transient
 
 type modifiers = modifier list
 

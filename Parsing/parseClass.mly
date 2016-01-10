@@ -21,12 +21,12 @@
 /* Identifiers */
 %token <string> IDENT
 %token CLASS INTERFACE ENUM
-%token PUBLIC PROTECTED PRIVATE STATIC ABSTRACT FINAL STRICTFP
+%token PUBLIC PROTECTED PRIVATE STATIC ABSTRACT FINAL STRICTFP VOLATILE TRANSIENT
 %token IMPORT PACKAGE
 %token EXTENDS IMPLEMENTS
 %token THIS SUPER
 %token RETURN
-%token PINT
+%token PINT PSHORT PDOUBLE PCHAR PBOOLEAN PFLOAT PLONG PBYTE
 %token POINT
 %token VOID
 
@@ -39,7 +39,7 @@
 %%
 
 filecontent: 
-  | packname=packageDeclaration? imp=importDeclarations? str=classOrElseDeclaration { FileType({packagename=packname; listImport=imp; listClass=str; })}
+  | packname=packageDeclaration? imp=importDeclarations? str=classOrElseDeclaration EOF { FileType({packagename=packname; listImport=imp; listClass=str; })}
 
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
@@ -80,15 +80,15 @@ classOrElseDeclaration:
   | decl = enumDeclaration	{ decl }
 
 classDeclaration:
-  | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
+  | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  body=classBody { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
 
 
 enumDeclaration:
-  | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody RBRACE EOF { EnumType { enumname = id; access = modi; enumbody = body; interfaces = listeinterface  } }
+  | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody RBRACE { EnumType { enumname = id; access = modi; enumbody = body; interfaces = listeinterface  } }
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
+  | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE  { InterfaceType{interfacename = id; access = modi} }
 
 
 enumBody:
@@ -109,7 +109,7 @@ enumBodyDeclarations:
 
 
 classBody:
-  | body=classBodyDeclarations { body }
+  | LBRACE body=classBodyDeclarations?  RBRACE { body }
 
 classBodyDeclarations:
   | decl = classBodyDeclaration	{ [decl] }
@@ -120,18 +120,22 @@ classBodyDeclaration:
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
   | constructor = constructorDeclaration	{ constructor }
-
+	
 (*classMemberDeclaration*)
 
 classMemberDeclaration:
+(*  | attribut = attributDeclaration		{ Attribut(attribut) }*)
+  | decl = methodDeclaration		{ MethodClass(decl) }
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
-  | decl = methodDeclaration		{ MethodClass(decl) }
-(*  | attribut = attributDeclaration		{  }*)
+
 
 	(*declaration des attributs*)
+(*attributDeclaration:*)
+(*  | classModifiers? str=typeDeclaration listDecl = variableDeclarators SC	{ { names=listeDecl; typeof=str } }*)
+
 attributDeclaration:
-  | modifier? typeDeclaration listDecl = variableDeclarators SC	{ listDecl }
+  | modi=classModifiers? str=typeDeclaration n=variableDeclarator SC { { name=n; typeof=str; modifiers=modi } }
 
 variableDeclarators:
   | str=variableDeclarator					{ [str] }
@@ -141,12 +145,18 @@ variableDeclarator:
   | str=IDENT 	{ str }
   | str=IDENT EQUAL variableInitializer	{ str }
 
-variableInitializer:
-  | statements	{ }
-  
 
-attributModifiers:
-  | modifier	{ }
+variableInitializer:
+  | e=expression	{ e }
+(*  | arrayInitializer { }*)
+  
+arrayInitializer:
+  | LBRACE variableInitializers? COMA? RBRACE		{ }
+
+variableInitializers:
+  | variableInitializer			{ }
+  | variableInitializers COMA variableInitializer		{ }
+
 
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
@@ -173,7 +183,7 @@ explicitConstructorInvocation:
 
 (* déclaration de méthodes*)
 methodDeclaration:
-  | decl=methodHeader LBRACE body=methodBody? RBRACE { match decl with
+  | decl=methodHeader body=methodBody { match decl with
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} } 
 
 methodHeader:
@@ -186,7 +196,7 @@ methodModifiers:
   | modifier	{ }
 
 methodBody:
-  | stmts = blockstmts { stmts }	
+  | stmts = block { BlockStatements(stmts) }	
 (*  | SC {  }*)
 
 blockstmts:
@@ -285,14 +295,19 @@ interfaceModifier:
   | m=accessModifier	{ m }
   | m=modifier		{ m }
 
+fieldModifiers:
+  | m=fieldModifier		{ [m] }
+  | liste=fieldModifiers m=fieldModifier { liste @ [m] }
+
+fieldModifier:
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierStatic | m= modifierFinal | m=modifierTransient | m=modifierVolatile	{ m }
+
 classModifiers:
   | m=classModifier		{ [m]}
   | liste=classModifiers m=classModifier	{ liste @ [m] }
 
 classModifier:
-  | m=accessModifier	{ m }
-  | m=modifier		{ m }
-  | m=modifierFinal { m }
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp {m }
 
 accessModifier:
   | PUBLIC { Public }
@@ -304,16 +319,38 @@ modifier:
   | STATIC			{ Static }
   | STRICTFP		{ AstUtil.Strictfp }
 
-modifierFinal:
-  | FINAL			{ AstUtil.Final }
-
 (*modifierStatic:*)
 (*  | STATIC 	{ Static }*)
 
 (*modifierAbstract:*)
 (*  | ABSTRACT { Abstract }*)
 
+modifierStrictfp:
+  | STRICTFP		{ Strictfp }
 
+modifierPublic:
+  | PUBLIC 		{ Public }
+
+modifierPrivate:
+  | PRIVATE 	{ Private }
+
+modifierProtected:
+  | PROTECTED 	{ Protected }
+
+modifierFinal:
+  | FINAL			{ AstUtil.Final }
+
+modifierStatic:
+  | STATIC 	{ Static }
+
+modifierAbstract:
+  | ABSTRACT { Abstract }
+
+modifierTransient:
+  | TRANSIENT { Transient }
+
+modifierVolatile:
+  | VOLATILE { Volatile }
 
 super:
   | EXTENDS str=classType { str }
