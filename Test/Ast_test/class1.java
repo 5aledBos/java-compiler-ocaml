@@ -6,8 +6,8 @@ import static java.io.*;
 
 
 public abstract class test extends machin implements testable, truc  {
-	
-	public int i;
+
+	//public int i;
 
 	private test() {
         this(variable, "coucou", 120);
@@ -32,6 +32,18 @@ public abstract class test extends machin implements testable, truc  {
             case 4: i = 4;
             default: {}
         }
+
+        while(test){}
+
+        for (i = 0, j = 0; c<3;k++) {
+            if (true) {
+                break f;
+            }
+        }
+
+        do {
+            i = 2;
+        } while (c);
 	}
 
 	public test(string sss, int j) {

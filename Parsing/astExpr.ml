@@ -67,7 +67,10 @@ type statement =
   | If of expression * statement
   | Ifelse of expression * statement * statement
   | While of expression * statement
-  (*| For of expression list * expression list*)
+  | DoWhile of statement * expression
+  | For of expression list option * expression option * expression list option * statement
+  | EFor of expression * expression * statement
+  (*| EFor of modifier list option * type * expression * expression * statement *)
 
 
 (* ERRORS *)
@@ -138,10 +141,10 @@ let rec string_of_list f l =
   | [] -> ""
   | h::t -> (f h) ^ (string_of_list f t)
 
-let string_of_optlist f l =
-  match l with
+let string_of_opt f o =
+  match o with
   | None -> ""
-  | Some(li) -> string_of_list f li
+  | Some(li) -> f li
 
 let rec string_of_expr expr =
   match expr with
@@ -174,7 +177,7 @@ let rec string_of_statement stat =
   | Assert(e) -> "(assert " ^ (string_of_expr e) ^ ")"
   | BAssert(e1, e2) -> "(assert " ^ (string_of_expr e1) ^ ":" ^ (string_of_expr e2) ^ ")"
   | Switch(e, s) -> "(switch (" ^ (string_of_expr e) ^ ") " ^ (string_of_statement s) ^ ")"
-  | SwitchBlock(s, e) -> "{" ^ (string_of_optlist string_of_statement s) ^ (string_of_optlist string_of_expr e) ^ "}"
+  | SwitchBlock(s, e) -> "{" ^ (string_of_opt (string_of_list string_of_statement) s) ^ (string_of_opt (string_of_list string_of_expr) e) ^ "}"
   | SwitchGroup(e, s) -> (string_of_list string_of_expr e) ^ (string_of_list string_of_statement s)
   | Break(v) -> "(break " ^ v ^ ")"
   | Continue(v) -> "(continue " ^ v ^ ")"
@@ -186,4 +189,7 @@ let rec string_of_statement stat =
   | Ifelse(e, s1, s2) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s1) ^ "}"
                           ^ " else {" ^ (string_of_statement s2) ^ "}"
   | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
-  (*| For(f, b) -> "for(" ^ (string_of_list string_of_expr f) ^ ") {" ^ (string_of_list string_of_expr b) ^ "}"*)
+  | DoWhile(s, e) -> "do {" ^ (string_of_statement s) ^ "} while(" ^ (string_of_expr e) ^ ")"
+  | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_opt (string_of_list string_of_expr) es) ^ ") {" ^ (string_of_statement s) ^ "}"
+  | EFor(id, e, s) -> "for(" ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"
+  (*| EFOR(vm, t, id, e, s) -> "for("(* Print variable modifiers and type *) ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"*)

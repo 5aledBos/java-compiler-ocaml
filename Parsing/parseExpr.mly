@@ -16,7 +16,7 @@
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS LSHIFTASS SRSHIFTASS URSHIFTASS AMPASS CIRCASS PIPEASS
 
 /* Statements */
-%token IF ELSE WHILE FOR SWITCH CASE DEFAULT ASSERT
+%token IF ELSE WHILE DO FOR SWITCH CASE DEFAULT ASSERT
 %token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
 
 %token NEW
@@ -235,7 +235,7 @@ statement:
   | i = ifstatement           { i }
   | ie = ifelsestatement      { ie }
   | ws = whilestatement       { ws }
-  (*| fs = forstatement         { fs }*)
+  | fs = forstatement         { fs }
 
 statwithoutsubstat:
   | b = block                                         { Statements(b) }
@@ -243,7 +243,7 @@ statwithoutsubstat:
   | es = exprstatement                                { Expression(es) }
   | ast = assertstatement                             { ast }
   | ss = switchstatement                              { ss }
-  (*| ds = dostatement            { ds }*)
+  | ds = dostatement                                  { ds }
   | BREAK id = IDENT SC                               { Break(id) }
   (* TODO | BREAK SC *)
   | CONTINUE id = IDENT SC                            { Continue(id) }
@@ -299,6 +299,7 @@ switchlabel:
 enumconstantname:
   | id = IDENT                                                         { Var id }
 
+(* TODO: Complete this with all possible expression for case in switch *)
 constantexpression:
   | i = INT                                                            { Int i }
 
@@ -344,16 +345,30 @@ ifelsestatement:
 whilestatement:
   | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
 
-(*forstatement:
-  | bf = basicfor       { bf }
-  | ef = enhancedfor    { ef }*)
+dostatement:
+  | DO s = statement WHILE LPAR e = expression RPAR SC                { DoWhile(s, e) }
 
-(*basicfor:
-  | FOR LPAR fi = forinit SC e = expression SC es = exprstatements RPAR s = statement   { For() }
+(* TODO: Add enhancedForStatement *)
+forstatement:
+  | bf = basicForStatement       { bf }
+  (*| ef = enhancedForStatement    { ef }*)
 
+basicForStatement:
+  | FOR LPAR fi = forinit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
+
+(* TODO: Change this to accept coma seperated declaration *)
 forinit:
-  | es = exprstatements         { es }
-  | lv = localvariabledecl      { lv }*)
+  | es = statementExpressionList                             { es }
+  (*| lv = localvariabledecl                                   { lv }*)
+
+statementExpressionList:
+  | e = statementexpression                                  { [e] }
+  | e = statementexpression COMA l = statementExpressionList { e::l }
+
+(* TODO: test this one *)
+enhancedForStatement:
+  | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
+  (*| FOR LPAR vm = variablemodifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
 
 %inline binopmul:
   | TIMES     { Bmul }
