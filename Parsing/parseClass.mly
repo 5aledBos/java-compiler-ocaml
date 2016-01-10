@@ -45,9 +45,6 @@ compilationUnit:
 packageDeclaration:
   | PACKAGE str=packageName SC { Package(str) }
 
-packageName:
-  | str = typeName { str }
-
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
   | p=importDeclarations str=importDeclaration 	{ p @ [Import(str)] }
