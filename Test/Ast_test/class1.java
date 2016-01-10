@@ -19,6 +19,7 @@ public abstract class test extends machin implements testable, truc  {
 
         if (true) {}
         assert i = 0;
+        assert i = 0 : j = 4;
 
 		if (false) {
   			continue rest;

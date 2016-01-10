@@ -262,6 +262,7 @@ statementexpression:
 
 assertstatement:
   | ASSERT es = statementexpression SC { Assert(es) }
+  | ASSERT e1 = statementexpression COLON e2 = statementexpression SC { BAssert(e1, e2) }
 
 (*trystatement:
   | TRY b = block c = catches                      { Try(b, c) }
