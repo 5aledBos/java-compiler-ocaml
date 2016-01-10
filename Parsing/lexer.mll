@@ -1,21 +1,21 @@
 {
     open Parser
     open Lexing
-    
+
     (* ERRORS *)
     type error =
       | Illegal_character of char
     exception Error of error * position * position
-    
+
     let raise_error err lexbuf =
       raise (Error(err, lexeme_start_p lexbuf, lexeme_end_p lexbuf))
-    
+
     let report_error = function
       | Illegal_character c ->
     print_string "Illegal character '";
 	  print_char c;
 	  print_string "' "
-	  
+
 	  let print_position start fin =
       if (start.pos_lnum = fin.pos_lnum) then
         begin
@@ -40,10 +40,10 @@
 
     let incr_line lexbuf =
       let pos = lexbuf.lex_curr_p in
-        lexbuf.lex_curr_p <- 
-	  { 
-	    pos with 
-	      pos_lnum = pos.pos_lnum + 1; 
+        lexbuf.lex_curr_p <-
+	  {
+	    pos with
+	      pos_lnum = pos.pos_lnum + 1;
 	      pos_bol = pos.pos_cnum;
 	  }
 }
@@ -94,72 +94,73 @@ rule nexttoken = parse
   | newline                  { incr_line lexbuf; nexttoken lexbuf }
   | space+                   { nexttoken lexbuf }
   | eof                      { EOF }
-  | comment_single         	 { nexttoken lexbuf }
-  | comment_mul  	           { nexttoken lexbuf }
-  
+  | comment_single           { nexttoken lexbuf }
+  | comment_mul              { nexttoken lexbuf }
+
   (* Classes *)
-  | "class"		               { CLASS }
-  | "interface"		           { INTERFACE }
-  | "public"		             { PUBLIC }
-  | "protected"		           { PROTECTED }
-  | "private"		             { PRIVATE }
-  | "package" 		           { PACKAGE }
-  | "import"		             { IMPORT }
-  | "extends"		             { EXTENDS }
-  | "implements"	           { IMPLEMENTS }
-  | "abstract"		           { ABSTRACT }
-  | "static"				{ STATIC }
-  | "final"					{ FINAL }
-  | "strictfp"			{ STRICTFP }
-  | "this"					{ THIS }
-  | "super"						{ SUPER }
-  | "break"		               { BREAK }
+  | "class"                  { CLASS }
+  | "interface"              { INTERFACE }
+  | "public"                 { PUBLIC }
+  | "protected"              { PROTECTED }
+  | "private"                { PRIVATE }
+  | "package"                { PACKAGE }
+  | "import"                 { IMPORT }
+  | "extends"                { EXTENDS }
+  | "implements"             { IMPLEMENTS }
+  | "abstract"               { ABSTRACT }
+  | "static"                 { STATIC }
+  | "final"                  { FINAL }
+  | "strictfp"               { STRICTFP }
+  | "this"                   { THIS }
+  | "super"                  { SUPER }
+  | "break"                  { BREAK }
   | "continue"               { CONTINUE }
-  | "return"		             { RETURN }
-  | "throw"		               { THROW }
+  | "return"                 { RETURN }
+  | "throw"                  { THROW }
   | "synchronized"           { SYNCHRONIZED }
   | "try"                    { TRY }
   | "finally"                { FINALLY }
-  | "void"					         { VOID }
+  | "void"                   { VOID }
   | "int"                    { PINT }
-  | ";"		                   { SC }
-  | ","		                   { COMA }
-  | "."				               { POINT }
-  
+  | ";"	                     { SC }
+  | ","	                     { COMA }
+  | "."                      { POINT }
+
   (* Statements *)
-  | "if"		                 { IF }
-  | "else"		               { ELSE }
-  | "while"		               { WHILE }
-  | "for"		                 { FOR }
+  | "if"                     { IF }
+  | "else"                   { ELSE }
+  | "while"                  { WHILE }
+  | "for"                    { FOR }
   | "switch"                 { SWITCH }
   | "case"                   { CASE }
-  
+  | "assert"                 { ASSERT }
+
   (* Brackets *)
   | "("                      { LPAR }
   | ")"                      { RPAR }
-  | "{"			                 { LBRACE }
-  | "}"			                 { RBRACE }
+  | "{"	                     { LBRACE }
+  | "}"                      { RBRACE }
   | "["                      { LBRACKET }
   | "]"                      { RBRACKET }
-    
+
   (* Unary operators *)
   | "++"                     { INCR }
   | "--"                     { DECR }
   | "!"                      { NOT }
   | "~"                      { BITWISE }
-  
+
   (* Multiplicative and additive operators *)
   | "*"                      { TIMES }
   | "/"                      { DIV }
   | "%"                      { MOD }
   | "+"                      { PLUS }
   | "-"                      { MINUS }
-  
+
   (* Shift operators *)
   | "<<"                     { LSHIFT }
   | ">>"                     { SRSHIFT }
   | ">>>"                    { URSHIFT }
-  
+
   (* Relational and equality operators *)
   | ">"                      { GT }
   | ">="                     { GE }
@@ -167,11 +168,11 @@ rule nexttoken = parse
   | "<="                     { LE }
   | "=="                     { EQUAL }
   | "!="                     { NEQUAL }
-    
+
   (* Conditional operators *)
   | "&&"                     { AND }
   | "||"                     { OR }
-  
+
   (* Assignment operators *)
   | "="                      { ASS }
   | "*="                     { MULASS }
@@ -185,7 +186,7 @@ rule nexttoken = parse
   | "&="                     { AMPASS }
   | "^="                     { CIRCASS }
   | "|="                     { PIPEASS }
-      
+
   (* Literals *)
   | "null"                   { NULL }
   | integer as nb            { INT (int_of_string nb) }
@@ -203,4 +204,3 @@ rule nexttoken = parse
 
   (* Other => error *)
   | _ as c                   { raise_error (Illegal_character(c)) lexbuf }
-

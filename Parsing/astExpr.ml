@@ -47,6 +47,7 @@ type statement =
   | Expressions of expression list
   | Statements of statement list
   | EmptyStatement
+  | Assert of expression
   | Break of string
   | Continue of string
   | Return of expression
@@ -153,6 +154,7 @@ let rec string_of_statement stat =
   | Expressions e -> string_of_list string_of_expr e
   | Statements s -> string_of_list string_of_statement s
   | EmptyStatement -> "Empty statement"
+  | Assert(e) -> "(assert " ^ (string_of_expr e) ^ ")"
   | Break(v) -> "(break " ^ v ^ ")"
   | Continue(v) -> "(continue " ^ v ^ ")"
   | Return(e) -> "(return " ^ (string_of_expr e) ^ ")"

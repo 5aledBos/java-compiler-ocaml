@@ -16,7 +16,7 @@
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS LSHIFTASS SRSHIFTASS URSHIFTASS AMPASS CIRCASS PIPEASS
 
 /* Statements */
-%token IF ELSE WHILE FOR SWITCH CASE
+%token IF ELSE WHILE FOR SWITCH CASE ASSERT
 %token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
 
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
@@ -231,8 +231,8 @@ statwithoutsubstat:
   | b = block                                         { Statements(b) }
   | LBRACE RBRACE                                     { EmptyStatement }
   | es = exprstatement                                { Expression(es) }
-  (*| ast = assertstatement       { ast }
-  | ss = switchstatement        { ss }
+  | ast = assertstatement                             { ast }
+  (*| ss = switchstatement        { ss }
   | ds = dostatement            { ds }*)
   | BREAK id = IDENT SC                               { Break(id) }
   (* TODO | BREAK SC *)
@@ -249,13 +249,19 @@ exprstatements:
   | es = exprstatement rest = exprstatements   { es::rest }
 
 exprstatement:
-  | ass = assignment SC       { ass }
-  | INCR u = unary SC         { Unopleft(Ulincr, u) }
-  | DECR u = unary SC         { Unopleft(Uldecr, u) }
-  | p = postfix INCR SC       { Unopright(p, Urincr) }
-  | p = postfix DECR SC       { Unopright(p, Urdecr) }
-  (*| mi = methodinvoc SC       { mi }
-  | cie = classinstexpr SC    { cie }*)
+  | se = statementexpression SC    { se }
+
+statementexpression:
+  | ass = assignment          { ass }
+  | INCR u = unary            { Unopleft(Ulincr, u) }
+  | DECR u = unary            { Unopleft(Uldecr, u) }
+  | p = postfix INCR          { Unopright(p, Urincr) }
+  | p = postfix DECR          { Unopright(p, Urdecr) }
+  (*| mi = methodinvoc          { mi }
+  | cie = classinstexpr       { cie }*)
+
+assertstatement:
+  | ASSERT es = statementexpression SC { Assert(es) }
 
 (*trystatement:
   | TRY b = block c = catches                      { Try(b, c) }
