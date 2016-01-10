@@ -77,29 +77,36 @@ typeName:
 classOrElseDeclaration:
   | decl = classDeclaration { decl }
   | decl = interfaceDeclaration { decl }
-(*  | decl = enumDeclaration	{ }*)
+  | decl = enumDeclaration	{ decl }
 
 classDeclaration:
   | modi=classModifiers? CLASS id=IDENT leg=super? listeinterface= interfaces?  LBRACE body=classBody? RBRACE EOF    { ClassType {classename = id; access = modi; classbody = body; inheritance=leg; interfaces = listeinterface  } }
 
 
-(*enumDeclaration:*)
-(*  | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody? RBRACE { }*)
+enumDeclaration:
+  | modi=classModifiers? ENUM id=IDENT listeinterface=interfaces? LBRACE body=enumBody RBRACE EOF { EnumType { enumname = id; access = modi; enumbody = body; interfaces = listeinterface  } }
 
-(*classModifiers:*)
-(*  | m=classModifier		{ [m]}*)
-(*  | liste=classModifiers m=classModifier	{ liste @ [m] }*)
-
-(*classModifier:*)
-(*  | m=accessModifier	{ m }*)
-(*  | m=modifier		{ m }*)
 
 interfaceDeclaration:
   | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE EOF    { InterfaceType{interfacename = id; access = modi} }
 
-(*TODO*)
-(*enumDeclaration:*)
-(*  | *)
+
+enumBody:
+  | cons=enumConstants? COMA? decl=enumBodyDeclarations	{ { enumConstants = cons; enumDeclarations= decl } }
+
+enumConstants:
+  | e=enumConstant	(*classBody?*)		{ [e] }
+  | liste=enumConstants COMA e=enumConstant		{ liste @ [e] }
+
+enumConstant:
+  | str=IDENT liste=arguments?	{ { name=str; argumentlist=liste } }
+
+arguments:
+  | LPAR liste=argumentList RPAR		{ liste }
+
+enumBodyDeclarations:
+  | SC? decl=classBodyDeclarations?		{ decl }
+
 
 classBody:
   | body=classBodyDeclarations { body }
@@ -162,9 +169,7 @@ explicitConstructorInvocation:
   | SUPER LPAR liste=argumentList? RPAR SC		{ {invocator=Super; argumentlist=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
-(*attributDeclaration:*)
-(*  | atr=attributDeclaration primitive str=IDENT SC {  atr ^ "\n" ^"primitive " ^str }*)
-(*  | primitive str=IDENT SC	{ "primitive " ^str }*)
+
 
 (* déclaration de méthodes*)
 methodDeclaration:

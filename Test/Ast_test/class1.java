@@ -6,6 +6,8 @@ import static java.io.*;
 
 
 public abstract class test extends machin implements testable, truc  {
+	
+	public int i;
 
 	private test() {
         this(variable, "coucou", 120);

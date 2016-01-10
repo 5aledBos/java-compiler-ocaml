@@ -88,6 +88,17 @@ type classBodyAst = classBodyDeclaration list
 type classBodyType = 
   | ClassBodyType of classBodyAst
 
+type enumBodyAst = 
+{
+  enumConstants : enumConstant list option;
+  enumDeclarations : classBodyDeclaration list option
+}
+and enumConstant =
+  {
+	name : string;
+    argumentlist : AstExpr.expression list option;
+  }
+
 type classAst =
   {
     classename : string;
@@ -95,7 +106,14 @@ type classAst =
 	inheritance : string option;
  	interfaces : string list option;
 	classbody : classBodyAst option;
-(*    modifier : modifier option;*)
+  }
+
+type enumAst =
+  {
+    enumname : string;
+    access : AstUtil.modifiers option;
+ 	interfaces : string list option;
+	enumbody : enumBodyAst;
   }
 
 type interfaceAst =
@@ -110,6 +128,7 @@ type interfaceType =
 type classType = 
   | ClassType of classAst
   | InterfaceType of interfaceAst
+  | EnumType of enumAst
 
 type classList = classType list
 
@@ -167,6 +186,11 @@ let rec string_of_expressions stmts = match stmts with
   | [] -> ""
   | (x::xs) -> " " ^ AstExpr.string_of_expr(x) ^ string_of_expressions(xs)
 
+let rec string_of_expressionsOption stmts = match stmts with
+  | Some([]) -> ""
+  | Some(x::xs) -> " " ^ AstExpr.string_of_expr(x) ^ string_of_expressionsOption(Some(xs))	
+  | None -> ""
+
 let string_of_thisorsuper str = match str with
   | This -> "this"
   | Super -> "super"
@@ -192,6 +216,27 @@ let string_of_constructor c = match c with
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=Some(BlockStatements(body))  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
 
+let string_of_classDeclaration decl = match decl with
+  | ConstructorType(constructor) -> string_of_constructor(constructor)
+  | ClassMemberType(member) -> string_of_classmember(member)
+
+let rec string_of_classDeclarations liste = match liste with
+  | Some([]) -> ""
+  | Some(x::xs) -> string_of_classDeclaration(x) ^ "\n" ^ string_of_classDeclarations(Some(xs))
+  | None -> ""
+
+let string_of_enumConstant cons = match cons with
+  | { name=str; argumentlist=liste } -> str ^ "(" ^ string_of_expressionsOption(liste) ^ ")"
+
+let rec string_of_enumConstants liste = match liste with
+  | Some([]) -> ""
+  | Some(x::xs)-> " " ^ string_of_enumConstant(x) ^ string_of_enumConstants(Some(xs))
+  | None -> ""
+
+let string_of_enumBody body = match body with
+  | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_classDeclarations(decl)
+
+
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
   | ClassMemberType(member) -> print_endline(string_of_classmember(member))
@@ -203,6 +248,7 @@ let rec printClassBodyDeclarations liste = match liste with
 let printClassTree c = match c with
   | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=Some(body)}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements "^ string_of_interfaces(listeinterface)); printClassBodyDeclarations(body)
   | InterfaceType({interfacename=name; access=acc}) -> print_endline( "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc))
+  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> print_endline(AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " implements "^ string_of_interfaces(listeinterface)); print_endline(string_of_enumBody(body))
 
 let printFileTree c = match c with
   | FileType({packagename=package; listImport=imports; listClass=classes}) -> printPackage(package); printListImport(imports); printClassTree(classes)
