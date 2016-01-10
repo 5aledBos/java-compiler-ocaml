@@ -1,5 +1,6 @@
 %{
     open AstExpr
+    open AstUtil
 %}
 
 /**********/
@@ -19,7 +20,7 @@
 %token IF ELSE WHILE DO FOR SWITCH CASE DEFAULT ASSERT
 %token BREAK CONTINUE THROW SYNCHRONIZED TRY CATCH FINALLY
 
-%token NEW
+%token NEW INSTANCEOF
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
 
 /* Literal values */
@@ -99,8 +100,8 @@ className:
 (* EXPRESSIONS *)
 
 primary:
-  | pna = primaryNoNewArray              { pna }
-  (*| ac = arrayCreationExpression     { ac }*)
+  | pna = primaryNoNewArray          { pna }
+  | ac = arrayCreationExpression     { ac }
 
 primaryNoNewArray:
   | l = literal                              { l }
@@ -152,22 +153,35 @@ arrayAccess:
   | en = expressionName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
-(*arrayCreationExpression:
-  | NEW pt = primitiveType de = dimExprs d = dims?                 {}
-  | NEW coi = classOrInterfaceType de = dimExprs d = dims?         {}
-  | NEW pt = primitiveType d = dims ai = arrayInitializer          {}
-  | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  {}
+arrayCreationExpression:
+  | NEW pt = primitiveType de = dimExprs d = dims?                 { ArrayCreation(pt, de, d) }
+  (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }*)
+  | NEW pt = primitiveType d = dims ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
+  (*| NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 dimExprs:
   | de = dimExpr                { [de] }
-  | ds = dimExprs de = dimExpr  { ds::de }
+  | de = dimExpr ds = dimExprs  { de::ds }
 
 dimExpr:
   | LBRACKET e = expression RBRACKET    { Dimexpr(e) }
 
+(*TODO: solve here*)
 dims:
-  | LBRACKET LBRACKET            {}
-  | d = dims LBRACKET RBRACKET   {}*)
+  | LBRACKET RBRACKET            { [Dim] }
+  | LBRACKET RBRACKET d = dims   { Dim::d }
+
+arrayInitializer:
+  | LBRACE vi = variableInitializers? c = COMA? RBRACE    { ArrayInit(vi, c) }
+
+variableInitializers:
+  | vi = variableInitializer                                  { [vi] }
+  | vs = variableInitializers COMA vi = variableInitializer   { vi::vs }
+
+%public
+variableInitializer:
+  | e = expression         { e }
+  | ai = arrayInitializer  { ai }
 
 conditionalExpression:
   | co = conditionalOrExpression         { co }
@@ -201,7 +215,7 @@ equalityExpression:
 relationalExpression:
   | se = shiftExpression                                           { se }
   | re = relationalExpression op = binoprel se = shiftExpression   { Binop(re, op, se) }
-  (*| re = relationalExpression INSTANCEOF rt = referenceType*)
+  | re = relationalExpression INSTANCEOF rt = referenceType        { Instanceof(re, rt) }
 
 shiftExpression:
   | ae = additiveExpression                                       { ae }
@@ -233,10 +247,10 @@ postfixExpression:
   | p = postfixExpression DECR   { Unopright(p, Urdecr) }
 
 (*castExpression:
-  | LPAR pt = primitiveType RPAR ue = unaryExpression              {}
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   {}
-  | LPAR pt = primitiveType d = dims? RPAR ue = unaryExpression    {}
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   {}*)
+  | LPAR pt = primitiveType RPAR ue = unaryExpression              { Cast(pt, ue) }
+  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }
+  | LPAR pt = primitiveType d = dims? RPAR ue = unaryExpression    { Cast(pt, ue) }
+  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }*)
 
 assignment:
   | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
@@ -377,10 +391,11 @@ catches:
   | cc = catchClause                                                   { [cc] }
   | cc = catchClause c = catches                                       { cc::c }
 
+(*TODO: use formalParameter from parseClass*)
 catchClause:
-  | CATCH LPAR fp = formalParameter RPAR b = block                 { CatchClause(fp, b) }
+  | CATCH LPAR fp = formalParam RPAR b = block                 { CatchClause(fp, b) }
 
-formalParameter:
+formalParam:
   | vdi = IDENT                                                        { Var vdi }
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 

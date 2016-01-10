@@ -1,2 +1,2 @@
 
-parseExpr parseClass
+parseExpr parseClass parseType

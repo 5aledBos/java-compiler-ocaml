@@ -138,6 +138,7 @@ rule nexttoken = parse
   | ","	                     { COMA }
   | "."                      { POINT }
   | "new"                    { NEW }
+  | "instanceof"             { INSTANCEOF }
 
   (* Statements *)
   | "if"                     { IF }

@@ -156,7 +156,7 @@ variableDeclarator:
   | str=IDENT EQUAL variableInitializer	{ str }
 
 
-variableInitializer:
+(*variableInitializer:
   | e=expression	{ e }
 (*  | arrayInitializer { }*)
   
@@ -165,7 +165,7 @@ arrayInitializer:
 
 variableInitializers:
   | variableInitializer			{ }
-  | variableInitializers COMA variableInitializer		{ }
+  | variableInitializers COMA variableInitializer		{ }*)
 
 
 (*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)

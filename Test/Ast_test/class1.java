@@ -114,7 +114,11 @@ public class test extends machin implements testable, truc  {
 
       test = void.class;
 
-		if (false || true) {
+		if (a instanceof String) {
+		
+		  a = new double[3][3];
+		  //b = new char[5][];
+		  //c = new long[](az = 1)
 
   		compil = true;
   		++j;
