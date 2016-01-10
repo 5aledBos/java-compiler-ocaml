@@ -61,23 +61,32 @@ statements:
   | s = statement                     { [s] }
   | s = statement rest = statements   { s::rest }
 
-primary:
-  | pna = primarynoarray              { pna }
-  (*| ac = arraycreation               { ac }*)
 
-primarynoarray:
-  | l = literal                       { l }
-  (*| t = typ POINT c = clas            {}
-  | VOID POINT c = clas               {}
-  | THIS                              {}
-  | cn = classname POINT THIS         {}*)
-  | LPAR e = expression RPAR          { e }
-  | LPAR e = expression               { raise (Err(Illegal_bracket ')')) }
+(* NAMES *)
+
+expressionName:
+  | id = IDENT    { Var id }
+
+
+(* EXPRESSIONS *)
+
+primary:
+  | pna = primaryNoNewArray              { pna }
+  (*| ac = arrayCreationExpression     { ac }*)
+
+primaryNoNewArray:
+  | l = literal                              { l }
+  (*| t = typ POINT c = clas                   {}
+  | VOID POINT c = clas                      {}
+  | THIS                                     {}
+  | cn = className POINT THIS                {}*)
+  | LPAR e = expression RPAR                 { e }
+  | LPAR e = expression                      { raise (Err(Illegal_bracket ')')) }
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
-  (*| cie = classinstexpr               { cie }*)
-  | fa = fieldaccess                  { fa }
-  (*| mi = methodinvoc                  { mi }
-  | aa = arrayaccess                  { aa }*)
+  (*| cie = classInstanceCreationExpression    { cie }*)
+  | fa = fieldAccess                         { fa }
+  (*| mi = methodInvoccation                   { mi }
+  | aa = arrayAccess                         { aa }*)
 
 literal:
   | i = INT                           { Int i }
@@ -87,163 +96,195 @@ literal:
   | str = STRING                      { String str }
   | NULL                              { Null }
 
-expression:
-  | c = conditional     { c }
-  | ass = assignment    { ass }
+assignmentExpression:
+  | c = conditionalExpression  { c }
+  | ass = assignment           { ass }
 
-(*classinstexpr :
-  | NEW ta = typeargs? cit = classorinttype LPAR al = arglist? RPAR {}*)
+(*classInstanceCreationExpression:
+  | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
+  | p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList? RPAR cb = classBody?   {}*)
 
-fieldaccess:
+fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
   | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
-  (*| cn = classname POINT SUPER POINT id = IDENT   { Fieldaccess(Fasupercn, cn, id) }*)
+  (*| cn = className POINT SUPER POINT id = IDENT   {}*)
 
-(*methodinvoc:
-  | mn = methodname LPAR al = arglist? RPAR                                                 {}
-  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
-  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
-  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
-  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
+(*methodInvocation:
+  | mn = methodName LPAR al = argumentList? RPAR                                                          {}
+  | p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 {}
+  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       {}
+  | cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  {}
+  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList? RPAR                {}
 
-(* methodname in parseClass *)
+argumentList:
+  | e = expression                         { [e] }
+  | al = argumentList COMA e = expression  { al::e }*)
 
-arglist:
-  | e = expression                    { [e] }
-  | al = arglist COMA e = expression  { al::e }*)
+(*arrayAccess:
+  | en = expressionName LBRACKET e = expression RBRACKET       {}
+  | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  {}
 
-(*arraycreation:
-  | NEW pt = primitivetype de = dimexprs d = dims?    {}
-  | NEW coi = classorinttype de = dimexprs d = dims?  {}
-  | NEW pt = primitivetype d = dims ai = arrayinit    {}
-  | NEW coi = classorinttype d = dims ai = arrayinit  {}*)
+arrayCreationExpression:
+  | NEW pt = primitiveType de = dimExprs d = dims?                 {}
+  | NEW coi = classOrInterfaceType de = dimExprs d = dims?         {}
+  | NEW pt = primitiveType d = dims ai = arrayInitializer          {}
+  | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  {}
 
-conditional:
-  | co = condor         { co }
-  (*| co = condor QUESTMARK e = expression COLON c = conditional*)
+dimexprs:
+  | de = dimexpr                { [de] }
+  | ds = dimexprs de = dimexpr  { ds::de }
 
-condor:
-  | ca = condand                              { ca }
-  | co = condor OR ca = condand               { Binop(co, Bor, ca) }
+dimexpr:
+  | LBRACKET e = expression RBRACKET    { Dimexpr(e) }
 
-condand:
-  | io = inclusiveor                          { io }
-  | ca = condand AND io = inclusiveor         { Binop(ca, Band, io) }
+dims:
+  | LBRACKET LBRACKET            {}
+  | d = dims LBRACKET RBRACKET   {}*)
 
-inclusiveor:
-  | eo = exclusiveor                          { eo }
-  | io = inclusiveor PIPE eo = exclusiveor    { Binop(io, Bpipe, eo) }
+conditionalExpression:
+  | co = conditionalOrExpression         { co }
+  (*| co = conditionalOrExpression QUESTMARK e = expression COLON c = conditionalExpression  {}*)
 
-exclusiveor:
-  | ae = andexpr                              { ae }
-  | eo = exclusiveor CIRCUMFLEX ae = andexpr  { Binop(eo, Bcirc, ae) }
+conditionalOrExpression:
+  | ca = conditionalAndExpression                                  { ca }
+  | co = conditionalOrExpression OR ca = conditionalAndExpression  { Binop(co, Bor, ca) }
 
-andexpr:
-  | ee = equalexpr                            { ee }
-  | ae = andexpr AMP ee = equalexpr           { Binop(ae, Bamp, ee) }
+conditionalAndExpression:
+  | io = inclusiveOrExpression                                     { io }
+  | ca = conditionalAndExpression AND io = inclusiveOrExpression   { Binop(ca, Band, io) }
 
-equalexpr:
-  | re = relationalexpr                         { re }
-  | ee = equalexpr EQUAL re = relationalexpr    { Binop(ee, Beq, re) }
-  | ee = equalexpr NEQUAL re = relationalexpr   { Binop(ee, Bneq, re) }
+inclusiveOrExpression:
+  | eo = exclusiveOrExpression                                    { eo }
+  | io = inclusiveOrExpression PIPE eo = exclusiveOrExpression    { Binop(io, Bpipe, eo) }
 
-relationalexpr:
-  | se = shiftexpr                                     { se }
-  | re = relationalexpr op = binoprel se = shiftexpr   { Binop(re, op, se) }
-  (*| re = relationalexpr INSTANCEOF rt = referencetype*)
+exclusiveOrExpression:
+  | ae = andExpression                                        { ae }
+  | eo = exclusiveOrExpression CIRCUMFLEX ae = andExpression  { Binop(eo, Bcirc, ae) }
 
-shiftexpr:
-  | ae = addexpr                                 { ae }
-  | se = shiftexpr op = binopshift ae = addexpr  { Binop(se, op, ae) }
+andExpression:
+  | ee = equalityExpression                            { ee }
+  | ae = andExpression AMP ee = equalityExpression     { Binop(ae, Bamp, ee) }
 
-addexpr:
-  | me = multexpr                      { me }
-  | ae = addexpr PLUS me = multexpr    { Binop(ae, Badd, me) }
-  | ae = addexpr MINUS me = multexpr   { Binop(ae, Bsub, me) }
+equalityExpression:
+  | re = relationalExpression                                  { re }
+  | ee = equalityExpression EQUAL re = relationalExpression    { Binop(ee, Beq, re) }
+  | ee = equalityExpression NEQUAL re = relationalExpression   { Binop(ee, Bneq, re) }
 
-multexpr:
-  | ue = unary                               { ue }
-  | me = multexpr op = binopmul ue = unary   { Binop(me, op, ue) }
+relationalExpression:
+  | se = shiftExpression                                           { se }
+  | re = relationalExpression op = binoprel se = shiftExpression   { Binop(re, op, se) }
+  (*| re = relationalExpression INSTANCEOF rt = referenceType*)
 
-unary:
-  | op = unop u = unary   { Unopleft(op, u) }
-  | u = unarynot          { u }
+shiftExpression:
+  | ae = additiveExpression                                       { ae }
+  | se = shiftExpression op = binopshift ae = additiveExpression  { Binop(se, op, ae) }
 
-unarynot:
-  | pe = postfix       { pe }
-  | BITWISE u = unary  { Unopleft(Ubitwise, u) }
-  | NOT u = unary      { Unopleft(Unot, u) }
-  (*| ca = castexpr      { ca }*)
+additiveExpression:
+  | me = multiplicativeExpression                                 { me }
+  | ae = additiveExpression PLUS me = multiplicativeExpression    { Binop(ae, Badd, me) }
+  | ae = additiveExpression MINUS me = multiplicativeExpression   { Binop(ae, Bsub, me) }
 
-postfix:
-  | p = primary        { p }
-  | id = IDENT         { Var id }
-  | p = postfix INCR   { Unopright(p, Urincr) }
-  | p = postfix DECR   { Unopright(p, Urdecr) }
+multiplicativeExpression:
+  | ue = unaryExpression                                               { ue }
+  | me = multiplicativeExpression op = binopmul ue = unaryExpression   { Binop(me, op, ue) }
 
-(*castexpr:
-  | LPAR pt = primtype RPAR ue = unary
-  | LPAR rt = reftype RPAR u = unarynot
-  | LPAR PrimitiveType d = dims? RPAR ue = unary
-  | LPAR rt = reftype RPAR u = unarynot*)
+unaryExpression:
+  | op = unop u = unaryExpression      { Unopleft(op, u) }
+  | u = unaryExpressionNotPlusMinus    { u }
+
+unaryExpressionNotPlusMinus:
+  | pe = postfixExpression       { pe }
+  | BITWISE u = unaryExpression  { Unopleft(Ubitwise, u) }
+  | NOT u = unaryExpression      { Unopleft(Unot, u) }
+  (*| ca = castExpression          { ca }*)
+
+postfixExpression:
+  | p = primary                  { p }
+  | en = expressionName          { en }
+  | p = postfixExpression INCR   { Unopright(p, Urincr) }
+  | p = postfixExpression DECR   { Unopright(p, Urdecr) }
+
+(*castExpression:
+  | LPAR pt = primitiveType RPAR ue = unaryExpression              {}
+  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   {}
+  | LPAR pt = primitiveType d = dims? RPAR ue = unaryExpression    {}
+  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   {}*)
 
 assignment:
-  | l = leftside ass = assign e = expression  { Assign(l, ass, e) }
+  | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
 
-leftside:
-  | id = IDENT                        { Var id }
-  (*| fa = fieldaccess  { fa }
-  | aa = arrayaccess  { aa }*)
+leftHandSide:
+  | en = expressionName     { en }
+  (*| fa = fieldAccess  { fa }
+  | aa = arrayAccess  { aa }*)
+
+expression:
+  | ae = assignmentExpression    { ae }
+
+constantExpression:
+  | e = expression               { e }
 
 
 (* BLOCKS AND STATEMENTS *)
 
 block:
-  | LBRACE bs = blockstatements RBRACE    { bs }
-  | LBRACE bs = blockstatements           { raise (Err(Illegal_bracket '}')) }
-  (* TODO: | bs = blockstatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
+  | LBRACE bs = blockStatements RBRACE    { bs }
+  | LBRACE bs = blockStatements           { raise (Err(Illegal_bracket '}')) }
+  (* TODO: | bs = blockStatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
 
-blockstatements:
-  | bs = blockstatement                         { [bs] }
-  | bs = blockstatement rest = blockstatements  { bs::rest }
+blockStatements:
+  | bs = blockStatement                         { [bs] }
+  | bs = blockStatement rest = blockStatements  { bs::rest }
 
-blockstatement:
+blockStatement:
   (*| lv = localvariabledeclstat
   | cd = classdeclar*)
   | s = statement       { s }
 
-(*localvariabledeclstat:
-  | lv = localvariabledecl SC     { lv }
+(*localVariableDeclarationStatement:
+  | lv = localVariableDeclaration SC     { lv }
 
-localvariabledecl:
-  | vm = variablemodifiers t = typ vd = variabledecls
+localVariableDeclaration:
+  | vm = variableModifiers t = typ vd = variableDeclarators
 
-variablemodifiers:
-  | vm = variablemodifier                         { [vm] }
-  | vs = variablemodifiers vm = variablemodifier  { vs::vm }
+variableModifiers:
+  | vm = variableModifier                         { [vm] }
+  | vs = variablemMdifiers vm = variableModifier  { vs::vm }
 
-variablemodifier:
+variableModifier:
   | (* TODO: Use the class parser? *)
 
-variabledecls:
-  | vd = variabledecl                             { [vd] }
-  | vs = variabledecls COMA vd = variabledecl     { vs::vd }*)
+variableDeclarators:
+  | vd = variableDeclarator                                 { [vd] }
+  | vs = variableDeclarators COMA vd = variableDeclarator   { vs::vd }
+
+variableDeclarator:
+  | vdi = variableDeclaratorId
+  | vdi = variableDeclaratorId ASS vi = variableInitializer
+
+variableDeclaratorId:
+  | id = IDENT
+  | vdi = variableDeclaratorId LBRACKET RBRACKET
+
+variableInitializer:
+  | e = expression
+  | ai = arrayInitializer*)
 
 statement:
-  | s = statwithoutsubstat    { s }
-  | ls = labeledstatement     { ls }
-  | i = ifstatement           { i }
-  | ie = ifelsestatement      { ie }
-  | ws = whilestatement       { ws }
-  | fs = forstatement         { fs }
+  | s = statementWithoutTrailingSubstatement { s }
+  | ls = labeledStatement                    { ls }
+  | i = ifThenStatement                      { i }
+  | ie = ifThenElseStatement                 { ie }
+  | ws = whileStatement                      { ws }
+  | fs = forStatement                        { fs }
 
-statwithoutsubstat:
+statementWithoutTrailingSubstatement:
   | b = block                                         { Statements(b) }
   | LBRACE RBRACE                                     { EmptyStatement }
-  | es = exprstatement                                { Expression(es) }
-  | ast = assertstatement                             { ast }
-  | ss = switchstatement                              { ss }
-  | ds = dostatement                                  { ds }
+  | es = expressionStatement                          { Expression(es) }
+  | ast = assertStatement                             { ast }
+  | ss = switchStatement                              { ss }
+  | ds = doStatement                                  { ds }
   | BREAK id = IDENT SC                               { Break(id) }
   (* TODO | BREAK SC *)
   | CONTINUE id = IDENT SC                            { Continue(id) }
@@ -252,59 +293,59 @@ statwithoutsubstat:
   (* TODO: | RETURN SC*)
   | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
   | THROW e = expression SC                           { Throw(e) }
-  (*| ts = trystatement                                 { ts }*)
+  (*| ts = tryStatement                                 { ts }*)
 
-exprstatements:
-  | es = exprstatement                         { [es] }
-  | es = exprstatement rest = exprstatements   { es::rest }
+expressionStatements:
+  | es = expressionStatement                         { [es] }
+  | es = expressionStatement rest = expressionStatements   { es::rest }
 
-exprstatement:
-  | se = statementexpression SC    { se }
+expressionStatement:
+  | se = statementExpression SC    { se }
 
-statementexpression:
+statementExpression:
   | ass = assignment          { ass }
-  | INCR u = unary            { Unopleft(Ulincr, u) }
-  | DECR u = unary            { Unopleft(Uldecr, u) }
-  | p = postfix INCR          { Unopright(p, Urincr) }
-  | p = postfix DECR          { Unopright(p, Urdecr) }
-  (*| mi = methodinvoc          { mi }
-  | cie = classinstexpr       { cie }*)
+  | INCR u = unaryExpression            { Unopleft(Ulincr, u) }
+  | DECR u = unaryExpression            { Unopleft(Uldecr, u) }
+  | p = postfixExpression INCR          { Unopright(p, Urincr) }
+  | p = postfixExpression DECR          { Unopright(p, Urdecr) }
+  (*| mi = methodInvocation          { mi }
+  | cie = classInstanceCreationExpression  { cie }*)
 
-assertstatement:
-  | ASSERT es = statementexpression SC                                 { Assert(es) }
-  | ASSERT e1 = statementexpression COLON e2 = statementexpression SC  { BAssert(e1, e2) }
+assertStatement:
+  | ASSERT es = statementExpression SC                                 { Assert(es) }
+  | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-switchstatement:
-  | SWITCH LPAR id = IDENT RPAR sb = switchblock                       { Switch(Var id, sb) }
+switchStatement:
+  | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
 
-switchblock:
-  | LBRACE sbg = switchblockstatementgroups? sl = switchlabels? RBRACE   { SwitchBlock(sbg, sl) }
+switchBlock:
+  | LBRACE sbg = switchBlockStatementGroups? sl = switchLabels? RBRACE   { SwitchBlock(sbg, sl) }
 
-switchblockstatementgroups:
-  | sbsg = switchblockstatementgroup                                   { [sbsg] }
-  | s = switchblockstatementgroup g = switchblockstatementgroups       { s::g }
+switchBlockStatementGroups:
+  | sbsg = switchBlockStatementGroup                                   { [sbsg] }
+  | s = switchBlockStatementGroup g = switchBlockStatementGroups       { s::g }
 
-switchblockstatementgroup:
-  | l = switchlabels b = blockstatements                               { SwitchGroup(l, b) }
+switchBlockStatementGroup:
+  | l = switchLabels b = blockStatements                               { SwitchGroup(l, b) }
 
-switchlabels:
-  | s = switchlabel                                                    { [s] }
-  | s = switchlabel  sls = switchlabels                                { s::sls }
+switchLabels:
+  | s = switchLabel                                                    { [s] }
+  | s = switchLabel  sls = switchLabels                                { s::sls }
 
-switchlabel:
-  | CASE c = constantexpression COLON                                  { Case(c) }
-  | CASE e = enumconstantname COLON                                    { Case(e) }
+switchLabel:
+  | CASE c = constantExpression COLON                                  { Case(c) }
+  | CASE e = enumConstantName COLON                                    { Case(e) }
   | DEFAULT COLON                                                      { Default }
 
-enumconstantname:
+enumConstantName:
   | id = IDENT                                                         { Var id }
 
 (* TODO: Complete this with all possible expression for case in switch *)
-constantexpression:
+(*constantexpression:
   | i = INT                                                            { Int i }
 
 
-(*constantexpression:
+constantexpression:
   | primitive
   | STRING
   | cast
@@ -315,60 +356,65 @@ constantexpression:
   | relop
   |*)
 
-(*trystatement:
+(*tryStatement:
   | TRY b = block c = catches                      { Try(b, c) }
   | TRY b = block c = catches? FINALLY b = block   { Tryfin(b, c, b) }
 
 catches:
-  | cc = catchclause                 { [cc] }
-  | c = catches cc = catchclause     { c::cc }
+  | cc = catchClause                 { [cc] }
+  | c = catches cc = catchClause     { c::cc }
 
-catchclause:
+catchClause:
   | CATCH LPAR fp = formalparam RPAR b = block    {}
 
-formalparam:
-  | vm = variablemodifiers t = typ vdi = variabledeclid     {}
+formalParameter:
+  | vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
-variabledeclid:
-  | id = IDENT                        { Var id }
-  | variabledeclid LBRACKET RBRACKET  {}*)
-
-labeledstatement:
+labeledStatement:
   | id = IDENT COLON s = statement                                    { Label(id, s) }
 
-ifstatement:
+ifThenStatement:
   | IF LPAR e = expression RPAR s = statement                         { If(e, s) }
 
-ifelsestatement:
+ifThenElseStatement:
   | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement    { Ifelse(e, s1, s2) }
+  (* TODO: replace previous by
+  | IF LPAR e = expression RPAR s1 = statementNoShortIf ELSE s2 = statement    { Ifelse(e, s1, s2) }*)
 
-whilestatement:
+(*statementNoShortIf:
+  | StatementWithoutTrailingSubstatement
+  | LabeledStatementNoShortIf
+  | IfThenElseStatementNoShortIf
+  | WhileStatementNoShortIf
+  | ForStatementNoShortIf*)
+
+whileStatement:
   | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
 
-dostatement:
+doStatement:
   | DO s = statement WHILE LPAR e = expression RPAR SC                { DoWhile(s, e) }
 
-(* TODO: Add enhancedForStatement *)
-forstatement:
+forStatement:
   | bf = basicForStatement       { bf }
   (*| ef = enhancedForStatement    { ef }*)
 
 basicForStatement:
-  | FOR LPAR fi = forinit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
+  | FOR LPAR fi = forInit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
 
 (* TODO: Change this to accept coma seperated declaration *)
-forinit:
+forInit:
   | es = statementExpressionList                             { es }
   (*| lv = localvariabledecl                                   { lv }*)
 
 statementExpressionList:
-  | e = statementexpression                                  { [e] }
-  | e = statementexpression COMA l = statementExpressionList { e::l }
+  | e = statementExpression                                  { [e] }
+  | e = statementExpression COMA l = statementExpressionList { e::l }
 
 (* TODO: test this one *)
 enhancedForStatement:
   | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
-  (*| FOR LPAR vm = variablemodifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
+  (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
+
 
 %inline binopmul:
   | TIMES     { Bmul }
