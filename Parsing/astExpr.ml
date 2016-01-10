@@ -48,6 +48,7 @@ type expression =
   | Case of expression
   | Default
   | ArrayAccess of expression * expression
+  | Ternary of expression * expression * expression
   (*| Method of expression * expression list*)
 
 type statement =
@@ -159,7 +160,7 @@ let rec string_of_expr expr =
   | String s -> "\"" ^ s ^ "\""
   | Null -> "null"
   | Var v -> v
-  
+
   (* Names *)
   | Name(e, str) -> (string_of_expr e) ^ "." ^ str
 
@@ -176,6 +177,7 @@ let rec string_of_expr expr =
   | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
   | Default -> "default: "
   | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
+  | Ternary(c, e1, e2) -> "(" ^ (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2) ^ ")"
   (*| Method(e1, e2) -> "(" ^ (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")" ^ ")"*)
 
 let rec string_of_statement stat =

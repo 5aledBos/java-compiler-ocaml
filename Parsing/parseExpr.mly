@@ -171,7 +171,7 @@ dims:
 
 conditionalExpression:
   | co = conditionalOrExpression         { co }
-  (*| co = conditionalOrExpression QUESTMARK e = expression COLON c = conditionalExpression  {}*)
+  | co = conditionalOrExpression QUESTMARK e = expression COLON c = conditionalExpression  { Ternary(co, e, c) }
 
 conditionalOrExpression:
   | ca = conditionalAndExpression                                  { ca }
