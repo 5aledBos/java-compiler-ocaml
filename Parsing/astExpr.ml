@@ -41,6 +41,10 @@ type expression =
   | Unopleft of unopleft * expression
   | Unopright of expression * unopright
   | Assign of expression * assign * expression
+  | Fieldaccess of expression * string
+  | Fieldaccesssuper of string
+  | Case of expression
+  | Default
 
 type statement =
   | Expression of expression
@@ -49,6 +53,9 @@ type statement =
   | EmptyStatement
   | Assert of expression
   | BAssert of expression * expression
+  | Switch of expression * statement
+  | SwitchBlock of statement list option * expression list option
+  | SwitchGroup of expression list * statement list
   | Break of string
   | Continue of string
   | Return of expression
@@ -131,6 +138,11 @@ let rec string_of_list f l =
   | [] -> ""
   | h::t -> (f h) ^ (string_of_list f t)
 
+let string_of_optlist f l =
+  match l with
+  | None -> ""
+  | Some(li) -> string_of_list f li
+
 let rec string_of_expr expr =
   match expr with
   (* Literals *)
@@ -148,6 +160,10 @@ let rec string_of_expr expr =
   | Unopleft(op, e) -> "(" ^ (string_of_unopleft op) ^ (string_of_expr e) ^ ")"
   | Unopright(e, op) -> "(" ^ (string_of_expr e) ^ (string_of_unopright op) ^ ")"
   | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
+  | Fieldaccess(e, str) -> "(" ^ (string_of_expr e) ^ "." ^ str ^ ")"
+  | Fieldaccesssuper(str) -> "(super." ^ str ^ ")"
+  | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
+  | Default -> "default:"
 
 let rec string_of_statement stat =
   match stat with
@@ -157,6 +173,9 @@ let rec string_of_statement stat =
   | EmptyStatement -> "Empty statement"
   | Assert(e) -> "(assert " ^ (string_of_expr e) ^ ")"
   | BAssert(e1, e2) -> "(assert " ^ (string_of_expr e1) ^ ":" ^ (string_of_expr e2) ^ ")"
+  | Switch(e, s) -> "(switch (" ^ (string_of_expr e) ^ ") " ^ (string_of_statement s) ^ ")"
+  | SwitchBlock(s, e) -> "{" ^ (string_of_optlist string_of_statement s) ^ (string_of_optlist string_of_expr e) ^ "}"
+  | SwitchGroup(e, s) -> (string_of_list string_of_expr e) ^ (string_of_list string_of_statement s)
   | Break(v) -> "(break " ^ v ^ ")"
   | Continue(v) -> "(continue " ^ v ^ ")"
   | Return(e) -> "(return " ^ (string_of_expr e) ^ ")"

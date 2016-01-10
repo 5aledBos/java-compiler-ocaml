@@ -100,7 +100,7 @@ rule nexttoken = parse
   (* Classes *)
   | "class"                  { CLASS }
   | "interface"              { INTERFACE }
-  | "enum"					{ ENUM }
+  | "enum"					         { ENUM }
   | "public"                 { PUBLIC }
   | "protected"              { PROTECTED }
   | "private"                { PRIVATE }
@@ -126,6 +126,7 @@ rule nexttoken = parse
   | ";"	                     { SC }
   | ","	                     { COMA }
   | "."                      { POINT }
+  | "new"                    { NEW }
 
   (* Statements *)
   | "if"                     { IF }
@@ -134,6 +135,7 @@ rule nexttoken = parse
   | "for"                    { FOR }
   | "switch"                 { SWITCH }
   | "case"                   { CASE }
+  | "default"                { DEFAULT }
   | "assert"                 { ASSERT }
 
   (* Brackets *)

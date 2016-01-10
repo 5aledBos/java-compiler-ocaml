@@ -26,6 +26,12 @@ public abstract class test extends machin implements testable, truc  {
 		if (false) {
   			continue rest;
 		}
+
+        switch (variable) {
+            case 2: i = 3;
+            case 4: i = 4;
+            default: {}
+        }
 	}
 
 	public test(string sss, int j) {
@@ -45,6 +51,11 @@ public abstract class test extends machin implements testable, truc  {
 
 
 	protected void getName(String s, int i) {
+
+	  // field access examples
+	  test = "t".est;
+	  test = super.testable;
+
 		if (false || true) {
 
   		compil = true;

@@ -16,9 +16,10 @@
 %token ASS MULASS DIVASS MODASS PLUSASS MINUSASS LSHIFTASS SRSHIFTASS URSHIFTASS AMPASS CIRCASS PIPEASS
 
 /* Statements */
-%token IF ELSE WHILE FOR SWITCH CASE ASSERT
+%token IF ELSE WHILE FOR SWITCH CASE DEFAULT ASSERT
 %token BREAK CONTINUE THROW SYNCHRONIZED TRY FINALLY
 
+%token NEW
 %token QUESTMARK COLON PIPE CIRCUMFLEX AMP COMA
 
 /* Literal values */
@@ -73,28 +74,10 @@ primarynoarray:
   | LPAR e = expression RPAR          { e }
   | LPAR e = expression               { raise (Err(Illegal_bracket ')')) }
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
-  (*| cie = classinstexpr               { cie }
+  (*| cie = classinstexpr               { cie }*)
   | fa = fieldaccess                  { fa }
-  | mi = methodinvoc                  { mi }
+  (*| mi = methodinvoc                  { mi }
   | aa = arrayaccess                  { aa }*)
-
-(*fieldaccess:
-  | p = primary POINT id = IDENT                  {}
-  | SUPER POINT id = IDENT                        {}
-  | cn = classname POINT SUPER POINT id = IDENT   {}
-
-methodinvoc:
-  | mn = methodname LPAR al = arglist? RPAR                                                 {}
-  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
-  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
-  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
-  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
-
-(* methodname in parseClass *)
-
-arglist:
-  | e = expression                    { [e] }
-  | al = arglist COMA e = expression  { al::e }*)
 
 literal:
   | i = INT                           { Int i }
@@ -107,6 +90,33 @@ literal:
 expression:
   | c = conditional     { c }
   | ass = assignment    { ass }
+
+(*classinstexpr :
+  | NEW ta = typeargs? cit = classorinttype LPAR al = arglist? RPAR {}*)
+
+fieldaccess:
+  | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
+  | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
+  (*| cn = classname POINT SUPER POINT id = IDENT   { Fieldaccess(Fasupercn, cn, id) }*)
+
+(*methodinvoc:
+  | mn = methodname LPAR al = arglist? RPAR                                                 {}
+  | p = primary POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                 {}
+  | SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR                       {}
+  | cn = classname POINT SUPER POINT nwa = nonwildargs? id = IDENT LPAR al = arglist? RPAR  {}
+  | tn = typename POINT nwa = nonwildargs id = IDENT LPAR al = arglist? RPAR                {}
+
+(* methodname in parseClass *)
+
+arglist:
+  | e = expression                    { [e] }
+  | al = arglist COMA e = expression  { al::e }*)
+
+(*arraycreation:
+  | NEW pt = primitivetype de = dimexprs d = dims?    {}
+  | NEW coi = classorinttype de = dimexprs d = dims?  {}
+  | NEW pt = primitivetype d = dims ai = arrayinit    {}
+  | NEW coi = classorinttype d = dims ai = arrayinit  {}*)
 
 conditional:
   | co = condor         { co }
@@ -232,8 +242,8 @@ statwithoutsubstat:
   | LBRACE RBRACE                                     { EmptyStatement }
   | es = exprstatement                                { Expression(es) }
   | ast = assertstatement                             { ast }
-  (*| ss = switchstatement        { ss }
-  | ds = dostatement            { ds }*)
+  | ss = switchstatement                              { ss }
+  (*| ds = dostatement            { ds }*)
   | BREAK id = IDENT SC                               { Break(id) }
   (* TODO | BREAK SC *)
   | CONTINUE id = IDENT SC                            { Continue(id) }
@@ -261,8 +271,48 @@ statementexpression:
   | cie = classinstexpr       { cie }*)
 
 assertstatement:
-  | ASSERT es = statementexpression SC { Assert(es) }
-  | ASSERT e1 = statementexpression COLON e2 = statementexpression SC { BAssert(e1, e2) }
+  | ASSERT es = statementexpression SC                                 { Assert(es) }
+  | ASSERT e1 = statementexpression COLON e2 = statementexpression SC  { BAssert(e1, e2) }
+
+switchstatement:
+  | SWITCH LPAR id = IDENT RPAR sb = switchblock                       { Switch(Var id, sb) }
+
+switchblock:
+  | LBRACE sbg = switchblockstatementgroups? sl = switchlabels? RBRACE   { SwitchBlock(sbg, sl) }
+
+switchblockstatementgroups:
+  | sbsg = switchblockstatementgroup                                   { [sbsg] }
+  | s = switchblockstatementgroup g = switchblockstatementgroups       { s::g }
+
+switchblockstatementgroup:
+  | l = switchlabels b = blockstatements                               { SwitchGroup(l, b) }
+
+switchlabels:
+  | s = switchlabel                                                    { [s] }
+  | s = switchlabel  sls = switchlabels                                { s::sls }
+
+switchlabel:
+  | CASE c = constantexpression COLON                                  { Case(c) }
+  | CASE e = enumconstantname COLON                                    { Case(e) }
+  | DEFAULT COLON                                                      { Default }
+
+enumconstantname:
+  | id = IDENT                                                         { Var id }
+
+constantexpression:
+  | i = INT                                                            { Int i }
+
+
+(*constantexpression:
+  | primitive
+  | STRING
+  | cast
+  | unary
+  | multop
+  | addop
+  | shifts
+  | relop
+  |*)
 
 (*trystatement:
   | TRY b = block c = catches                      { Try(b, c) }
