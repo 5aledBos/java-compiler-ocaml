@@ -408,7 +408,7 @@ doStatement:
 
 forStatement:
   | bf = basicForStatement       { bf }
-  (*| ef = enhancedForStatement    { ef }*)
+  | ef = enhancedForStatement    { ef }
 
 basicForStatement:
   | FOR LPAR fi = forInit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }

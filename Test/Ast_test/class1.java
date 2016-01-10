@@ -41,6 +41,10 @@ public class test extends machin implements testable, truc  {
             }
         }
 
+        for (idnt : test) {
+            c += idnt;
+        }
+
         do {
             i = table[k];
             j = 1;
