@@ -51,6 +51,7 @@ public class test extends machin implements testable, truc  {
             i = table[k];
             j = 1;
             m = "get".table[j];
+            ;
         } while (c);
 	}
 

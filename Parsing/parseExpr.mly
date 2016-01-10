@@ -256,6 +256,7 @@ constantExpression:
 (* BLOCKS AND STATEMENTS *)
 
 block:
+  | LBRACE RBRACE                         { [EmptyBlock] }
   | LBRACE bs = blockStatements RBRACE    { bs }
   | LBRACE bs = blockStatements           { raise (Err(Illegal_bracket '}')) }
   (* TODO: | bs = blockStatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
@@ -308,7 +309,7 @@ statement:
 
 statementWithoutTrailingSubstatement:
   | b = block                                         { Statements(b) }
-  | LBRACE RBRACE                                     { EmptyStatement }
+  | SC                                                { EmptyStatement }
   | es = expressionStatement                          { Expression(es) }
   | ast = assertStatement                             { ast }
   | ss = switchStatement                              { ss }
@@ -422,7 +423,7 @@ statementExpressionList:
   | e = statementExpression                                  { [e] }
   | e = statementExpression COMA l = statementExpressionList { e::l }
 
-(* TODO: test this one *)
+(* TODO: add type *)
 enhancedForStatement:
   | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
   (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)

@@ -55,6 +55,7 @@ type statement =
   | Expression of expression
   | Expressions of expression list
   | Statements of statement list
+  | EmptyBlock
   | EmptyStatement
   | Assert of expression
   | BAssert of expression * expression
@@ -186,6 +187,7 @@ let rec string_of_statement stat =
   | Expressions e -> string_of_list string_of_expr e
   | Statements s -> string_of_list string_of_statement s
   | EmptyStatement -> "Empty statement"
+  | EmptyBlock -> "Empty block"
   | Assert(e) -> "(assert " ^ (string_of_expr e) ^ ")"
   | BAssert(e1, e2) -> "(assert " ^ (string_of_expr e1) ^ ":" ^ (string_of_expr e2) ^ ")"
   | Switch(e, s) -> "(switch (" ^ (string_of_expr e) ^ ") " ^ (string_of_statement s) ^ ")"
