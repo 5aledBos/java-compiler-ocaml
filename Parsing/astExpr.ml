@@ -36,6 +36,8 @@ type expression =
   | Char of string
   | String of string
   | Null
+  | CVoid
+  | This of expression option
   | Var of string
   | Name of expression * string
   | Binop of expression * binop * expression
@@ -62,9 +64,9 @@ type statement =
   | Switch of expression * statement
   | SwitchBlock of statement list option * expression list option
   | SwitchGroup of expression list * statement list
-  | Break of string
-  | Continue of string
-  | Return of expression
+  | Break of string option
+  | Continue of string option
+  | Return of expression option
   | Throw of expression
   | Synchro of expression * statement list
   | Try of statement list * statement list
@@ -162,6 +164,9 @@ let rec string_of_expr expr =
   | String s -> "\"" ^ s ^ "\""
   | Null -> "null"
   | Var v -> v
+  | CVoid -> "void.class"
+  | This None -> "this"
+  | This Some(e) -> (string_of_expr e) ^ ".this"
 
   (* Names *)
   | Name(e, str) -> (string_of_expr e) ^ "." ^ str
@@ -197,9 +202,12 @@ let rec string_of_statement stat =
   | Try(b, c) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_list string_of_statement c)
   | Tryfin(b, c, f) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_opt (string_of_list string_of_statement) c) ^ "finally {" ^ (string_of_list string_of_statement f) ^ "}"
   | CatchClause(e, s) -> "catch ("^ (string_of_expr e) ^") {" ^ (string_of_list string_of_statement s) ^ "}"
-  | Break(v) -> "(break " ^ v ^ ")"
-  | Continue(v) -> "(continue " ^ v ^ ")"
-  | Return(e) -> "(return " ^ (string_of_expr e) ^ ")"
+  | Break(Some(v)) -> "(break " ^ v ^ ")"
+  | Break(None) -> "(break)"
+  | Continue(Some(v)) -> "(continue " ^ v ^ ")"
+  | Continue(None) -> "(continue)"
+  | Return(Some(e)) -> "(return " ^ (string_of_expr e) ^ ")"
+  | Return(None) -> "(return)"
   | Throw(e) -> "(throw " ^ (string_of_expr e) ^ ")"
   | Synchro(e, s) -> "(synchronized (" ^ (string_of_expr e) ^ ") {" ^ (string_of_list string_of_statement s) ^ "}"
   | Label(v, s) -> v ^ " : " ^ (string_of_statement s)

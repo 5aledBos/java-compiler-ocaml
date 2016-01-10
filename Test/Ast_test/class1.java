@@ -106,6 +106,13 @@ public class test extends machin implements testable, truc  {
 	  // field access examples
 	  test = "t".est;
 	  test = super.testable;
+      test.coucou = "";
+      test[1] = test;
+
+      this.a = this.b;
+      this.a.b = c;
+
+      test = void.class;
 
 		if (false || true) {
 
@@ -113,6 +120,10 @@ public class test extends machin implements testable, truc  {
   		++j;
   		throw abc *= 5.3++;
 		}
+
+        return;
+        continue;
+        break;
  	}
 
 	public int getInt() {

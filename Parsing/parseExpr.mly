@@ -104,10 +104,10 @@ primary:
 
 primaryNoNewArray:
   | l = literal                              { l }
-  (*| t = typ POINT c = clas                   {}
-  | VOID POINT c = clas                      {}
-  | THIS                                     {}
-  | cn = className POINT THIS                {}*)
+  (*| t = typ POINT c = clas                   {}*)
+  | VOID POINT CLASS                         { CVoid }
+  | THIS                                     { This(None) }
+  (*| cn = className POINT THIS                { This(Some(cn)) } *)
   | LPAR e = expression RPAR                 { e }
   | LPAR e = expression                      { raise (Err(Illegal_bracket ')')) }
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
@@ -242,9 +242,9 @@ assignment:
   | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
 
 leftHandSide:
-  | en = expressionName     { en }
-  (*| fa = fieldAccess  { fa }
-  | aa = arrayAccess  { aa }*)
+  | en = expressionName          { en }
+  | fa = fieldAccess             { fa }
+  | aa = arrayAccess             { aa }
 
 expression:
   | ae = assignmentExpression    { ae }
@@ -314,12 +314,9 @@ statementWithoutTrailingSubstatement:
   | ast = assertStatement                             { ast }
   | ss = switchStatement                              { ss }
   | ds = doStatement                                  { ds }
-  | BREAK id = IDENT SC                               { Break(id) }
-  (* TODO | BREAK SC *)
-  | CONTINUE id = IDENT SC                            { Continue(id) }
-  (* TODO | CONTINUE SC *)
-  | RETURN e = expression SC                          { Return(e) }
-  (* TODO: | RETURN SC*)
+  | BREAK id = IDENT? SC                              { Break(id) }
+  | CONTINUE id = IDENT? SC                           { Continue(id) }
+  | RETURN e = expression? SC                          { Return(e) }
   | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
   | THROW e = expression SC                           { Throw(e) }
   | ts = tryStatement                                 { ts }
