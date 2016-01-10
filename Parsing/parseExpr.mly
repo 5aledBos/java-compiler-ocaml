@@ -67,8 +67,33 @@ statements:
 
 (* NAMES *)
 
+(*packageName:
+  | id = IDENT                                { Var id }
+  | pn = packageName POINT id = IDENT         { Name(pn, id) }
+
+typeName:
+  | id = IDENT                                { Var id }
+  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }*)
+
 expressionName:
-  | id = IDENT    { Var id }
+  | id = IDENT                                { Var id }
+  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
+
+methodName:
+  | id = IDENT                                { Var id }
+  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
+
+packageOrTypeName:
+  | id = IDENT                                { Var id }
+  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }
+
+ambiguousName:
+  | id = IDENT                                { Var id }
+  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
+
+(*TODO: check in the Java spec*)
+className:
+  | id = IDENT                                { Var id }
 
 
 (* EXPRESSIONS *)
@@ -88,8 +113,8 @@ primaryNoNewArray:
   (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
   (*| cie = classInstanceCreationExpression    { cie }*)
   | fa = fieldAccess                         { fa }
-  (*| mi = methodInvoccation                   { mi }
-  | aa = arrayAccess                         { aa }*)
+  (*| mi = methodInvocation                   { mi }*)
+  | aa = arrayAccess                         { aa }
 
 literal:
   | i = INT                           { Int i }
@@ -110,10 +135,10 @@ assignmentExpression:
 fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
   | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
-  (*| cn = className POINT SUPER POINT id = IDENT   {}*)
+  (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
 
 (*methodInvocation:
-  | mn = methodName LPAR al = argumentList? RPAR                                                          {}
+  | mn = methodName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
   | p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 {}
   | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       {}
   | cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  {}
@@ -123,21 +148,21 @@ argumentList:
   | e = expression                         { [e] }
   | al = argumentList COMA e = expression  { al::e }*)
 
-(*arrayAccess:
-  | en = expressionName LBRACKET e = expression RBRACKET       {}
-  | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  {}
+arrayAccess:
+  | en = expressionName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
+  | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
-arrayCreationExpression:
+(*arrayCreationExpression:
   | NEW pt = primitiveType de = dimExprs d = dims?                 {}
   | NEW coi = classOrInterfaceType de = dimExprs d = dims?         {}
   | NEW pt = primitiveType d = dims ai = arrayInitializer          {}
   | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  {}
 
-dimexprs:
-  | de = dimexpr                { [de] }
-  | ds = dimexprs de = dimexpr  { ds::de }
+dimExprs:
+  | de = dimExpr                { [de] }
+  | ds = dimExprs de = dimExpr  { ds::de }
 
-dimexpr:
+dimExpr:
   | LBRACKET e = expression RBRACKET    { Dimexpr(e) }
 
 dims:
@@ -342,22 +367,6 @@ switchLabel:
 
 enumConstantName:
   | id = IDENT                                                         { Var id }
-
-(* TODO: Complete this with all possible expression for case in switch *)
-(*constantexpression:
-  | i = INT                                                            { Int i }
-
-
-constantexpression:
-  | primitive
-  | STRING
-  | cast
-  | unary
-  | multop
-  | addop
-  | shifts
-  | relop
-  |*)
 
 (*tryStatement:
   | TRY b = block c = catches                      { Try(b, c) }

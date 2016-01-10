@@ -37,14 +37,18 @@ type expression =
   | String of string
   | Null
   | Var of string
+  | Name of expression * string
   | Binop of expression * binop * expression
   | Unopleft of unopleft * expression
   | Unopright of expression * unopright
   | Assign of expression * assign * expression
   | Fieldaccess of expression * string
   | Fieldaccesssuper of string
+  | Fieldaccessclass of expression * string
   | Case of expression
   | Default
+  | ArrayAccess of expression * expression
+  (*| Method of expression * expression list*)
 
 type statement =
   | Expression of expression
@@ -155,6 +159,9 @@ let rec string_of_expr expr =
   | String s -> "\"" ^ s ^ "\""
   | Null -> "null"
   | Var v -> v
+  
+  (* Names *)
+  | Name(e, str) -> (string_of_expr e) ^ "." ^ str
 
   (* Operations *)
   | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
@@ -165,8 +172,11 @@ let rec string_of_expr expr =
   | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
   | Fieldaccess(e, str) -> "(" ^ (string_of_expr e) ^ "." ^ str ^ ")"
   | Fieldaccesssuper(str) -> "(super." ^ str ^ ")"
+  | Fieldaccessclass(e, str) -> "(" ^ (string_of_expr e) ^ ".super." ^ str ^ ")"
   | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
-  | Default -> "default:"
+  | Default -> "default: "
+  | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
+  (*| Method(e1, e2) -> "(" ^ (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")" ^ ")"*)
 
 let rec string_of_statement stat =
   match stat with

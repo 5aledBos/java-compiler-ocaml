@@ -112,8 +112,8 @@ rule nexttoken = parse
   | "static"                 { STATIC }
   | "final"                  { FINAL }
   | "strictfp"               { STRICTFP }
-  | "transient"				{ TRANSIENT }
-  | "volatile"					{ VOLATILE }
+  | "transient"			         { TRANSIENT }
+  | "volatile"					     { VOLATILE }
   | "this"                   { THIS }
   | "super"                  { SUPER }
   | "break"                  { BREAK }
@@ -125,13 +125,13 @@ rule nexttoken = parse
   | "finally"                { FINALLY }
   | "void"                   { VOID }
   | "int"                    { PINT }
-  | "float"					{ PFLOAT }
-  | "char"					{ PCHAR }
-  | "boolean"				{ PBOOLEAN }
-  | "byte"					{ PBYTE }
-  | "short"					{ PSHORT }
-  | "long"					{ PLONG }
-  | "double"				{ PDOUBLE }
+  | "float"					         { PFLOAT }
+  | "char"					         { PCHAR }
+  | "boolean"				         { PBOOLEAN }
+  | "byte"					         { PBYTE }
+  | "short"					         { PSHORT }
+  | "long"					         { PLONG }
+  | "double"				         { PDOUBLE }
   | ";"	                     { SC }
   | ","	                     { COMA }
   | "."                      { POINT }

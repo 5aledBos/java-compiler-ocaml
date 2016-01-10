@@ -14,7 +14,7 @@ public class test extends machin implements testable, truc  {
 
 		i = 0;
 		if (true) {
-  			test = 3 + 5;
+  			test.te = 3 + 5;
   			abc *= 6.2 / 78.4 % 5.0;
   			break rest;
 		}
@@ -42,7 +42,9 @@ public class test extends machin implements testable, truc  {
         }
 
         do {
-            i = 2;
+            i = table[k];
+            j = 1;
+            m = "get".table[j];
         } while (c);
 	}
 
