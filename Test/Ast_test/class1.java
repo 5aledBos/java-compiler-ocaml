@@ -7,7 +7,8 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
-	//public int i;
+	public int i, j;
+	public final String test;
 
 	private test() {
         this(variable, "coucou", 120);
@@ -130,9 +131,9 @@ public class test extends machin implements testable, truc  {
         break;
  	}
 
-	public int getInt() {
-		return i;
-	}
+public void setInt(int k) {
+	i = k;
+}
 
 }
 

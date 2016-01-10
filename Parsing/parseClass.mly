@@ -129,7 +129,7 @@ classBodyDeclaration:
 (*classMemberDeclaration*)
 
 classMemberDeclaration:
-(*  | attribut = attributDeclaration		{ Attribut(attribut) }*)
+  | attribut = fieldDeclaration		{ Attribut(attribut) }
   | decl = methodDeclaration		{ MethodClass(decl) }
 (*  | nestedClass			{}*)
 (*  | nestedInterface		{}*)
@@ -139,8 +139,8 @@ classMemberDeclaration:
 (*attributDeclaration:*)
 (*  | classModifiers? str=typeDeclaration2 listDecl = variableDeclarators SC	{ { names=listeDecl; typeof=str } }*)
 
-attributDeclaration:
-  | modi=classModifiers? str=typeDeclaration2 n=variableDeclarator SC { { name=n; typeof=str; modifiers=modi } }
+fieldDeclaration:
+  | modi=classModifiers? str=typ n=variableDeclarators SC { { names=n; typeof=str; modifiers=modi } }
 
 variableDeclarators:
   | str=variableDeclarator					{ [str] }
@@ -220,7 +220,7 @@ blockstmts:
 
 result:
   | VOID 	{ Void }
-  | str=typeDeclaration2	{ AttributType(str) }
+  | str=typ	{ AttributType(str) }
 
 (*instanceInitializer*)
 (*instanceInitializer:*)
@@ -257,7 +257,7 @@ variableDeclaratorId:
   | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
 
 variableType:
-  | str=typeDeclaration2 { str }
+  | str=typ { str }
 
 
 parameterList:
@@ -266,14 +266,9 @@ parameterList:
 
 
 parameter:
-  | t=typeDeclaration2 str=IDENT	{ {parametertype=t; name=str} }
+  | t=typ str=IDENT	{ {parametertype=t; name=str} }
 
 
-
-
-typeDeclaration2:
-  | p=primitive	{ AstUtil.Primitive(p) }
-  | str=IDENT	{ AstUtil.String(str) }
 
 argumentList:
   | e=expression	{ [e] }

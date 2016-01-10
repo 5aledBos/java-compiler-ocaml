@@ -5,8 +5,6 @@ type modifier =
 
 type modifiers = modifier list
 
-type attributType =
-  | String of string | Primitive of primitive 
 and primitive = 
   | Int | Float | Double | Char | Boolean | Byte | Short | Long
 
@@ -41,9 +39,9 @@ let string_of_primitive = function
   | Byte -> "byte"
   | Short -> "short"
 
-let string_of_attributType t = match t with
-  | String str -> str
-  | Primitive p -> string_of_primitive p
+(*let string_of_attributType t = match t with*)
+(*  | String str -> str*)
+(*  | Primitive p -> string_of_primitive p*)
 
 let string_of_type t = match t with
   | Primitive p -> string_of_primitive p

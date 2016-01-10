@@ -15,18 +15,18 @@ type importList = import list
 
 
 type resultTypeAst = 
-  | AttributType of AstUtil.attributType | Void
+  | AttributType of AstUtil.typ | Void
 
 type parameter = 
 {
-  parametertype : AstUtil.attributType;
+  parametertype : AstUtil.typ;
   name : string
 }
 
 
 type attributAst = {
-  typeof : AstUtil.attributType;
-  name : string;
+  typeof : AstUtil.typ;
+  names : string list;
   modifiers : AstUtil.modifiers option
 }
 
@@ -167,7 +167,7 @@ let rec printListImport liste = match liste with
 
 
 let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> AstUtil.string_of_attributType(typeof) ^ " " ^ str
+  | { parametertype=typeof; name=str } -> AstUtil.string_of_type(typeof) ^ " " ^ str
 
 let rec string_of_listparameters params = match params with
   | Some([]) -> ""
@@ -195,7 +195,11 @@ let string_of_thisorsuper str = match str with
 
 let string_of_resultType t = match t with
   | Void -> "void"
-  | AttributType(a) -> AstUtil.string_of_attributType(a)
+  | AttributType(a) -> AstUtil.string_of_type(a)
+
+let rec string_of_attributs liste = match liste with
+  | [] -> ""
+  | (x::xs) -> " " ^ x ^ string_of_attributs(xs)
 
 let string_of_constructorinvocation inv = match inv with
   | Some({ invocator = i ; argumentlist=Some(params) }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions(params) ^ ")"
@@ -212,7 +216,7 @@ let string_of_constructor c = match c with
 
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
-  | Attribut( { typeof=a; name=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_attributType(a) ^ " " ^ str 
+  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ string_of_attributs(str) 
 
 let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)
