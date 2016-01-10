@@ -135,6 +135,7 @@ rule nexttoken = parse
   | "for"                    { FOR }
   | "switch"                 { SWITCH }
   | "case"                   { CASE }
+  | "default"                { DEFAULT }
   | "assert"                 { ASSERT }
 
   (* Brackets *)
