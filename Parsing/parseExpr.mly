@@ -343,22 +343,6 @@ switchLabel:
 enumConstantName:
   | id = IDENT                                                         { Var id }
 
-(* TODO: Complete this with all possible expression for case in switch *)
-(*constantexpression:
-  | i = INT                                                            { Int i }
-
-
-constantexpression:
-  | primitive
-  | STRING
-  | cast
-  | unary
-  | multop
-  | addop
-  | shifts
-  | relop
-  |*)
-
 (*tryStatement:
   | TRY b = block c = catches                      { Try(b, c) }
   | TRY b = block c = catches? FINALLY b = block   { Tryfin(b, c, b) }
@@ -399,7 +383,7 @@ doStatement:
 
 forStatement:
   | bf = basicForStatement       { bf }
-  (*| ef = enhancedForStatement    { ef }*)
+  | ef = enhancedForStatement    { ef }
 
 basicForStatement:
   | FOR LPAR fi = forInit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
