@@ -138,7 +138,7 @@ variableInitializer:
   | e = expression         { e }
   | ai = arrayInitializer  { ai }
 
-(*conditionalExpression:
+conditionalExpression:
   | co = conditionalOrExpression         { co }
   | co = conditionalOrExpression QUESTMARK e = expression COLON c = conditionalExpression  { Ternary(co, e, c) }
 
@@ -199,7 +199,7 @@ postfixExpression:
   | p = primary                  { p }
   | en = pathName          { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
-  | p = postfixExpression DECR   { Unopright(p, Urdecr) }*)
+  | p = postfixExpression DECR   { Unopright(p, Urdecr) }
 
 (*castExpression:
   | LPAR pt = primitiveType RPAR ue = unaryExpression              { Cast(pt, ue) }
@@ -216,7 +216,7 @@ leftHandSide:
   (*| aa = arrayAccess             { aa }*)
 
 expression:
-  (*| c = conditionalExpression  { c }*)
+  | c = conditionalExpression  { c }
   | ass = assignment           { ass }
   | p = primary                { p }
 
@@ -390,8 +390,6 @@ enhancedForStatement:
   | DECR      { Uldecr }
   | PLUS      { Uplus }
   | MINUS     { Uminus }
-  | BITWISE   { Ubitwise }
-  | NOT       { Unot }
 
 %inline assign:
   | ASS         { Ass }
