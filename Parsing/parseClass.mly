@@ -111,10 +111,13 @@ interfaceMemberDeclarations:
   | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
-(*  | constantDeclaration		{ }*)
+  | constantDeclaration		{ }
   | abstractMethodDeclaration	{ }
   | decl=classDeclaration		{  }
   | decl=interfaceDeclaration	{  }
+
+constantDeclaration:
+  | classModifiers? typ variableDeclarators SC	{ }
 
 abstractMethodDeclaration:
   | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
@@ -179,7 +182,8 @@ variableDeclarators:
 
 variableDeclarator:
   | str=IDENT 	{ str }
-  | str=IDENT EQUAL variableInitializer	{ str }
+
+  | str=IDENT ASS variableInitializer	{ str }
   | error {raise Illegal_variableDeclarator }
 
 
@@ -194,8 +198,6 @@ variableInitializers:
   | variableInitializer			{ }
   | variableInitializers COMA variableInitializer		{ }*)
 
-
-(*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }
@@ -225,8 +227,8 @@ methodDeclaration:
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
-  | modi=classModifiers? r=VOID temp=methodDeclarator (*throws?*)	{ modi, temp, Void }
-  | modi=classModifiers? r=typ temp=methodDeclarator (*throws?*)	{ modi, temp, AttributType(r) }
+  | modi=classModifiers? r=VOID temp=methodDeclarator throws?	{ modi, temp, Void }
+  | modi=classModifiers? r=typ temp=methodDeclarator throws?	{ modi, temp, AttributType(r) }
 
 (*methodHeader:*)
 (*  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }*)
@@ -245,9 +247,6 @@ exceptionType:
   | classType		{ }
 (*  | typeVariable	{ }*)
 
-(*methodModifiers:*)
-(*  | modifier	{ }*)
-
 methodBody:
   | stmts = block { BlockStatements(stmts) }
   | error { raise Illegal_methodeBody } 
@@ -255,11 +254,6 @@ methodBody:
 
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
-
-
-(*instanceInitializer*)
-(*instanceInitializer:*)
-(*  | str=IDENT str=IDENT EQUAL *)
 
 
 (* utilisé par les ClassBody*)
@@ -281,8 +275,8 @@ formalParameter:
 
 
 variableModifiers:
-  | variableModifier	{ }
-  | variableModifiers variableModifier		{}
+  | modifier = variableModifier	{ [modifier] }
+  | liste = variableModifiers modifier = variableModifier		{ liste @ [modifier] }
 
 variableModifier:
   | f = FINAL 	{ AstUtil.Final }
@@ -319,21 +313,6 @@ argumentList:
 (*egalite:*)
 (*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
-interfaceModifiers:
-  | m=interfaceModifier		{ [m]}
-  | liste=interfaceModifiers m=interfaceModifier	{ liste @ [m] }
-
-interfaceModifier:
-  | m=accessModifier	{ m }
-  | m=modifier		{ m }
-
-fieldModifiers:
-  | m=fieldModifier		{ [m] }
-  | liste=fieldModifiers m=fieldModifier { liste @ [m] }
-
-fieldModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierStatic | m= modifierFinal | m=modifierTransient | m=modifierVolatile	{ m }
-
 classModifiers:
   | m=classModifier		{ [m]}
   | liste=classModifiers m=classModifier	{ liste @ [m] }
@@ -351,11 +330,6 @@ modifier:
   | STATIC			{ Static }
   | STRICTFP		{ AstUtil.Strictfp }
 
-(*modifierStatic:*)
-(*  | STATIC 	{ Static }*)
-
-(*modifierAbstract:*)
-(*  | ABSTRACT { Abstract }*)
 
 modifierStrictfp:
   | STRICTFP		{ Strictfp }
@@ -400,9 +374,4 @@ interfaceType:
 classType:
   | str=IDENT	{ str }
 
-primitive:
-  | PINT { AstUtil.Int }
 
-
-
-(*attribut*)

@@ -1,6 +1,3 @@
-(*type modifier = *)
-(*  | Static | Abstract | Final | Strictfp*)
-
 type package = Package of AstExpr.expression
 
 
