@@ -157,10 +157,10 @@ let string_of_assign = function
   | Asscirc -> "^="
   | Asspipe -> "|="
 
-let string_of_list f l =
+let string_of_list sep f l =
   match l with
   | [] -> ""
-  | li -> String.concat ", " (List.map f li)
+  | li -> String.concat sep (List.map f li)
 
 let string_of_opt f o =
   match o with
@@ -181,7 +181,7 @@ let rec string_of_expr expr =
   | This Some(e) -> (string_of_expr e) ^ ".this"
 
   (* Names *)
-  | Name(l) -> (string_of_list string_of_expr l)
+  | Name(l) -> (string_of_list ", " string_of_expr l)
 
   (* Operations *)
   | Binop(e1, op, e2) -> (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2)
@@ -196,31 +196,31 @@ let rec string_of_expr expr =
   | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
   | Default -> "default: "
   | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
-  | ArrayCreation(t, e) -> "(new " ^ (string_of_type t) ^ (string_of_list (string_of_opt string_of_expr) e) ^ ")"
-  | ArrayInit(l) -> (string_of_list string_of_expr l)
+  | ArrayCreation(t, e) -> "(new " ^ (string_of_type t) ^ (string_of_list ", " (string_of_opt string_of_expr) e) ^ ")"
+  | ArrayInit(l) -> (string_of_list ", " string_of_expr l)
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
   | Cast(t, e) -> "(" ^ (string_of_type t) ^ ") " ^ (string_of_expr e)
   | CastP(t, d, e) -> "(" ^ (string_of_type t) ^ " " ^ (string_of_int d) ^ ") " ^ (string_of_expr e)
-  | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")"
+  | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list ", " string_of_expr e2) ^ ")"
   (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
-  | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list string_of_expr l) ^ ")"
-  | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_list string_of_expr l) ^ ")"
+  | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
+  | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
 
 let rec string_of_statement stat =
   match stat with
   | Expression e -> "(" ^ string_of_expr e ^ ")"
-  | Expressions e -> string_of_list string_of_expr e
-  | Statements s -> string_of_list string_of_statement s
+  | Expressions e -> string_of_list ", " string_of_expr e
+  | Statements s -> string_of_list ", " string_of_statement s
   | EmptyStatement -> "Empty statement"
   | Assert(e) -> "(assert " ^ (string_of_expr e) ^ ")"
   | BAssert(e1, e2) -> "(assert " ^ (string_of_expr e1) ^ ":" ^ (string_of_expr e2) ^ ")"
   | Switch(e, s) -> "(switch (" ^ (string_of_expr e) ^ ") " ^ (string_of_statement s) ^ ")"
-  | SwitchBlock(s, e) -> "{" ^ (string_of_list string_of_statement s) ^ (string_of_list string_of_expr e) ^ "}"
-  | SwitchGroup(e, s) -> (string_of_list string_of_expr e) ^ (string_of_list string_of_statement s)
-  | Try(b, c) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_list string_of_statement c)
-  | Tryfin(b, c, f) -> "try {" ^ (string_of_list string_of_statement b) ^ "}" ^ (string_of_list string_of_statement c) ^ "finally {" ^ (string_of_list string_of_statement f) ^ "}"
-  | CatchClause(e, s) -> "catch ("^ (string_of_expr e) ^") {" ^ (string_of_list string_of_statement s) ^ "}"
+  | SwitchBlock(s, e) -> "{" ^ (string_of_list ", " string_of_statement s) ^ (string_of_list ", " string_of_expr e) ^ "}"
+  | SwitchGroup(e, s) -> (string_of_list ", " string_of_expr e) ^ (string_of_list ", " string_of_statement s)
+  | Try(b, c) -> "try {" ^ (string_of_list ", " string_of_statement b) ^ "}" ^ (string_of_list ", " string_of_statement c)
+  | Tryfin(b, c, f) -> "try {" ^ (string_of_list ", " string_of_statement b) ^ "}" ^ (string_of_list ", " string_of_statement c) ^ "finally {" ^ (string_of_list ", " string_of_statement f) ^ "}"
+  | CatchClause(e, s) -> "catch ("^ (string_of_expr e) ^") {" ^ (string_of_list ", " string_of_statement s) ^ "}"
   | Break(Some(v)) -> "(break " ^ v ^ ")"
   | Break(None) -> "(break)"
   | Continue(Some(v)) -> "(continue " ^ v ^ ")"
@@ -228,11 +228,11 @@ let rec string_of_statement stat =
   | Return(Some(e)) -> "(return " ^ (string_of_expr e) ^ ")"
   | Return(None) -> "(return)"
   | Throw(e) -> "(throw " ^ (string_of_expr e) ^ ")"
-  | Synchro(e, s) -> "(synchronized (" ^ (string_of_expr e) ^ ") {" ^ (string_of_list string_of_statement s) ^ "}"
+  | Synchro(e, s) -> "(synchronized (" ^ (string_of_expr e) ^ ") {" ^ (string_of_list ", " string_of_statement s) ^ "}"
   | Label(v, s) -> v ^ " : " ^ (string_of_statement s)
   | If(e, s, es) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ " else {" ^ (string_of_opt string_of_statement es) ^ "}"
   | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
   | DoWhile(s, e) -> "do {" ^ (string_of_statement s) ^ "} while(" ^ (string_of_expr e) ^ ")"
-  | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_list string_of_expr es) ^ ") {" ^ (string_of_statement s) ^ "}"
+  | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list ", " string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_list ", " string_of_expr es) ^ ") {" ^ (string_of_statement s) ^ "}"
   | EFor(id, e, s) -> "for(" ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"
   (*| EFOR(vm, t, id, e, s) -> "for("(* Print variable modifiers and type *) ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"*)
