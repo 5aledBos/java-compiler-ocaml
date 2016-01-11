@@ -54,7 +54,7 @@ type expression =
   | ArrayAccess of expression * expression
   | ArrayCreation of typ * expression option list
   | ArrayCreationInit of typ * expression list * expression
-  | ArrayInit of expression list * unit option
+  | ArrayInit of expression list
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ
   (*| Cast of typ * expression *)
@@ -197,6 +197,7 @@ let rec string_of_expr expr =
   | Default -> "default: "
   | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
   | ArrayCreation(t, e) -> "(new " ^ (string_of_type t) ^ (string_of_list (string_of_opt string_of_expr) e) ^ ")"
+  | ArrayInit(l) -> (string_of_list string_of_expr l)
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
   | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")"
