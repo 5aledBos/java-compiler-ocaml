@@ -259,114 +259,80 @@ variableInitializer:
   | ai = arrayInitializer*)
 
 statement:
-  | s = statementWithoutTrailingSubstatement { s }
-  (*| ls = labeledStatement                    { ls }*)
-  | i = ifThenStatement                      { i }
-  (*| ie = ifThenElseStatement                 { ie }
-  | ws = whileStatement                      { ws }
-  | fs = forStatement                        { fs }*)
+  | s = statementWithoutTrailingSubstatement                          { s }
+  | id = IDENT COLON s = statement                                    { Label(id, s) }
+  (*| IF LPAR e = expression RPAR s = statement es = elseStatement?     { If(e, s, es) }*)
+  | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
+  | fs = forStatement                                                 { fs }
 
 statementWithoutTrailingSubstatement:
-  (*| b = block                                         { Statements(b) }
-  | SC                                                { EmptyStatement }*)
-  | es = expressionStatement                          { Expression(es) }
-  | ast = assertStatement                             { ast }
-  (*| ss = switchStatement                              { ss }
-  | ds = doStatement                                  { ds }
-  | BREAK id = IDENT? SC                              { Break(id) }
-  | CONTINUE id = IDENT? SC                           { Continue(id) }
-  | RETURN e = expression? SC                          { Return(e) }
-  | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
-  | THROW e = expression SC                           { Throw(e) }
-  | ts = tryStatement                                 { ts }*)
-
-expressionStatement:
-  | se = statementExpression SC    { se }
+  | b = block                                             { Statements(b) }
+  | SC                                                    { EmptyStatement }
+  | se = statementExpression SC                           { Expression(se) }
+  | ast = assertStatement                                 { ast }
+  (*| SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }*)
+  | DO s = statement WHILE LPAR e = expression RPAR SC    { DoWhile(s, e) }
+  | BREAK id = IDENT? SC                                  { Break(id) }
+  | CONTINUE id = IDENT? SC                               { Continue(id) }
+  | RETURN e = expression? SC                             { Return(e) }
+  | SYNCHRONIZED LPAR e = expression RPAR b = block       { Synchro(e, b) }
+  | THROW e = expression SC                               { Throw(e) }
+  | ts = tryStatement                                     { ts }
 
 statementExpression:
   | ass = assignment                       { ass }
-  (*| INCR u = unaryExpression               { Unopleft(Ulincr, u) }
+  | INCR u = unaryExpression               { Unopleft(Ulincr, u) }
   | DECR u = unaryExpression               { Unopleft(Uldecr, u) }
   | p = postfixExpression INCR             { Unopright(p, Urincr) }
   | p = postfixExpression DECR             { Unopright(p, Urdecr) }
   | mi = methodInvocation                  { mi }
-  | cie = classInstanceCreationExpression  { cie }*)
+  (*| cie = classInstanceCreationExpression  { cie }*)
 
 assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-(*switchStatement:
+switchStatement:
   | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
 
 switchBlock:
   | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
-  | l = nonempty_list(switchLabel) bs = list(blockStatement)           { SwitchGroup(l, b) }
+  | l = nonempty_list(switchLabel) bs = list(blockStatement)           { SwitchGroup(l, bs) }
 
 switchLabel:
   | CASE c = expression COLON                                  { Case(c) }
-  | CASE e = enumConstantName COLON                                    { Case(e) }
-  | DEFAULT COLON                                                      { Default }
+  | CASE e = enumConstantName COLON                            { Case(e) }
+  | DEFAULT COLON                                              { Default }
 
 enumConstantName:
-  | id = IDENT                                                         { Var id }
+  | id = IDENT                                                 { Var id }
 
 tryStatement:
-  | TRY b = block c = nonempty_list(catchClause)                       { Try(b, c) }
-  | TRY b = block c = nonempty_list(catchClause) FINALLY f = block     { Tryfin(b, Some(c), f) }
-  | TRY b = block FINALLY f = block                                    { Tryfin(b, None, f) }
-  (* Could be the following, but give the error: Error: do not know how to resolve a reduce/reduce conflict
-  | TRY b = block c = list(catchClause) FINALLY f = block                        { Tryfin(b, c, f) }*)
+  | TRY b = block c = nonempty_list(catchClause)                { Try(b, c) }
+  | TRY b = block c = list(catchClause) FINALLY f = block       { Tryfin(b, c, f) }
 
 (*TODO: use formalParameter from parseClass*)
 catchClause:
-  | CATCH LPAR fp = formalParam RPAR b = block                 { CatchClause(fp, b) }
+  | CATCH LPAR fp = formalParam RPAR b = block                  { CatchClause(fp, b) }
 
 formalParam:
-  | vdi = IDENT                                                        { Var vdi }
+  | vdi = IDENT                                                  { Var vdi }
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
-labeledStatement:
-  | id = IDENT COLON s = statement                                     { Label(id, s) }*)
-
-ifThenStatement:
-  | IF LPAR e = expression RPAR s = statement                          { If(e, s) }
-
-(*ifThenElseStatement:
-  | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement     { Ifelse(e, s1, s2) }
-  (* TODO: replace previous by
-  | IF LPAR e = expression RPAR s1 = statementNoShortIf ELSE s2 = statement    { Ifelse(e, s1, s2) }*)
-
-(*statementNoShortIf:
-  | StatementWithoutTrailingSubstatement
-  | LabeledStatementNoShortIf
-  | IfThenElseStatementNoShortIf
-  | WhileStatementNoShortIf
-  | ForStatementNoShortIf*)
-
-whileStatement:
-  | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
-
-doStatement:
-  | DO s = statement WHILE LPAR e = expression RPAR SC                { DoWhile(s, e) }
+elseStatement:
+  | ELSE s = statement                                                { s }
 
 forStatement:
-  | bf = basicForStatement       { bf }
-  | ef = enhancedForStatement    { ef }
-
-basicForStatement:
   | FOR LPAR fi = forInit? SC e = expression? SC es = separated_list(COMA, statementExpression) RPAR s = statement   { For(fi, e, es, s) }
+  | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
+  (*TODO: replace previous by
+  | FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
 
 forInit:
-  | es = separated_nonempty_list(COMA, statementExpression)   es }
+  | es = separated_nonempty_list(COMA, statementExpression)   { es }
   (*| lv = localvariabledecl                                    { lv }*)
-
-(* TODO: add type *)
-enhancedForStatement:
-  | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
-  (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)*)
 
 
 %inline binopmul:

@@ -39,7 +39,63 @@ public class test extends machin implements testable, truc  {
     // array access
     w = arr.ay["access"];
     x = abc.this[10];
+    
+    // if statement
+    //if(true) abc *= 6.2;
+    //if (false) i -= 1; else i += 1;
+    
+    // while statement
+    while(true) abc *= 6.2;
+    
+    // labeled statement
+    ident : while(false) i -= 1;
+    
+    // for statement
+    for (i = 0;; i++) j--;
 
+    for (idnt : "test") {
+        c += 54;
+    }
+    
+    return;
+    continue;
+    break;
+    throw abc *= 5.3;
+    
+    // try statement
+    try {
+        ++test;
+    } catch (e) {
+        ++bye;
+    } catch (e) {
+        ++bye;
+    } catch (e) {
+        ++bye;
+    }
+
+    try {
+        ++test;
+    } catch (e) {
+        ++bye;
+    } finally {
+        byebye++;
+    }
+
+    try {
+        ++test;
+    } finally {
+        byebye++;
+    }
+    
+    // synchronized statement 
+    synchronized(5) {
+      PA.count();
+    }
+    
+    // do statement
+    do {
+        abc *= 5.3; abc++;
+    } while (true);
   }
 
 	public void getSomething() throws something {
