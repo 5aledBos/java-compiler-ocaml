@@ -26,7 +26,7 @@ let string_of_modifier c = match c with
   | Volatile -> "volatile"
   | Transient -> "transient"
 
-let rec string_of_modifiers list = match list with
+let rec string_of_modifiers l = match l with
   | Some([]) -> ""
   | Some(x::xs) -> string_of_modifier(x) ^ " " ^ string_of_modifiers(Some(xs))
   | None -> "No modifier"

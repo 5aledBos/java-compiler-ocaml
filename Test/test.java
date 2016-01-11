@@ -21,6 +21,7 @@ public class test extends machin implements testable, truc  {
 
 	private test(int i) {
 	super(5, 6, 8);
+	
     // assignments
     abc *= 6.2;
     array[5] = 5;
@@ -50,7 +51,10 @@ public class test extends machin implements testable, truc  {
     while(true) abc *= 6.2;
     
     // labeled statement
-    ident : while(false) i -= 1;
+    ident : while(false) {
+//      final long test;
+//      double az = "erty";
+    }
     
     // for statement
     for (i = 0;; i++) j--;
@@ -101,6 +105,8 @@ public class test extends machin implements testable, truc  {
   }
 
 	public void getSomething(final int i) throws something {
+	
+	  
 	}
 
 }

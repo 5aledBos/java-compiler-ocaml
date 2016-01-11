@@ -64,6 +64,7 @@ type expression =
   | MethodS of typ list option * expression * expression list
   | MethodCS of expression * typ list option * expression * expression list
   | MethodT of expression * typ list * expression * expression list
+  | VarDecl of expression * expression option
 
 type statement =
   | Expression of expression
@@ -89,6 +90,7 @@ type statement =
   | DoWhile of statement * expression
   | For of expression list option * expression option * expression list * statement
   | EFor of expression * expression * statement
+  | LocalVarDecl of modifier list option * typ * expression list
   (*| EFor of modifier list option * type * expression * expression * statement *)
 
 
@@ -206,6 +208,8 @@ let rec string_of_expr expr =
   (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
   | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
   | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
+  | VarDecl(e1, None) -> "(" ^ (string_of_expr e1) ^ ")"
+  | VarDecl(e1, Some(e2)) -> "(" ^ (string_of_expr e1) ^ "=" ^ (string_of_expr e2) ^ ")"
 
 let rec string_of_statement stat =
   match stat with
@@ -236,3 +240,5 @@ let rec string_of_statement stat =
   | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list ", " string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_list ", " string_of_expr es) ^ ") {" ^ (string_of_statement s) ^ "}"
   | EFor(id, e, s) -> "for(" ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"
   (*| EFOR(vm, t, id, e, s) -> "for("(* Print variable modifiers and type *) ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"*)
+  | LocalVarDecl(ml, t, el) -> "(" ^ (string_of_opt (string_of_list ", " string_of_modifier) ml) ^ " " ^ (string_of_type t) ^ " " ^ (string_of_list ", " string_of_expr el) ^ ")"
+
