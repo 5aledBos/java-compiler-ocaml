@@ -15,6 +15,12 @@
 %start referenceType
 %type <AstUtil.typ> referenceType
 
+%start typeVariable
+%type <AstUtil.typ> typeVariable
+
+(*%start classType*)
+(*%type <AstUtil.> classType*)
+
 %%
 
 /*********/
@@ -53,21 +59,21 @@ referenceType:
 
 classOrInterfaceType:
   | ct = classType                { ct }
-  | it = interfaceType            { it }
+  | it = interfaceType            { it }*)
 
-classType:
-  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Class, tds, ta) }
+(*classType:*)
+(*  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Class, tds, ta) }*)
 
-interfaceType:
-  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Interface, tds, ta) }
+(*interfaceType:*)
+(*  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Interface, tds, ta) }*)
 
-typeDeclSpecifier:
-  | tn = typeName                                 { tn }
-  | cit = classOrInterfaceType POINT id = IDENT   { TypeDecl(cit, id) }
+(*typeDeclSpecifier:*)
+(*  | tn = typeName                                 { tn }*)
+(*  | cit = classOrInterfaceType POINT id = IDENT   { TypeDecl(cit, id) }*)
 
-typeName:
-  | id = IDENT                       { Var id }
-  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
+(*typeName:*)
+(*  | id = IDENT                       { Var id }*)
+(*  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
 
 typeVariable:
   | id = IDENT    { Type id }

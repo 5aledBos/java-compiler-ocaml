@@ -45,11 +45,9 @@ type methodClassType =
   methodbody: blockstmts
 }
 
-type classMemberType =
-  | MethodClass of methodClassType
-  | Attribut of attributAst
 
-type constructorBodyAst =
+
+and constructorBodyAst =
 {
   invocation : constructorInvocation option;
   liststatements : blockstmts;
@@ -63,7 +61,7 @@ and thisOrSuper =
   |This | Super
 
 
-type constructorAst =
+and constructorAst =
 {
   name : string;
   access : AstUtil.modifiers option;
@@ -72,33 +70,11 @@ type constructorAst =
 }
 
 
-type constructorType = ConstructorType of constructorAst
+and constructorType = ConstructorType of constructorAst
 
-type classContentAst =
-{
-  listClassMember : classMemberType list;
-  listConstructors : constructorType list;
-}
 
-type classBodyDeclaration =
-  | ClassMemberType of classMemberType
-  | ConstructorType of constructorAst
 
-type classBodyAst = classBodyDeclaration list option
 
-type classBodyType = 
-  | ClassBodyType of classBodyAst
-
-type enumBodyAst = 
-{
-  enumConstants : enumConstant list option;
-  enumDeclarations : classBodyDeclaration list option
-}
-and enumConstant =
-  {
-	name : string;
-    argumentlist : AstExpr.expression list option;
-  }
 
 type classAst =
   {
@@ -109,7 +85,40 @@ type classAst =
 	classbody : classBodyAst;
   }
 
-type enumAst =
+and classBodyAst = classBodyDeclaration list option
+and classBodyDeclaration =
+  | ClassMemberType of classMemberType
+  | ConstructorType of constructorAst
+
+and classMemberType =
+  | MethodClass of methodClassType
+  | Attribut of attributAst
+  | InnerClass of classType
+  | InnerInterface of classType
+
+and classBodyType = 
+  | ClassBodyType of classBodyAst
+
+and classContentAst =
+{
+  listClassMember : classMemberType list;
+  listConstructors : constructorType list;
+}
+
+and enumBodyAst = 
+{
+  enumConstants : enumConstant list option;
+  enumDeclarations : classBodyDeclaration list option
+}
+and enumConstant =
+  {
+	name : string;
+    argumentlist : AstExpr.expression list option;
+  }
+
+
+
+and enumAst =
   {
     enumname : string;
     access : AstUtil.modifiers option;
@@ -117,16 +126,22 @@ type enumAst =
 	enumbody : enumBodyAst;
   }
 
-type interfaceAst =
+and interfaceAst =
 { 
   interfacename : string;
   access : AstUtil.modifiers option;
+(*  interfaceBody : interfaceMemberDeclaration list option*)
 }
 
-type interfaceType = 
+and interfaceMemberDeclaration = 
+  | InterfaceInnerInterface of classType
+  | InterfaceInnerClass of classType
+(*  | AbstractDeclarationType of abstractDeclarationType*)
+
+and interfaceType = 
   | InterfaceType of interfaceAst
 
-type classType = 
+and classType = 
   | ClassType of classAst
   | InterfaceType of interfaceAst
   | EnumType of enumAst
@@ -217,6 +232,8 @@ let string_of_constructor c = match c with
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
   | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ string_of_attributs(str) 
+  | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
+  | InnerInterface(interface) -> "innerInterface: "
 
 let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)

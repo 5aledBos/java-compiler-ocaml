@@ -93,8 +93,23 @@ enumDeclaration:
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE  { InterfaceType{interfacename = id; access = modi} }
+  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) interfaceBody   { InterfaceType{interfacename = id; access = modi(*; interfaceBody=str*)} }
 
+interfaceBody:
+  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
+
+interfaceMemberDeclarations:
+  | decl=interfaceMemberDeclaration	{  }
+  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
+
+interfaceMemberDeclaration:
+(*  | constantDeclaration		{ }*)
+  | abstractMethodDeclaration	{ }
+  | decl=classDeclaration		{  }
+  | decl=interfaceDeclaration	{  }
+
+abstractMethodDeclaration:
+  | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
   | cons=enumConstants? COMA? decl=enumBodyDeclarations	{ { enumConstants = cons; enumDeclarations= decl } }
@@ -131,8 +146,8 @@ classBodyDeclaration:
 classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
   | decl = methodDeclaration		{ MethodClass(decl) }
-(*  | nestedClass			{}*)
-(*  | nestedInterface		{}*)
+  | decl = classDeclaration			{ InnerClass(decl)	}
+  | interface = interfaceDeclaration	{ InnerInterface(interface) }
 
 
 	(*declaration des attributs*)
@@ -197,19 +212,19 @@ methodHeader:
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
 
-(*throws:*)
-(*  | THROWS exceptionTypeList { }*)
+throws:
+  | THROWS exceptionTypeList { }
 
-(*exceptionTypeList:*)
-(*  | exceptionType			{ }*)
-(*  | exceptionTypeList COMA exceptionType	{ }*)
+exceptionTypeList:
+  | exceptionType			{ }
+  | exceptionTypeList COMA exceptionType	{ }
 
-(*exceptionType:*)
-(*  | classType		{ }*)
+exceptionType:
+  | classType		{ }
 (*  | typeVariable	{ }*)
 
-methodModifiers:
-  | modifier	{ }
+(*methodModifiers:*)
+(*  | modifier	{ }*)
 
 methodBody:
   | stmts = block { BlockStatements(stmts) }	
