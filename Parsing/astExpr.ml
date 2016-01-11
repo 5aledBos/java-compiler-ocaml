@@ -52,13 +52,11 @@ type expression =
   | Case of expression
   | Default
   | ArrayAccess of expression * expression
-  | ArrayCreation of typ * expression list * expression list option
+  | ArrayCreation of typ * expression option list
   | ArrayCreationInit of typ * expression list * expression
   | ArrayInit of expression list option * unit option
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ
-  | Dimexpr of expression
-  | Dim
   (*| Cast of typ * expression *)
   | Method of expression * expression list option
   | MethodP of expression * typ list option * expression * expression list option
@@ -197,9 +195,7 @@ let rec string_of_expr expr =
   | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
   | Default -> "default: "
   | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
-  | ArrayCreation(t, e1, e2) -> "(new " ^ (string_of_type t) ^ (string_of_list string_of_expr e1) ^ (string_of_opt (string_of_list string_of_expr) e2) ^ ")"
-  | Dimexpr(e) -> "[" ^ (string_of_expr e) ^ "]"
-  | Dim -> "[]"
+  | ArrayCreation(t, e) -> "(new " ^ (string_of_type t) ^ (string_of_list (string_of_opt string_of_expr) e) ^ ")"
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
   | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_opt (string_of_list string_of_expr) e2) ^ ")"

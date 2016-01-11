@@ -108,10 +108,8 @@ primaryNoNewArray:
   (*| t = typ POINT c = clas                   {}*)
   | VOID POINT CLASS                         { CVoid }
   | THIS                                     { This(None) }
-  (*| cn = className POINT THIS                { This(Some(cn)) } *)
+  (*| cn = className POINT THIS                { This(Some(cn)) }*)
   | LPAR e = expression RPAR                 { e }
-  | LPAR e = expression                      { raise (Err(Illegal_bracket ')')) }
-  (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
   (*| cie = classInstanceCreationExpression    { cie }*)
   | fa = fieldAccess                         { fa }
   (*| mi = methodInvocation                   { mi }*)
@@ -126,8 +124,9 @@ literal:
   | NULL                              { Null }
 
 assignmentExpression:
-  | c = conditionalExpression  { c }
+  (*| c = conditionalExpression  { c }*)
   | ass = assignment           { ass }
+  | p = primary                { p }
 
 (*classInstanceCreationExpression:
   | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
@@ -162,22 +161,10 @@ arrayAccess:
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
 arrayCreationExpression:
-  | NEW pt = primitiveType de = dimExprs d = dims?                 { ArrayCreation(pt, de, d) }
-  (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }*)
+  | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET,expression?,RBRACKET))                    { ArrayCreation(pt, de) }
+  (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }
   | NEW pt = primitiveType d = dims ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
-  (*| NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
-
-dimExprs:
-  | de = dimExpr                { [de] }
-  | de = dimExpr ds = dimExprs  { de::ds }
-
-dimExpr:
-  | LBRACKET e = expression RBRACKET    { Dimexpr(e) }
-
-(*TODO: solve here*)
-dims:
-  | LBRACKET RBRACKET            { [Dim] }
-  | LBRACKET RBRACKET d = dims   { Dim::d }
+  | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 arrayInitializer:
   | LBRACE vi = variableInitializers? c = COMA? RBRACE    { ArrayInit(vi, c) }
@@ -191,7 +178,7 @@ variableInitializer:
   | e = expression         { e }
   | ai = arrayInitializer  { ai }
 
-conditionalExpression:
+(*conditionalExpression:
   | co = conditionalOrExpression         { co }
   | co = conditionalOrExpression QUESTMARK e = expression COLON c = conditionalExpression  { Ternary(co, e, c) }
 
@@ -252,7 +239,7 @@ postfixExpression:
   | p = primary                  { p }
   | en = expressionName          { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
-  | p = postfixExpression DECR   { Unopright(p, Urdecr) }
+  | p = postfixExpression DECR   { Unopright(p, Urdecr) }*)
 
 (*castExpression:
   | LPAR pt = primitiveType RPAR ue = unaryExpression              { Cast(pt, ue) }
@@ -265,8 +252,8 @@ assignment:
 
 leftHandSide:
   | en = expressionName          { en }
-  | fa = fieldAccess             { fa }
-  | aa = arrayAccess             { aa }
+  (*| fa = fieldAccess             { fa }
+  | aa = arrayAccess             { aa }*)
 
 expression:
   | ae = assignmentExpression    { ae }
@@ -281,8 +268,6 @@ constantExpression:
 block:
   | LBRACE RBRACE                         { [EmptyBlock] }
   | LBRACE bs = blockStatements RBRACE    { bs }
-  | LBRACE bs = blockStatements           { raise (Err(Illegal_bracket '}')) }
-  (* TODO: | bs = blockStatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
 
 blockStatements:
   | bs = blockStatement                         { [bs] }
@@ -324,17 +309,17 @@ variableInitializer:
 
 statement:
   | s = statementWithoutTrailingSubstatement { s }
-  | ls = labeledStatement                    { ls }
+  (*| ls = labeledStatement                    { ls }*)
   | i = ifThenStatement                      { i }
-  | ie = ifThenElseStatement                 { ie }
+  (*| ie = ifThenElseStatement                 { ie }
   | ws = whileStatement                      { ws }
-  | fs = forStatement                        { fs }
+  | fs = forStatement                        { fs }*)
 
 statementWithoutTrailingSubstatement:
-  | b = block                                         { Statements(b) }
-  | SC                                                { EmptyStatement }
+  (*| b = block                                         { Statements(b) }
+  | SC                                                { EmptyStatement }*)
   | es = expressionStatement                          { Expression(es) }
-  | ast = assertStatement                             { ast }
+  (*| ast = assertStatement                             { ast }
   | ss = switchStatement                              { ss }
   | ds = doStatement                                  { ds }
   | BREAK id = IDENT? SC                              { Break(id) }
@@ -346,21 +331,21 @@ statementWithoutTrailingSubstatement:
 
 expressionStatements:
   | es = expressionStatement                         { [es] }
-  | es = expressionStatement rest = expressionStatements   { es::rest }
+  | es = expressionStatement rest = expressionStatements   { es::rest }*)
 
 expressionStatement:
   | se = statementExpression SC    { se }
 
 statementExpression:
   | ass = assignment                       { ass }
-  | INCR u = unaryExpression               { Unopleft(Ulincr, u) }
+  (*| INCR u = unaryExpression               { Unopleft(Ulincr, u) }
   | DECR u = unaryExpression               { Unopleft(Uldecr, u) }
   | p = postfixExpression INCR             { Unopright(p, Urincr) }
   | p = postfixExpression DECR             { Unopright(p, Urdecr) }
   | mi = methodInvocation                  { mi }
-  (*| cie = classInstanceCreationExpression  { cie }*)
+  | cie = classInstanceCreationExpression  { cie }*)
 
-assertStatement:
+(*assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
@@ -409,12 +394,12 @@ formalParam:
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
 labeledStatement:
-  | id = IDENT COLON s = statement                                     { Label(id, s) }
+  | id = IDENT COLON s = statement                                     { Label(id, s) }*)
 
 ifThenStatement:
   | IF LPAR e = expression RPAR s = statement                          { If(e, s) }
 
-ifThenElseStatement:
+(*ifThenElseStatement:
   | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement     { Ifelse(e, s1, s2) }
   (* TODO: replace previous by
   | IF LPAR e = expression RPAR s1 = statementNoShortIf ELSE s2 = statement    { Ifelse(e, s1, s2) }*)
@@ -451,7 +436,7 @@ statementExpressionList:
 (* TODO: add type *)
 enhancedForStatement:
   | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
-  (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
+  (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)*)
 
 
 %inline binopmul:
