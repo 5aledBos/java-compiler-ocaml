@@ -105,10 +105,13 @@ interfaceMemberDeclarations:
   | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
 
 interfaceMemberDeclaration:
-(*  | constantDeclaration		{ }*)
+  | constantDeclaration		{ }
   | abstractMethodDeclaration	{ }
   | decl=classDeclaration		{  }
   | decl=interfaceDeclaration	{  }
+
+constantDeclaration:
+  | classModifiers? typ variableDeclarators SC	{ }
 
 abstractMethodDeclaration:
   | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
@@ -172,7 +175,7 @@ variableDeclarators:
 
 variableDeclarator:
   | str=IDENT 	{ str }
-  | str=IDENT EQUAL variableInitializer	{ str }
+  | str=IDENT ASS variableInitializer	{ str }
 
 
 (*variableInitializer:
@@ -186,8 +189,6 @@ variableInitializers:
   | variableInitializer			{ }
   | variableInitializers COMA variableInitializer		{ }*)
 
-
-(*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }

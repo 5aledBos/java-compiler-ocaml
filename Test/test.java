@@ -9,7 +9,8 @@ import static java.io.*;
 public class test extends machin implements testable, truc  {
 
 
-	transient public int i, j;
+	transient public int i, j = 5;
+	private String nom = "bonjour";
 
 	public final String test;
 
@@ -53,6 +54,10 @@ public class secondClass {
 		public test(int i, int j) {
 		
 		}
+}
+public interface testable {
+	int test();
+	public int variable = 54;
 }
 
 
