@@ -15,9 +15,6 @@
 %start referenceType
 %type <AstUtil.typ> referenceType
 
-%start typeVariable
-%type <AstUtil.typ> typeVariable
-
 (*%start classType*)
 (*%type <AstUtil.> classType*)
 
@@ -54,7 +51,7 @@ floatingPointType:
 
 referenceType:
   (*| cit = classOrInterfaceType    { cit }*)
-  | tv = typeVariable             { tv }
+  | id = IDENT             { Type id }
   (*| at = arrayType                { at }
 
 classOrInterfaceType:
@@ -74,9 +71,6 @@ classOrInterfaceType:
 (*typeName:*)
 (*  | id = IDENT                       { Var id }*)
 (*  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
-
-typeVariable:
-  | id = IDENT    { Type id }
 
 (*arrayType:
   | typ LBRACKET RBRACKET   { ArrayType(typ) }

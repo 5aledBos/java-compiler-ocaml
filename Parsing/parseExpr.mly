@@ -74,7 +74,7 @@ className:
 (* EXPRESSIONS *)
 
 expression:
-  (*| c = conditionalExpression  { c }*)
+  | c = conditionalExpression  { c }
   | ass = assignment           { ass }
   | p = primary                { p }
 
@@ -198,19 +198,17 @@ unaryExpressionNotPlusMinus:
   | pe = postfixExpression       { pe }
   | BITWISE u = unaryExpression  { Unopleft(Ubitwise, u) }
   | NOT u = unaryExpression      { Unopleft(Unot, u) }
-  (*| ca = castExpression          { ca }*)
+  | ca = castExpression          { ca }
 
 postfixExpression:
-  | p = primary                  { p }
-  | en = pathName          { en }
+  (*| p = primary                  { p }*)
+  | en = pathName                { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
   | p = postfixExpression DECR   { Unopright(p, Urdecr) }
 
-(*castExpression:
-  | LPAR pt = primitiveType RPAR ue = unaryExpression              { Cast(pt, ue) }
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }
-  | LPAR pt = primitiveType d = dims? RPAR ue = unaryExpression    { Cast(pt, ue) }
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }*)
+castExpression:
+  | LPAR pt = primitiveType l = list(pair(LBRACKET, RBRACKET)) RPAR ue = unaryExpression    { CastP(pt, List.length(l), ue) }
+  (*| LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus                            { Cast(rt, u) }*)
 
 assignment:
   | l = leftHandSide ass = assign e = expression  { Assign(l, ass, e) }

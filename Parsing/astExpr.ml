@@ -57,7 +57,8 @@ type expression =
   | ArrayInit of expression list
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ
-  (*| Cast of typ * expression *)
+  | Cast of typ * expression
+  | CastP of typ * int * expression
   | Method of expression * expression list
   | MethodP of expression * typ list option * expression * expression list
   | MethodS of typ list option * expression * expression list
@@ -199,6 +200,8 @@ let rec string_of_expr expr =
   | ArrayInit(l) -> (string_of_list string_of_expr l)
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
+  | Cast(t, e) -> "(" ^ (string_of_type t) ^ ") " ^ (string_of_expr e)
+  | CastP(t, d, e) -> "(" ^ (string_of_type t) ^ " " ^ (string_of_int d) ^ ") " ^ (string_of_expr e)
   | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")"
   (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
   | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list string_of_expr l) ^ ")"

@@ -23,19 +23,20 @@ public class test extends machin implements testable, truc  {
     // assignments
     abc *= 6.2;
     array[5] = 5;
-    
+
     t = new long[3][5][];
 
     // assert
     assert a = 1;
     assert a = 1 : b = 3;
-    
+
     // field access
     u = "field".access;
-    
+
+    c = (long[][])-a;
     // method invocation
     v = method.invoc("ation", 10);
-    
+
     // array access
     w = arr.ay["access"];
     x = abc.this[10];
