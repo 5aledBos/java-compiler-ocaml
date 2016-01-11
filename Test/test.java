@@ -100,7 +100,7 @@ public class test extends machin implements testable, truc  {
     } while (true);
   }
 
-	public void getSomething() throws something {
+	public void getSomething(final int i) throws something {
 	}
 
 }
@@ -108,7 +108,7 @@ public class test extends machin implements testable, truc  {
 
 
 public class secondClass {
-		public test(int i, int j) {
+		public test(final int i, int j) {
 		
 		}
 }

@@ -266,8 +266,8 @@ formalParameter:
 
 
 variableModifiers:
-  | variableModifier	{ }
-  | variableModifiers variableModifier		{}
+  | modifier = variableModifier	{ [modifier] }
+  | liste = variableModifiers modifier = variableModifier		{ liste @ [modifier] }
 
 variableModifier:
   | f = FINAL 	{ AstUtil.Final }
