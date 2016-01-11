@@ -44,7 +44,7 @@ compilationUnit:
 
 
 packageDeclaration:
-  | PACKAGE str=pathName SC { Package(str) }
+  | (*annotations?*) PACKAGE str=pathName SC { Package(str) }
   (*| error {raise Illegal_package}*)
 
 importDeclarations:
@@ -92,6 +92,11 @@ typeDeclaration:
   | decl = classDeclaration		{ decl }
   | decl = interfaceDeclaration	{ decl }
 
+
+(*typeName:*)
+(*  | str=IDENT	{ str }*)
+(*  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }*)
+
 %public
 classDeclaration:
   | decl = normalClassDeclaration	{ decl }
@@ -105,7 +110,7 @@ enumDeclaration:
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) interfaceBody   { InterfaceType{interfacename = id; access = modi(*; interfaceBody=str*)} }
+  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) body=interfaceBody   { InterfaceType{interfacename = id; access = modi; interfaceBody=body } }
 
 interfaceBody:
   | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
@@ -118,17 +123,19 @@ interfaceMemberDeclarations:
   | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
-  | constantDeclaration		{ }
-  | abstractMethodDeclaration	{ }
-  | decl=classDeclaration		{  }
-  | decl=interfaceDeclaration	{  }
+  | constantDeclaration		{ ConstantDeclarationType }
+  | decl=abstractMethodDeclaration	{ AbstractMethodDeclarationType(decl) }
+  | decl=classDeclaration		{ InterfaceInnerClass(decl)  }
+  | decl=interfaceDeclaration	{ InterfaceInnerInterface(decl) }
 
 constantDeclaration:
   | classModifiers? typ variableDeclarators SC	{ }
 
 abstractMethodDeclaration:
-  | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
-  | modi=classModifiers? (*typeParameters?*) typ methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) VOID decl = methodDeclarator (*throws*)	SC	{ match decl with 
+		| (methodname, listeparameter) -> { name=methodname; access=modi;parameters=listeparameter; resultType= Void }  }
+  | modi=classModifiers? (*typeParameters?*) letype=typ decl=methodDeclarator (*throws*)	SC	{ match decl with 
+		| (methodname, listeparameter) -> { name=methodname; access=modi;parameters=listeparameter; resultType=AttributType(letype) } }
 
 enumBody:
   | cons=enumConstants?  decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
@@ -373,7 +380,7 @@ modifierVolatile:
 
 
 super:
-  | EXTENDS str=classType { "test" }
+  | EXTENDS str=classType { str }
 
 interfaces:
   | IMPLEMENTS liste=interfaceTypeList  { liste }
