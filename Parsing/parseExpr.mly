@@ -34,13 +34,13 @@
 /* Priorities and associativity */
 /********************************/
 
-%left OR
+(*%left OR
 %left AND
-(*%left EQUAL NEQUAL
-%left GT GE LT LE*)
+%left EQUAL NEQUAL
+%left GT GE LT LE
 %left PLUS MINUS
 %left TIMES DIV MOD
-(*%right UMINUS UPLUS NOT INCR DECR BITWISE*)
+%right UMINUS UPLUS NOT INCR DECR BITWISE*)
 
 /******************************/
 /* Entry points of the parser */
@@ -63,12 +63,6 @@
 
 statements:
   | s = nonempty_list(statement)    { s }
-
-
-(* NAMES *)
-
-className:
-  | id = IDENT                                { Var id }
 
 
 (* EXPRESSIONS *)
@@ -110,13 +104,13 @@ literal:
 fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
   | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
-  (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
+  (*| id = IDENT POINT SUPER POINT id = IDENT       { Fieldaccessclass(id, id) }*)
 
 methodInvocation:
   | mn = pathName LPAR al = argumentList RPAR        { Method(mn, al) }
   (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                 { MethodP(p, nwa, Var id, al) }
   | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                       { MethodS(nwa, Var id, al) }
-  | cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
+  | id = IDENT POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
   | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList RPAR               { MethodT(tn, nwa, Var id, al) }*)
 
 nonWildTypeArguments:
@@ -226,36 +220,24 @@ block:
   | LBRACE bs = list(blockStatement) RBRACE    { bs }
 
 blockStatement:
-  (*| lv = localvariabledeclstat
-  | cd = classdeclar*)
-  | s = statement       { s }
+  (*| vm = variableModifiers? t = typ vd = variableDeclarators SC     { LocalVarDecl(vm, t, vd) }*)
+  (*| cd = classDeclaration                                           { cd }*)
+  | s = statement                                                   { s }
 
-(*localVariableDeclarationStatement:
-  | lv = localVariableDeclaration SC     { lv }
-
-localVariableDeclaration:
-  | vm = variableModifiers t = typ vd = variableDeclarators
-
-variableModifiers:
-  | vm = nonempty_list(variableModifier)          { vm }
-
-variableModifier:
-  | (* TODO: Use the class parser? *)
-
+%public
 variableDeclarators:
   | vd = separated_nonempty_list(COMA, variableDeclarator)      { vd }
 
 variableDeclarator:
-  | vdi = variableDeclaratorId
-  | vdi = variableDeclaratorId ASS vi = variableInitializer
+  | vdi = variableDeclaratorId vc = variableDeclaratorCompl?    { VarDecl(vdi, vc) }
+  
+variableDeclaratorCompl:
+  | ASS vi = variableInitializer     { vi }
 
+%public
 variableDeclaratorId:
-  | id = IDENT
-  | vdi = variableDeclaratorId LBRACKET RBRACKET
-
-variableInitializer:
-  | e = expression
-  | ai = arrayInitializer*)
+  | id = IDENT                                     { Var id }
+  (*| vdi = variableDeclaratorId LBRACKET RBRACKET   {}*)
 
 statement:
   | s = statementWithoutTrailingSubstatement                          { s }
@@ -291,10 +273,7 @@ assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-switchStatement:
-  | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
-
-switchBlock:
+(*switchBlock:
   | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
@@ -306,7 +285,7 @@ switchLabel:
   | DEFAULT COLON                                              { Default }
 
 enumConstantName:
-  | id = IDENT                                                 { Var id }
+  | id = IDENT                                                 { Var id }*)
 
 tryStatement:
   | TRY b = block c = nonempty_list(catchClause)                { Try(b, c) }
@@ -320,8 +299,8 @@ formalParam:
   | vdi = IDENT                                                  { Var vdi }
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
-elseStatement:
-  | ELSE s = statement                                                { s }
+(*elseStatement:
+  | ELSE s = statement                                                { s }*)
 
 forStatement:
   | FOR LPAR fi = forInit? SC e = expression? SC es = separated_list(COMA, statementExpression) RPAR s = statement   { For(fi, e, es, s) }

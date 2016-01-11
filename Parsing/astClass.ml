@@ -17,13 +17,13 @@ type resultTypeAst =
 type parameter = 
 {
   parametertype : AstUtil.typ;
-  name : string
+  name : AstExpr.expression
 }
 
 
 type attributAst = {
   typeof : AstUtil.typ;
-  names : string list;
+  names : AstExpr.expression list;
   modifiers : AstUtil.modifiers option
 }
 
@@ -181,7 +181,7 @@ let rec printListImport liste = match liste with
 
 
 let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> AstUtil.string_of_type(typeof) ^ " " ^ str
+  | { parametertype=typeof; name=str } -> AstUtil.string_of_type(typeof) ^ " " ^ (AstExpr.string_of_expr str)
 
 let rec string_of_listparameters params = match params with
   | Some([]) -> ""
@@ -230,7 +230,7 @@ let string_of_constructor c = match c with
 
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
-  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ string_of_attributs(str) 
+  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ (AstExpr.string_of_list AstExpr.string_of_expr str)
   | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
   | InnerInterface(interface) -> "innerInterface: "
 

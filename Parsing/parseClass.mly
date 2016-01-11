@@ -86,7 +86,7 @@ typeName:
   | str=IDENT	{ str }
   | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }
 
-
+%public
 classDeclaration:
   | decl = normalClassDeclaration	{ decl }
   | enum = enumDeclaration			{ enum }
@@ -177,28 +177,6 @@ classMemberDeclaration:
 fieldDeclaration:
   | modi=classModifiers? str=typ n=variableDeclarators SC { { names=n; typeof=str; modifiers=modi } }
 
-variableDeclarators:
-  | str=variableDeclarator					{ [str] }
-  | listdecl = variableDeclarators COMA str=variableDeclarator 	{ listdecl @ [str] }
-
-variableDeclarator:
-  | str=IDENT 	{ str }
-
-  | str=IDENT ASS variableInitializer	{ str }
-  | error {raise Illegal_variableDeclarator }
-
-
-(*variableInitializer:
-  | e=expression	{ e }
-(*  | arrayInitializer { }*)
-
-arrayInitializer:
-  | LBRACE variableInitializers? COMA? RBRACE		{ }
-
-variableInitializers:
-  | variableInitializer			{ }
-  | variableInitializers COMA variableInitializer		{ }*)
-
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }
@@ -274,17 +252,13 @@ lastFormalParameter:
 formalParameter:
   | variableModifiers? var=variableType id=variableDeclaratorId		{ { name = id; parametertype=var} }
 
-
+%public
 variableModifiers:
   | modifier = variableModifier	{ [modifier] }
   | liste = variableModifiers modifier = variableModifier		{ liste @ [modifier] }
 
 variableModifier:
   | f = FINAL 	{ AstUtil.Final }
-
-variableDeclaratorId:
-  | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
-  | str=IDENT		{ str }
 
 variableType:
   | str=typ { str }
