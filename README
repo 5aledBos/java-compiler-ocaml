@@ -27,6 +27,12 @@ It is also possible to build and then execute the compiler on a given file in on
 ocamlbuild Main.byte -- <filename>
 ```
 
+To print the entire abstract tree of the Java file, simple add the -v option:
+
+```
+./Main.byte -v <filename>
+```
+
 
 Folders and files
 -----------------
@@ -36,7 +42,7 @@ Folders and files
 The `Main` folder contains 2 files:
 
  - the main file of the project, `Main.ml`. It opens the given file, creates a lexing buffer, initializes the location and call the compile function.
- - and `Compile.ml` which contains the function that calls the parser of this project. The parser is described and documented in the `Documentation/Parser.md` file.
+ - and `Compile.ml` which contains the function that calls the parser of this project.
 
 ###Parsing
 
@@ -47,16 +53,16 @@ The **lexer** is implemented in one unique file, `lexer.mll`. It contains:
  - the regular expressions needed to define the lexemes of the parsed Java file such as integer, floating point, identifier, and so on
  - and the nexttoken rule, allowing to lexically analyse the given file.
 
-The **parser** has been split into 2 files:
+The **parser** has been split into 4 files:
 
  - the expression parser which parses all the statements, blocks and expressions of the Java file, that is everything that can be inside a method
- - and the class parser parsing the class elements, that is the packages, imports, attributes, inheritence, and so on.
+ - the class parser parsing the class elements, that is the packages, imports, attributes, inheritence, and so on
+ - the name parser that parses all the possible names for expressions, methods, packages and so on
+ - and the type parser, which parses the types.
 
-Those 2 files are joined thanks to the *mlypack* tool in a `Parser.mlypack` file. That way, we can call one unique parser from the `Compile.ml` module.
+Those 4 files are joined thanks to the *mlypack* tool in a `Parser.mlypack` file. That way, we can call one unique parser from the `Compile.ml` module.
 
-As well as the parser, the **AST** is defined in 2 files: one for the expressions and statements and another one for the class elements. This AST is described in the `Documentation/Ast.md` file.
-
-For more documentation about those files, use the `Documentation` folder.
+As well as the parser, the **AST** is defined in 2 files: one for the expressions and statements and another one for the class elements.
 
 ###Test
 
@@ -68,7 +74,7 @@ The `Ast_test` folder contains a set of Java files allowing to test our compiler
 For instance, to parse a simple Java class containing methods, run from the root folder:
 
 ```
-./Main.byte ./Test/Ast_test/class1.java
+./Main.byte ./Test/Ast_test/test.java
 ```
 
 To parse a file containing an error and see how it is returned, run:
@@ -79,7 +85,7 @@ To parse a file containing an error and see how it is returned, run:
 
 ####Unit_test
 
-To unit test, we use the **Alcotest** library. For now, every file from the `Parsing` folder is unit test in a file with the same name in the `Test/Unit_test` folder.
+To unit test, we use the **Alcotest** library. For now, a file from the `Parsing` folder is unit test in a file with the same name in the `Test/Unit_test` folder.
 
 ###Utils
 
@@ -91,10 +97,6 @@ The `Utils` folder contains a set of files allowing to locate a lexeme:
 ###Documentation
 
 Some documentation files are written in the `Documentation` folder to describe and explain how do the lexer, the parser and the abstract syntax tree have been implemented.
-
-###Compiling
-
-TODO
 
 ###Typing
 
