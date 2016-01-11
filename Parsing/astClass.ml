@@ -94,6 +94,7 @@ and classMemberType =
   | MethodClass of methodClassType
   | Attribut of attributAst
   | InnerClass of classType
+  | InnerInterface of classType
 
 and classBodyType = 
   | ClassBodyType of classBodyAst
@@ -226,6 +227,7 @@ let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
   | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ string_of_attributs(str) 
   | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
+  | InnerInterface(interface) -> "innerInterface: "
 
 let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)

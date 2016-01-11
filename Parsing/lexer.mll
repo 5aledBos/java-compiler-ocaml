@@ -119,8 +119,8 @@ rule nexttoken = parse
   | "break"                  { BREAK }
   | "continue"               { CONTINUE }
   | "return"                 { RETURN }
-  | "throw"                  { THROW }
   | "throws"				{ THROWS }
+  | "throw"                  { THROW }
   | "synchronized"           { SYNCHRONIZED }
   | "try"                    { TRY }
   | "catch"                  { CATCH }

@@ -132,7 +132,7 @@ classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
   | decl = methodDeclaration		{ MethodClass(decl) }
   | decl = classDeclaration			{ InnerClass(decl)	}
-(*  | interfaceDeclaration	{}*)
+  | interface = interfaceDeclaration	{ InnerInterface(interface) }
 
 
 	(*declaration des attributs*)
@@ -197,19 +197,19 @@ methodHeader:
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
 
-(*throws:*)
-(*  | THROWS exceptionTypeList { }*)
+throws:
+  | THROWS exceptionTypeList { }
 
-(*exceptionTypeList:*)
-(*  | exceptionType			{ }*)
-(*  | exceptionTypeList COMA exceptionType	{ }*)
+exceptionTypeList:
+  | exceptionType			{ }
+  | exceptionTypeList COMA exceptionType	{ }
 
-(*exceptionType:*)
-(*  | classType		{ }*)
+exceptionType:
+  | classType		{ }
 (*  | typeVariable	{ }*)
 
-methodModifiers:
-  | modifier	{ }
+(*methodModifiers:*)
+(*  | modifier	{ }*)
 
 methodBody:
   | stmts = block { BlockStatements(stmts) }	

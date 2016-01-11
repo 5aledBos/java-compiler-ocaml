@@ -102,7 +102,7 @@ public class test extends machin implements testable, truc  {
 
 	
 
-	protected void getName(String s, int i) {
+	protected void getName (String s, int i) {
 
 	  // field access examples
 	  test = "t".est;
@@ -148,12 +148,15 @@ public class test extends machin implements testable, truc  {
 	private class innerclass {
 	}
 
+	interface clonable {
+	}
+
 }
 
 
 public class secondClass {
-	public test(int i, int j) {
-	}
+		public test(int i, int j) {
+		}
 }
 
 
