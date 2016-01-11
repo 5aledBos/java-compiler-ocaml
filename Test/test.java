@@ -1,5 +1,5 @@
 package com.tus.test;
-package uhi;
+
 
 import static test.te;
 import java.lang.*;
@@ -8,11 +8,18 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
-	public int i,j;
+
+	transient public int i, j;
+
 	public final String test;
 
-	private test() {
+	static {
+		abc *= 6.2;
+    	array[5] = 5;
+	}
 
+	private test(int i) {
+	super(5, 6, 8);
     // assignments
     abc *= 6.2;
     array[5] = 5;
@@ -50,6 +57,6 @@ public enum testable {
 
 
 	BLACK, RED, LIGHT;
-	public void test() {
+	public int test(int i) {
 	}
 }

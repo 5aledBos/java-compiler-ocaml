@@ -111,7 +111,8 @@ interfaceMemberDeclaration:
   | decl=interfaceDeclaration	{  }
 
 abstractMethodDeclaration:
-  | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) typ methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
   | cons=enumConstants?  decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
@@ -139,11 +140,17 @@ classBodyDeclarations:
 
 classBodyDeclaration:
   | decl = classMemberDeclaration	{ ClassMemberType(decl) } (*TODO* faire types pour celui là *)
-(*  | instanceInitializer		{}*)
-(*  | staticInitializer		{}*)
+  | decl = instanceInitializer		{ InstanceInitializerType(decl) }
+  | decl = staticInitializer	{ StaticInitializerType(decl) }
   | constructor = constructorDeclaration	{ constructor }
 
 (*classMemberDeclaration*)
+
+instanceInitializer:
+  | stmts=block		{ BlockStatements(stmts) }
+
+staticInitializer:
+  | STATIC stmts=block		{ BlockStatements(stmts) }
 
 classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
@@ -210,7 +217,11 @@ methodDeclaration:
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
-  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }
+  | modi=classModifiers? r=VOID temp=methodDeclarator (*throws?*)	{ modi, temp, Void }
+  | modi=classModifiers? r=typ temp=methodDeclarator (*throws?*)	{ modi, temp, AttributType(r) }
+
+(*methodHeader:*)
+(*  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }*)
 
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
@@ -237,10 +248,6 @@ methodBody:
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
 
-result:
-  | VOID 	{ Void }
-  | str=typ	{ AttributType(str) }
-  | error { raise Illegal_result }
 
 (*instanceInitializer*)
 (*instanceInitializer:*)
@@ -298,22 +305,6 @@ argumentList:
 
 
 
-declaration:
-  | statements {  }
-(*  | d=declaration str=attributDeclaration { }*)
-(*  | d=declaration str=methodeDeclaration {  }*)
-(*  | str=methodeDeclaration {  }*)
-(*  | str=attributDeclaration {}*)
-
-
-(*boucle:*)
-(*  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}*)
-(*   *)
-(* *)
-
-(*condition:*)
-(*  | str=IDENT { str } *)
-(*  | NEQUAL  str=IDENT { str } *)
 
 (* Caracteres speciaux *)
 
@@ -340,7 +331,7 @@ classModifiers:
   | liste=classModifiers m=classModifier	{ liste @ [m] }
 
 classModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp {m }
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile {m } 
 
 accessModifier:
   | PUBLIC { Public }
