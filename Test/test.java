@@ -10,8 +10,8 @@ public class test extends machin implements testable, truc  {
 	public int i, j;
 	public final String test;
 
-	private test() {
-
+	private test(int i) {
+	super(5, 6, 8);
     // assignments
     abc *= 6.2;
     array[5] = 5;
@@ -44,6 +44,6 @@ public class secondClass {
 
 public enum testable {
 	BLACK, RED, LIGHT;
-	public void test() {
+	public int test(int i) {
 	}
 }

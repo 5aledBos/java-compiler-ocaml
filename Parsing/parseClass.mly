@@ -207,7 +207,11 @@ methodDeclaration:
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
-  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }
+  | modi=classModifiers? r=VOID temp=methodDeclarator (*throws?*)	{ modi, temp, Void }
+  | modi=classModifiers? r=typ temp=methodDeclarator (*throws?*)	{ modi, temp, AttributType(r) }
+
+(*methodHeader:*)
+(*  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }*)
 
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
@@ -233,9 +237,9 @@ methodBody:
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
 
-result:
-  | VOID 	{ Void }
-  | str=typ	{ AttributType(str) }
+(*result:*)
+(*  | VOID 	{ Void }*)
+(*  | str=typ	{ AttributType(str) }*)
 
 (*instanceInitializer*)
 (*instanceInitializer:*)
@@ -292,22 +296,6 @@ argumentList:
 
 
 
-declaration:
-  | statements {  }
-(*  | d=declaration str=attributDeclaration { }*)
-(*  | d=declaration str=methodeDeclaration {  }*)
-(*  | str=methodeDeclaration {  }*)
-(*  | str=attributDeclaration {}*)
-
-
-(*boucle:*)
-(*  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}*)
-(*   *)
-(* *)
-
-(*condition:*)
-(*  | str=IDENT { str } *)
-(*  | NEQUAL  str=IDENT { str } *)
 
 (* Caracteres speciaux *)
 
