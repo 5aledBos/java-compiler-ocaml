@@ -1,7 +1,7 @@
 %{
   open AstClass
   open AstUtil
-%}	
+%}
 
 
 
@@ -39,11 +39,11 @@
 
 %%
 
-compilationUnit: 
+compilationUnit:
   | packname=packageDeclaration? imp=importDeclarations? liste=typeDeclarations? EOF { FileType({packagename=packname; listImport=imp; listClass=liste; })}
 
 packageDeclaration:
-  | PACKAGE str=packageName SC { Package(str) }
+  | PACKAGE str=pathName SC { Package(str) }
 
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
@@ -74,7 +74,7 @@ typeDeclarations:
 typeDeclaration:
   | decl = classDeclaration		{ decl }
   | decl = interfaceDeclaration	{ decl }
-  
+
 
 typeName:
   | str=IDENT	{ str }
@@ -140,7 +140,7 @@ classBodyDeclaration:
 (*  | instanceInitializer		{}*)
 (*  | staticInitializer		{}*)
   | constructor = constructorDeclaration	{ constructor }
-	
+
 (*classMemberDeclaration*)
 
 classMemberDeclaration:
@@ -169,7 +169,7 @@ variableDeclarator:
 (*variableInitializer:
   | e=expression	{ e }
 (*  | arrayInitializer { }*)
-  
+
 arrayInitializer:
   | LBRACE variableInitializers? COMA? RBRACE		{ }
 
@@ -182,7 +182,7 @@ variableInitializers:
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }
- 
+
 constructorDeclarator:
   | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
 
@@ -194,7 +194,7 @@ constructorBody:
 
 
 
-explicitConstructorInvocation: 
+explicitConstructorInvocation:
   | THIS LPAR liste=argumentList? RPAR SC	{ { invocator=This; argumentlist=liste } }
   | SUPER LPAR liste=argumentList? RPAR SC		{ {invocator=Super; argumentlist=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
@@ -204,7 +204,7 @@ explicitConstructorInvocation:
 (* déclaration de méthodes*)
 methodDeclaration:
   | decl=methodHeader body=methodBody { match decl with
-													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} } 
+													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
   | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }
@@ -227,7 +227,7 @@ exceptionType:
 (*  | modifier	{ }*)
 
 methodBody:
-  | stmts = block { BlockStatements(stmts) }	
+  | stmts = block { BlockStatements(stmts) }
 (*  | SC {  }*)
 
 blockstmts:
@@ -396,9 +396,8 @@ classType:
   | str=IDENT	{ str }
 
 primitive:
-  | PINT { AstUtil.Int } 
+  | PINT { AstUtil.Int }
 
 
 
 (*attribut*)
-

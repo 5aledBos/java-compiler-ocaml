@@ -68,30 +68,6 @@ statements:
 
 (* NAMES *)
 
-(*packageName:
-  | id = IDENT                                { Var id }
-  | pn = packageName POINT id = IDENT         { Name(pn, id) }
-
-typeName:
-  | id = IDENT                                { Var id }
-  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }*)
-
-expressionName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
-methodName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
-packageOrTypeName:
-  | id = IDENT                                { Var id }
-  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }
-
-ambiguousName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
 (*TODO: check in the Java spec*)
 className:
   | id = IDENT                                { Var id }
@@ -108,7 +84,7 @@ primaryNoNewArray:
   (*| t = typ POINT c = clas                   {}*)
   | VOID POINT CLASS                         { CVoid }
   | THIS                                     { This(None) }
-  (*| cn = className POINT THIS                { This(Some(cn)) }*)
+  | id = IDENT POINT THIS                { This(Some(Var id)) }
   | LPAR e = expression RPAR                 { e }
   (*| cie = classInstanceCreationExpression    { cie }*)
   | fa = fieldAccess                         { fa }
@@ -138,7 +114,7 @@ fieldAccess:
   (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
 
 methodInvocation:
-  | mn = methodName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
+  | mn = pathName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
   (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 { MethodP(p, nwa, Var id, al) }*)
   | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       { MethodS(nwa, Var id, al) }
   (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  { MethodCS(cn, nwa, Var id, al) }
@@ -157,7 +133,7 @@ argumentList:
   | e = expression COMA al = argumentList  { e::al }
 
 arrayAccess:
-  | en = expressionName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
+  | en = pathName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
 arrayCreationExpression:
@@ -237,7 +213,7 @@ unaryExpressionNotPlusMinus:
 
 postfixExpression:
   | p = primary                  { p }
-  | en = expressionName          { en }
+  | en = pathName          { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
   | p = postfixExpression DECR   { Unopright(p, Urdecr) }*)
 
@@ -251,7 +227,7 @@ assignment:
   | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
 
 leftHandSide:
-  | en = expressionName          { en }
+  | en = pathName          { en }
   (*| fa = fieldAccess             { fa }
   | aa = arrayAccess             { aa }*)
 

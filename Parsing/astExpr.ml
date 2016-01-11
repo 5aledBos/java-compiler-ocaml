@@ -41,7 +41,7 @@ type expression =
   | CVoid
   | This of expression option
   | Var of string
-  | Name of expression * string
+  | Name of expression list
   | Binop of expression * binop * expression
   | Unopleft of unopleft * expression
   | Unopright of expression * unopright
@@ -106,6 +106,8 @@ let report_err = function
 	  print_char c;
 	  print_string "' expected"
 
+
+let var_of_string s = Var(s)
 
 (* STRING_OF *)
 
@@ -180,7 +182,7 @@ let rec string_of_expr expr =
   | This Some(e) -> (string_of_expr e) ^ ".this"
 
   (* Names *)
-  | Name(e, str) -> (string_of_expr e) ^ "." ^ str
+  | Name(l) -> (string_of_list string_of_expr l)
 
   (* Operations *)
   | Binop(e1, op, e2) -> (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2)
