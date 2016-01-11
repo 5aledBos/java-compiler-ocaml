@@ -1,4 +1,5 @@
 package com.tus.test;
+package uhi;
 
 import static test.te;
 import java.lang.*;
@@ -7,7 +8,7 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
-	public int i, j;
+	public int i,j;
 	public final String test;
 
 	private test() {
@@ -31,18 +32,23 @@ public class test extends machin implements testable, truc  {
     // array access
     w = arr.ay["access"];
     x = abc.this[10];
+
   }
 
 }
 
 
+
 public class secondClass {
 		public test(int i, int j) {
+		
 		}
 }
 
 
 public enum testable {
+
+
 	BLACK, RED, LIGHT;
 	public void test() {
 	}

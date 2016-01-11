@@ -1,6 +1,7 @@
 %{
   open AstClass
   open AstUtil
+
 %}
 
 
@@ -44,6 +45,7 @@ compilationUnit:
 
 packageDeclaration:
   | PACKAGE str=pathName SC { Package(str) }
+  | error {raise Illegal_package}
 
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
@@ -185,6 +187,7 @@ constructorDeclaration:
 
 constructorDeclarator:
   | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
+  | error { raise Illegal_ConstructorException}
 
 constructorModifiers:
   | modifier		{ }
@@ -228,6 +231,7 @@ exceptionType:
 
 methodBody:
   | stmts = block { BlockStatements(stmts) }
+  | error { raise Illegal_methodeBody } 
 (*  | SC {  }*)
 
 blockstmts:
@@ -236,6 +240,7 @@ blockstmts:
 result:
   | VOID 	{ Void }
   | str=typ	{ AttributType(str) }
+  | error { raise Illegal_result }
 
 (*instanceInitializer*)
 (*instanceInitializer:*)
@@ -268,12 +273,12 @@ variableModifier:
   | f = FINAL 	{ AstUtil.Final }
 
 variableDeclaratorId:
-  | str=IDENT		{ str }
   | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
+  | str=IDENT		{ str }
 
 variableType:
   | str=typ { str }
-
+  | error {raise Illegal_variable}
 
 parameterList:
   | p=parameter			{ [p] }
@@ -282,6 +287,7 @@ parameterList:
 
 parameter:
   | t=typ str=IDENT	{ {parametertype=t; name=str} }
+
 
 
 
