@@ -48,3 +48,13 @@ let string_of_primitive = function
 let string_of_type t = match t with
   | Primitive p -> string_of_primitive p
   | Type t -> t
+
+exception Illegal_ConstructorException
+
+exception Illegal_package
+
+exception Illegal_variable 
+
+exception Illegal_result
+
+exception Illegal_methodeBody

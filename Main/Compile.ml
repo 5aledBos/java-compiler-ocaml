@@ -1,4 +1,5 @@
 open AstExpr
+open AstUtil
 
 (* verbose is a boolean that you can use to switch to a verbose output (for example, to dump all the ast) *)
 
@@ -31,4 +32,18 @@ with
      Lexer.report_error kind;
      Lexer.print_position start fin;
      print_newline()
-
+  | Parser.Error ->
+     print_string("erreur inconnu");
+     print_newline()
+  | Illegal_variable ->
+     print_string("erreur variable");
+     print_newline()
+| Illegal_package ->
+     print_string("erreur package");
+     print_newline()
+| Illegal_result ->
+     print_string("erreur de résultat");
+     print_newline()
+| Illegal_methodeBody ->
+     print_string("erreur au sein d'une methode");
+     print_newline()

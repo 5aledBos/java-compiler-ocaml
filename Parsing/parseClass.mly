@@ -1,6 +1,7 @@
 %{
   open AstClass
   open AstUtil
+
 %}
 
 
@@ -44,6 +45,7 @@ compilationUnit:
 
 packageDeclaration:
   | PACKAGE str=pathName SC { Package(str) }
+  | error {raise Illegal_package}
 
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
@@ -192,6 +194,7 @@ constructorDeclaration:
 
 constructorDeclarator:
   | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
+  | error { raise Illegal_ConstructorException}
 
 constructorModifiers:
   | modifier		{ }
@@ -236,10 +239,12 @@ exceptionType:
 
 methodBody:
   | stmts = block { BlockStatements(stmts) }
+  | error { raise Illegal_methodeBody } 
 (*  | SC {  }*)
 
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
+
 
 (* utilisé par les ClassBody*)
 
@@ -267,11 +272,36 @@ variableModifier:
   | f = FINAL 	{ AstUtil.Final }
 
 variableDeclaratorId:
-  | str=IDENT		{ str }
   | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
+  | str=IDENT		{ str }
 
 variableType:
   | str=typ { str }
+  | error {raise Illegal_variable}
+
+parameterList:
+  | p=parameter			{ [p] }
+  | params=parameterList COMA p=parameter	{ params @ [p] }
+
+
+parameter:
+  | t=typ str=IDENT	{ {parametertype=t; name=str} }
+
+
+
+
+(*Def in parseExpr
+argumentList:
+  | e=expression	{ [e] }
+  | liste=argumentList COMA e=expression { liste @ [e] }*)
+
+
+
+
+(* Caracteres speciaux *)
+
+(*egalite:*)
+(*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
 classModifiers:
   | m=classModifier		{ [m]}

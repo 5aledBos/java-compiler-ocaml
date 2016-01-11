@@ -1,5 +1,6 @@
 package com.tus.test;
 
+
 import static test.te;
 import java.lang.*;
 import static java.io.*;
@@ -7,7 +8,9 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
+
 	transient public int i, j;
+
 	public final String test;
 
 	static {
@@ -36,6 +39,7 @@ public class test extends machin implements testable, truc  {
     // array access
     w = arr.ay["access"];
     x = abc.this[10];
+
   }
 
 	public void getSomething() throws something {
@@ -44,13 +48,17 @@ public class test extends machin implements testable, truc  {
 }
 
 
+
 public class secondClass {
 		public test(int i, int j) {
+		
 		}
 }
 
 
 public enum testable {
+
+
 	BLACK, RED, LIGHT;
 	public int test(int i) throws something {
 	}
