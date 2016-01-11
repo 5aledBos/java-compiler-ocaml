@@ -109,7 +109,8 @@ interfaceMemberDeclaration:
   | decl=interfaceDeclaration	{  }
 
 abstractMethodDeclaration:
-  | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) typ methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
   | cons=enumConstants?  decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
@@ -322,7 +323,7 @@ classModifiers:
   | liste=classModifiers m=classModifier	{ liste @ [m] }
 
 classModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp {m }
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile {m } 
 
 accessModifier:
   | PUBLIC { Public }

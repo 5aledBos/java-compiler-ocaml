@@ -23,6 +23,8 @@ let string_of_modifier c = match c with
   | Static -> "static"
   | Final -> "final"
   | Strictfp -> "strictfp"
+  | Volatile -> "volatile"
+  | Transient -> "transient"
 
 let rec string_of_modifiers list = match list with
   | Some([]) -> ""

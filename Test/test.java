@@ -7,7 +7,7 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
-	public int i, j;
+	transient public int i, j;
 	public final String test;
 
 	private test(int i) {
