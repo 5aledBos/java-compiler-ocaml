@@ -1,7 +1,5 @@
 %{
   open AstClass
-  open AstUtil
-
 %}
 
 
@@ -31,6 +29,7 @@
 %token POINT
 %token VOID
 %token THROWS
+%token AT
 
 %start compilationUnit
 
@@ -270,7 +269,7 @@ variableModifiers:
   | liste = variableModifiers modifier = variableModifier		{ liste @ [modifier] }
 
 variableModifier:
-  | f = FINAL 	{ AstUtil.Final }
+  | f = FINAL 	{ AstExpr.Final }
 
 variableType:
   | str=typ { str }
@@ -292,7 +291,39 @@ argumentList:
   | e=expression	{ [e] }
   | liste=argumentList COMA e=expression { liste @ [e] }*)
 
+annotations:
+  |  annotation		{ }
+  |  annotations annotation		{ }
 
+annotation:
+(*  |  normalAnnotation		{}*)
+  |  expr = markerAnnotation			{ Annotation(expr) }
+(*  |  singleElementAnnotation		{ }*)
+
+(*normalAnnotation:*)
+(*  | AT typeName LPAR elementValuePairs? RPAR	{ }*)
+
+(*elementValuePairs:*)
+(*  | elementValuePair	{ }*)
+(*  | elementValuePairs COMA elementValuePair { }*)
+
+(*elementValuePair:*)
+(*  | IDENT ASS elementValue	{ }*)
+
+(*elementValue:*)
+(*  | conditionalExpression		{ }*)
+(*  | annotation			{ }*)
+(*  | elementValueArrayInitializer		{ }*)
+
+(*elementValueArrayInitializer:*)
+(*  | LBRACE elementValues? COMA? RBRACE 	{ }*)
+
+(*elementValues:*)
+(*  | elementValue		{ }*)
+(*  | elementValues COMA elementValue 		{ }*)
+
+markerAnnotation:
+  | AT str=IDENT		{ Var str }
 
 
 (* Caracteres speciaux *)
@@ -305,7 +336,7 @@ classModifiers:
   | liste=classModifiers m=classModifier	{ liste @ [m] }
 
 classModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile {m } 
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile | m=annotation {m } 
 
 accessModifier:
   | PUBLIC { Public }
@@ -315,7 +346,7 @@ accessModifier:
 modifier:
   | ABSTRACT		{ Abstract }
   | STATIC			{ Static }
-  | STRICTFP		{ AstUtil.Strictfp }
+  | STRICTFP		{ AstExpr.Strictfp }
 
 
 modifierStrictfp:
@@ -331,7 +362,7 @@ modifierProtected:
   | PROTECTED 	{ Protected }
 
 modifierFinal:
-  | FINAL			{ AstUtil.Final }
+  | FINAL			{ AstExpr.Final }
 
 modifierStatic:
   | STATIC 	{ Static }
@@ -344,6 +375,7 @@ modifierTransient:
 
 modifierVolatile:
   | VOLATILE { Volatile }
+
 
 super:
   | EXTENDS str=classType { str }

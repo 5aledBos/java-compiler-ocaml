@@ -13,19 +13,19 @@ type importList = import list
 
 
 type resultTypeAst = 
-  | AttributType of AstUtil.typ | Void
+  | AttributType of AstExpr.typ | Void
 
 type parameter = 
 {
-  parametertype : AstUtil.typ;
+  parametertype : AstExpr.typ;
   name : AstExpr.expression
 }
 
 
 type attributAst = {
-  typeof : AstUtil.typ;
+  typeof : AstExpr.typ;
   names : AstExpr.expression list;
-  modifiers : AstUtil.modifiers option
+  modifiers : AstExpr.modifiers option
 }
 
 
@@ -37,7 +37,7 @@ type blockstmts = BlockStatements of AstExpr.statement list
 type methodClassType =
 {
   name : string;
-  access : AstUtil.modifiers option;
+  access : AstExpr.modifiers option;
   parameters : parameter list option;
   resultType : resultTypeAst;
   methodbody: blockstmts
@@ -62,7 +62,7 @@ and thisOrSuper =
 and constructorAst =
 {
   name : string;
-  access : AstUtil.modifiers option;
+  access : AstExpr.modifiers option;
   parameters : parameter list option;
   constructorbody : constructorBodyAst option;
 }
@@ -77,7 +77,7 @@ and constructorType = ConstructorType of constructorAst
 type classAst =
   {
     classename : string;
-    access : AstUtil.modifiers option;
+    access : AstExpr.modifiers option;
 	inheritance : string option;
  	interfaces : string list option;
 	classbody : classBodyAst;
@@ -121,7 +121,7 @@ and enumConstant =
 and enumAst =
   {
     enumname : string;
-    access : AstUtil.modifiers option;
+    access : AstExpr.modifiers option;
  	interfaces : string list option;
 	enumbody : enumBodyAst;
   }
@@ -129,7 +129,7 @@ and enumAst =
 and interfaceAst =
 { 
   interfacename : string;
-  access : AstUtil.modifiers option;
+  access : AstExpr.modifiers option;
 (*  interfaceBody : interfaceMemberDeclaration list option*)
 }
 
@@ -186,7 +186,7 @@ let rec printListImport liste = match liste with
 
 
 let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> AstUtil.string_of_type(typeof) ^ " " ^ (AstExpr.string_of_expr str)
+  | { parametertype=typeof; name=str } -> AstExpr.string_of_type(typeof) ^ " " ^ (AstExpr.string_of_expr str)
 
 let rec string_of_listparameters params = match params with
   | Some([]) -> ""
@@ -214,7 +214,7 @@ let string_of_thisorsuper str = match str with
 
 let string_of_resultType t = match t with
   | Void -> "void"
-  | AttributType(a) -> AstUtil.string_of_type(a)
+  | AttributType(a) -> AstExpr.string_of_type(a)
 
 let rec string_of_attributs liste = match liste with
   | [] -> ""
@@ -231,11 +231,11 @@ let string_of_constructorBody body = match body with
 
 
 let string_of_constructor c = match c with
-  | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
+  | { name=str; access= modi; constructorbody=body; parameters= params } -> "\t" ^ "constructor de class: " ^ str ^ "(" ^ string_of_listparameters(params) ^ ")" ^ ", access: " ^ AstExpr.string_of_modifiers(modi) ^ "\n" ^ "\t" ^ "\t" ^  "constructor body:\n" ^ string_of_constructorBody(body)
 
 let string_of_classmember c = match c with
-  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
-  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ (AstExpr.string_of_list ", " AstExpr.string_of_expr str)
+  | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstExpr.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
+  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstExpr.string_of_modifiers(modi) ^ AstExpr.string_of_type(a) ^ " " ^ (AstExpr.string_of_list ", " AstExpr.string_of_expr str)
   | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
   | InnerInterface(interface) -> "innerInterface: "
 
@@ -287,9 +287,9 @@ let rec printClassBodyDeclarations liste = match liste with
   | None -> print_endline("")
 
 let string_of_classTree classe = match classe with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
-  | InterfaceType({interfacename=name; access=acc}) -> "Interface: " ^ name ^ ", " ^ AstUtil.string_of_modifiers(acc)
-  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstUtil.string_of_modifiers(acc) ^ "enum " ^ name ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
+  | InterfaceType({interfacename=name; access=acc}) -> "Interface: " ^ name ^ ", " ^ AstExpr.string_of_modifiers(acc)
+  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "enum " ^ name ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
 
 let rec string_of_classes classes = match classes with
   | Some([]) -> ""

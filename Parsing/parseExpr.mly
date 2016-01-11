@@ -1,6 +1,5 @@
 %{
     open AstExpr
-    open AstUtil
 %}
 
 /**********/

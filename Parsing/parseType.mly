@@ -1,5 +1,5 @@
 %{
-    open AstUtil
+    open AstExpr
 %}
 
 /******************************/
@@ -7,16 +7,16 @@
 /******************************/
 
 %start typ
-%type <AstUtil.typ> typ
+%type <AstExpr.typ> typ
 
 %start primitiveType
-%type <AstUtil.typ> primitiveType
+%type <AstExpr.typ> primitiveType
 
 %start referenceType
-%type <AstUtil.typ> referenceType
+%type <AstExpr.typ> referenceType
 
 (*%start classType*)
-(*%type <AstUtil.> classType*)
+(*%type <AstExpr.> classType*)
 
 %%
 

@@ -139,6 +139,7 @@ rule nexttoken = parse
   | "."                      { POINT }
   | "new"                    { NEW }
   | "instanceof"             { INSTANCEOF }
+  | "@"							{ AT }
 
   (* Statements *)
   | "if"                     { IF }

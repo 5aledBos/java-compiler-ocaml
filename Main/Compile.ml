@@ -1,5 +1,4 @@
 open AstExpr
-open AstUtil
 
 (* verbose is a boolean that you can use to switch to a verbose output (for example, to dump all the ast) *)
 

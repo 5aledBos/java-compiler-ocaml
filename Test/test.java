@@ -1,5 +1,4 @@
-package com.tus.test;
-
+package com.compilator.test;
 
 import static test.te;
 import java.lang.*;
@@ -103,9 +102,9 @@ public class test extends machin implements testable, truc  {
         abc *= 5.3; abc++;
     } while (true);
   }
-
+	@Override
 	public void getSomething(final int i) throws something {
-	
+		return i;
 	  
 	}
 
