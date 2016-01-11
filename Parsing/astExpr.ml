@@ -1,5 +1,4 @@
-(* AST *)
-
+(* Utils *)
 
 type primitive = 
   | Int | Float | Double | Char | Boolean | Byte | Short | Long
@@ -7,9 +6,6 @@ type primitive =
 type typ =
   | Primitive of primitive
   | Type of string
-
-
-
 
 let string_of_primitive = function
   | Int -> "int"
@@ -20,10 +16,6 @@ let string_of_primitive = function
   | Long -> "long"
   | Byte -> "byte"
   | Short -> "short"
-
-(*let string_of_attributType t = match t with*)
-(*  | String str -> str*)
-(*  | Primitive p -> string_of_primitive p*)
 
 let string_of_type t = match t with
   | Primitive p -> string_of_primitive p
@@ -104,7 +96,7 @@ type expression =
   | Default
   | ArrayAccess of expression * expression
   | ArrayCreation of typ * expression option list
-  | ArrayCreationInit of typ * (unit * unit) list * expression
+  | ArrayCreationInit of typ * int * expression
   | ArrayInit of expression list
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ
@@ -116,6 +108,10 @@ type expression =
   | MethodCS of expression * typ list option * expression * expression list
   | MethodT of expression * typ list * expression * expression list
   | VarDecl of expression * expression option
+  | LocalVarDecl of modifier list option * typ * expression list
+
+and modifier = 
+  | Public | Protected | Private | Static | Abstract | Final | Strictfp | Volatile | Transient | Annotation of expression
 
 type statement =
   | Expression of expression
@@ -140,16 +136,10 @@ type statement =
   | While of expression * statement
   | DoWhile of statement * expression
   | For of expression list option * expression option * expression list * statement
-  | EFor of expression * expression * statement
-  | LocalVarDecl of modifier list option * typ * expression list
-  (*| EFor of modifier list option * type * expression * expression * statement *)
-
-and modifier = 
-  | Public | Protected | Private | Static | Abstract | Final | Strictfp | Volatile | Transient | Annotation of expression
+  | EFor of modifier list option * typ * expression * expression * statement
+  | LocalVarDeclS of modifier list option * typ * expression list
 
 type modifiers = modifier list
-
-(* STRING_OF *)
 
 
 (* ERRORS *)
@@ -166,9 +156,9 @@ let report_err = function
 	  print_string "' expected"
 
 
-let var_of_string s = Var(s)
-
 (* STRING_OF *)
+
+let var_of_string s = Var(s)
 
 let string_of_binop = function
   | Badd -> "+"
@@ -240,9 +230,6 @@ let rec string_of_expr expr =
   | This None -> "this"
   | This Some(e) -> (string_of_expr e) ^ ".this"
 
-
-
-
   (* Names *)
   | Name(l) -> (string_of_list ", " string_of_expr l)
 
@@ -260,17 +247,31 @@ let rec string_of_expr expr =
   | Default -> "default: "
   | ArrayAccess(e1, e2) -> "(" ^ (string_of_expr e1) ^ "[" ^ (string_of_expr e2) ^ "]" ^ ")"
   | ArrayCreation(t, e) -> "(new " ^ (string_of_type t) ^ (string_of_list ", " (string_of_opt string_of_expr) e) ^ ")"
+  | ArrayCreationInit(t, i, e) -> "(new " ^ (string_of_type t) ^ " " ^ (string_of_int i) ^ (string_of_expr e) ^ ")"
   | ArrayInit(l) -> (string_of_list ", " string_of_expr l)
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
   | Cast(t, e) -> "(" ^ (string_of_type t) ^ ") " ^ (string_of_expr e)
   | CastP(t, d, e) -> "(" ^ (string_of_type t) ^ " " ^ (string_of_int d) ^ ") " ^ (string_of_expr e)
   | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list ", " string_of_expr e2) ^ ")"
-  (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
-  | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
-  | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
+  (*| MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"
+  | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list ", " string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr l) ^ ")"*)
   | VarDecl(e1, None) -> "(" ^ (string_of_expr e1) ^ ")"
   | VarDecl(e1, Some(e2)) -> "(" ^ (string_of_expr e1) ^ "=" ^ (string_of_expr e2) ^ ")"
+  | LocalVarDecl(ml, t, el) -> "(" ^ (string_of_opt (string_of_list ", " string_of_modifier) ml) ^ " " ^ (string_of_type t) ^ " " ^ (string_of_list ", " string_of_expr el) ^ ")"
+
+(* Modifiers *)
+and string_of_modifier c = match c with
+  | Public -> "public"
+  | Protected -> "protected"
+  | Private -> "private"
+  | Abstract -> "abstract"
+  | Static -> "static"
+  | Final -> "final"
+  | Strictfp -> "strictfp"
+  | Volatile -> "volatile"
+  | Transient -> "transient"
+  | Annotation(expr) -> "@" ^ string_of_expr(expr)
 
 let rec string_of_statement stat =
   match stat with
@@ -299,27 +300,11 @@ let rec string_of_statement stat =
   | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
   | DoWhile(s, e) -> "do {" ^ (string_of_statement s) ^ "} while(" ^ (string_of_expr e) ^ ")"
   | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list ", " string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_list ", " string_of_expr es) ^ ") {" ^ (string_of_statement s) ^ "}"
-  | EFor(id, e, s) -> "for(" ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"
-  (*| EFOR(vm, t, id, e, s) -> "for("(* Print variable modifiers and type *) ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"*)
-  | LocalVarDecl(ml, t, el) -> "(" ^ (string_of_opt (string_of_list ", " string_of_modifier) ml) ^ " " ^ (string_of_type t) ^ " " ^ (string_of_list ", " string_of_expr el) ^ ")"
-
-
-(*Modifiers*)
-and string_of_modifier c = match c with
-  | Public -> "public"
-  | Protected -> "protected"
-  | Private -> "private"
-  | Abstract -> "abstract"
-  | Static -> "static"
-  | Final -> "final"
-  | Strictfp -> "strictfp"
-  | Volatile -> "volatile"
-  | Transient -> "transient"
-  | Annotation(expr) -> "@" ^ string_of_expr(expr)
+  | EFor(vm, t, id, e, s) -> "for(" ^ (string_of_opt (string_of_list ", " string_of_modifier) vm) ^ " " ^ (string_of_type t) ^ (string_of_expr id) ^ " : " ^ (string_of_expr e) ^ ") { " ^ (string_of_statement s) ^ " }"
+  | LocalVarDeclS(ml, t, el) -> "([statement] " ^ (string_of_opt (string_of_list ", " string_of_modifier) ml) ^ " " ^ (string_of_type t) ^ " " ^ (string_of_list ", " string_of_expr el) ^ ")"
 
 let rec string_of_modifiers l = match l with
   | Some([]) -> ""
   | Some(x::xs) -> string_of_modifier(x) ^ " " ^ string_of_modifiers(Some(xs))
   | None -> "No modifier"
-
 

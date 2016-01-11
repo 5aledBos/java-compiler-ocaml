@@ -125,9 +125,9 @@ arrayAccess:
 
 arrayCreationExpression:
   | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET, expression?, RBRACKET))                    { ArrayCreation(pt, de) }
-  (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }
-  | NEW pt = primitiveType d = nonempty_list(pair(LBRACKET, RBRACKET)) ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
-  | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
+  (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }*)
+  | NEW pt = primitiveType d = nonempty_list(pair(LBRACKET, RBRACKET)) ai = arrayInitializer          { ArrayCreationInit(pt, List.length(d), ai) }
+  (*| NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 arrayInitializer:
   | LBRACE vi = separated_list(COMA, variableInitializer) (*COMA?*) RBRACE    { ArrayInit(vi) }
@@ -195,7 +195,7 @@ unaryExpressionNotPlusMinus:
   | ca = castExpression          { ca }
 
 postfixExpression:
-  (*| p = primary                  { p }*)
+  | p = primary                  { p }
   | en = pathName                { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
   | p = postfixExpression DECR   { Unopright(p, Urdecr) }
@@ -219,7 +219,7 @@ block:
   | LBRACE bs = list(blockStatement) RBRACE    { bs }
 
 blockStatement:
-  (*| vm = variableModifiers? t = typ vd = variableDeclarators SC     { LocalVarDecl(vm, t, vd) }*)
+  | vm = variableModifiers? t = typ vd = variableDeclarators SC     { LocalVarDeclS(vm, t, vd) }
   (*| cd = classDeclaration                                           { cd }*)
   | s = statement                                                   { s }
 
@@ -241,7 +241,7 @@ variableDeclaratorId:
 statement:
   | s = statementWithoutTrailingSubstatement                          { s }
   | id = IDENT COLON s = statement                                    { Label(id, s) }
-  (*| IF LPAR e = expression RPAR s = statement es = elseStatement?     { If(e, s, es) }*)
+  | IF LPAR e = expression RPAR s = statement es = elseStatement?     { If(e, s, es) }
   | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
   | fs = forStatement                                                 { fs }
 
@@ -298,18 +298,16 @@ formalParam:
   | vdi = IDENT                                                  { Var vdi }
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
-(*elseStatement:
-  | ELSE s = statement                                                { s }*)
+elseStatement:
+  | ELSE s = statement                                                { s }
 
 forStatement:
   | FOR LPAR fi = forInit? SC e = expression? SC es = separated_list(COMA, statementExpression) RPAR s = statement   { For(fi, e, es, s) }
-  | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
-  (*TODO: replace previous by
-  | FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
+  | FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }
 
 forInit:
-  | es = separated_nonempty_list(COMA, statementExpression)   { es }
-  (*| lv = localvariabledecl                                    { lv }*)
+  | es = separated_nonempty_list(COMA, statementExpression)    { es }
+  | vm = variableModifiers? t = typ vd = variableDeclarators   { [LocalVarDecl(vm, t, vd)] }
 
 
 %inline binopmul:

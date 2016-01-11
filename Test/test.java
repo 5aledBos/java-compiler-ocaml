@@ -19,7 +19,8 @@ public class test extends machin implements testable, truc  {
 	}
 
 	private test(int i) {
-	super(5, 6, 8);
+	
+	  super(5, 6, 8);
 	
     // assignments
     abc *= 6.2;
@@ -43,22 +44,33 @@ public class test extends machin implements testable, truc  {
     x = abc.this[10];
     
     // if statement
-    //if(true) abc *= 6.2;
-    //if (false) i -= 1; else i += 1;
+    if(true) {
+      abc *= 6.2;
+      x.get();
+    }
+    
+    if (false) i -= 1; else i += 1;
     
     // while statement
     while(true) abc *= 6.2;
     
     // labeled statement
     ident : while(false) {
-//      final long test;
-//      double az = "erty";
+      final long test;
+      double az = "erty";
     }
     
     // for statement
-    for (i = 0;; i++) j--;
+    for (i = 0; i < 5; i++) j--;
+    
+    for (final int k = 27; k >= 8; k -= 3) {
+      
+      w = arr.ay["access"];
+      x = abc.this[10];
+      b = new int[]{};
+    }
 
-    for (idnt : "test") {
+    for (double idnt : "test") {
         c += 54;
     }
     
@@ -66,6 +78,13 @@ public class test extends machin implements testable, truc  {
     continue;
     break;
     throw abc *= 5.3;
+    
+    // switch statement
+//    switch (variable) {
+//        case 2: i = 3;
+//        case 4: i = 4;
+//        default: {}
+//    }
     
     // try statement
     try {
@@ -102,6 +121,7 @@ public class test extends machin implements testable, truc  {
         abc *= 5.3; abc++;
     } while (true);
   }
+  
 	@Override
 	public void getSomething(final int i) throws something {
 		return i;
@@ -109,8 +129,6 @@ public class test extends machin implements testable, truc  {
 	}
 
 }
-
-
 
 public class secondClass {
 		public test(final int i, int j) {
