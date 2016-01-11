@@ -230,7 +230,7 @@ let string_of_constructor c = match c with
 
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstUtil.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
-  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ (AstExpr.string_of_list AstExpr.string_of_expr str)
+  | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstUtil.string_of_modifiers(modi) ^ AstUtil.string_of_type(a) ^ " " ^ (AstExpr.string_of_list ", " AstExpr.string_of_expr str)
   | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
   | InnerInterface(interface) -> "innerInterface: "
 
