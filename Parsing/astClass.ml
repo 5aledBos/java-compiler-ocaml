@@ -130,7 +130,13 @@ and interfaceAst =
 { 
   interfacename : string;
   access : AstUtil.modifiers option;
+(*  interfaceBody : interfaceMemberDeclaration list option*)
 }
+
+and interfaceMemberDeclaration = 
+  | InterfaceInnerInterface of classType
+  | InterfaceInnerClass of classType
+(*  | AbstractDeclarationType of abstractDeclarationType*)
 
 and interfaceType = 
   | InterfaceType of interfaceAst

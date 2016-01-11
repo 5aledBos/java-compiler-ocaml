@@ -93,21 +93,23 @@ enumDeclaration:
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) str=interfaceBody   { InterfaceType{interfacename = id; access = modi} }
+  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) interfaceBody   { InterfaceType{interfacename = id; access = modi(*; interfaceBody=str*)} }
 
 interfaceBody:
-  | LBRACE interfaceMemberDeclarations? RBRACE 	{ }
+  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
 
 interfaceMemberDeclarations:
-  | interfaceDeclaration	{ }
-  | interfaceMemberDeclarations interfaceMemberDeclaration	{ }
+  | decl=interfaceMemberDeclaration	{  }
+  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
 
 interfaceMemberDeclaration:
 (*  | constantDeclaration		{ }*)
-(*  | abstractMethodDeclaration	{ }*)
-  | classDeclaration		{ }
-  | interfaceDeclaration	{ }
+  | abstractMethodDeclaration	{ }
+  | decl=classDeclaration		{  }
+  | decl=interfaceDeclaration	{  }
 
+abstractMethodDeclaration:
+  | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
   | cons=enumConstants? COMA? decl=enumBodyDeclarations	{ { enumConstants = cons; enumDeclarations= decl } }

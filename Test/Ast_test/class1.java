@@ -149,6 +149,7 @@ public class test extends machin implements testable, truc  {
 	}
 
 	interface clonable {
+		public void methodname(int i);
 	}
 
 }
