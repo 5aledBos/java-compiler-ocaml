@@ -57,7 +57,7 @@ let digits = digit+
 let space = [' ' '\t']
 let newline = ('\010' | '\013' | "\013\010")
 
-let input_character = (letter | digit |  [' ''[''{''}''('')''['']''=''!''&''|'';'])  (* a completer *)
+let input_character = (letter | digit |  [' ''[''{''}''('')''['']''=''!''&''|'';''.''<''>'','])  (* a completer *)
 let escape_sequence = ('\b')(* | "\t" | "\n" | "\r" | "\"" | "\'" | "\\")*)
 
 (* Identifier *)

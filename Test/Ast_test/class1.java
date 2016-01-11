@@ -34,7 +34,7 @@ public class test extends machin implements testable, truc  {
             default: {}
         }
 
-        while(test){}
+        while(test) {}
 
         for (i = 0, j = 0; c<3;k++) {
             if (true) {
@@ -116,7 +116,7 @@ public class test extends machin implements testable, truc  {
       test = void.class;
 
 		if (a instanceof String) {
-		
+
 		  a = new double[3][3];
 		  //b = new char[5][];
 		  //c = new long[](az = 1)
@@ -125,6 +125,15 @@ public class test extends machin implements testable, truc  {
   		++j;
   		throw abc *= 5.3++;
 		}
+        test.a();
+        //t.<T>method();
+        super.<T>method();
+        test.test.c();
+
+        test.a(a);
+        test.a(a, b, c);
+        test.b(a,v);
+        //super.a(a, b);
 
         return;
         continue;

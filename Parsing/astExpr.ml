@@ -59,8 +59,12 @@ type expression =
   | Instanceof of expression * typ
   | Dimexpr of expression
   | Dim
-  (*| Cast of typ * expression
-  | Method of expression * expression list*)
+  (*| Cast of typ * expression *)
+  | Method of expression * expression list option
+  | MethodP of expression * typ list option * expression * expression list option
+  | MethodS of typ list option * expression * expression list option
+  | MethodCS of expression * typ list option * expression * expression list option
+  | MethodT of expression * typ list * expression * expression list option
 
 type statement =
   | Expression of expression
@@ -154,10 +158,10 @@ let string_of_assign = function
   | Asscirc -> "^="
   | Asspipe -> "|="
 
-let rec string_of_list f l =
+let string_of_list f l =
   match l with
   | [] -> ""
-  | h::t -> (f h) ^ (string_of_list f t)
+  | li -> String.concat ", " (List.map f li)
 
 let string_of_opt f o =
   match o with
@@ -181,13 +185,13 @@ let rec string_of_expr expr =
   | Name(e, str) -> (string_of_expr e) ^ "." ^ str
 
   (* Operations *)
-  | Binop(e1, op, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2) ^ ")"
+  | Binop(e1, op, e2) -> (string_of_expr e1) ^ (string_of_binop op) ^ (string_of_expr e2)
   | Bool true -> "true"
   | Bool false -> "false"
-  | Unopleft(op, e) -> "(" ^ (string_of_unopleft op) ^ (string_of_expr e) ^ ")"
-  | Unopright(e, op) -> "(" ^ (string_of_expr e) ^ (string_of_unopright op) ^ ")"
-  | Assign(e1, ass, e2) -> "(" ^ (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2) ^ ")"
-  | Fieldaccess(e, str) -> "(" ^ (string_of_expr e) ^ "." ^ str ^ ")"
+  | Unopleft(op, e) -> (string_of_unopleft op) ^ (string_of_expr e)
+  | Unopright(e, op) -> (string_of_expr e) ^ (string_of_unopright op)
+  | Assign(e1, ass, e2) -> (string_of_expr e1) ^ (string_of_assign ass) ^ (string_of_expr e2)
+  | Fieldaccess(e, str) -> (string_of_expr e) ^ "." ^ str
   | Fieldaccesssuper(str) -> "(super." ^ str ^ ")"
   | Fieldaccessclass(e, str) -> "(" ^ (string_of_expr e) ^ ".super." ^ str ^ ")"
   | Case(e) -> "(case: " ^ (string_of_expr e) ^ ")"
@@ -196,13 +200,16 @@ let rec string_of_expr expr =
   | ArrayCreation(t, e1, e2) -> "(new " ^ (string_of_type t) ^ (string_of_list string_of_expr e1) ^ (string_of_opt (string_of_list string_of_expr) e2) ^ ")"
   | Dimexpr(e) -> "[" ^ (string_of_expr e) ^ "]"
   | Dim -> "[]"
-  | Ternary(c, e1, e2) -> "(" ^ (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2) ^ ")"
-  | Instanceof(e, t) -> "(" ^ (string_of_expr e) ^ " instance of " ^ (string_of_type t) ^ ")"
-  (*| Method(e1, e2) -> "(" ^ (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")" ^ ")"*)
+  | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
+  | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
+  | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_opt (string_of_list string_of_expr) e2) ^ ")"
+  (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
+  | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_opt (string_of_list string_of_expr) l) ^ ")"
+  | MethodS(t, e2, l) -> "super" ^ "." ^ "<" ^ (string_of_opt (string_of_list string_of_type) t) ^ ">" ^ (string_of_expr e2) ^ "(" ^ (string_of_opt (string_of_list string_of_expr) l) ^ ")"
 
 let rec string_of_statement stat =
   match stat with
-  | Expression e -> string_of_expr e
+  | Expression e -> "(" ^ string_of_expr e ^ ")"
   | Expressions e -> string_of_list string_of_expr e
   | Statements s -> string_of_list string_of_statement s
   | EmptyStatement -> "Empty statement"

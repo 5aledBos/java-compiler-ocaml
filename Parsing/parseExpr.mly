@@ -138,16 +138,23 @@ fieldAccess:
   | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
   (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
 
-(*methodInvocation:
+methodInvocation:
   | mn = methodName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
-  | p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 {}
-  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       {}
-  | cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  {}
-  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList? RPAR                {}
+  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 { MethodP(p, nwa, Var id, al) }*)
+  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       { MethodS(nwa, Var id, al) }
+  (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  { MethodCS(cn, nwa, Var id, al) }
+  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList? RPAR               { MethodT(tn, nwa, Var id, al) }*)
+
+nonWildTypeArguments:
+  | LT l = referenceTypeList GT             { l }
+
+referenceTypeList:
+  | t = referenceType                       { [t] }
+  | t = referenceType l = referenceTypeList { t::l }
 
 argumentList:
   | e = expression                         { [e] }
-  | al = argumentList COMA e = expression  { al::e }*)
+  | e = expression COMA al = argumentList  { e::al }
 
 arrayAccess:
   | en = expressionName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
@@ -269,6 +276,7 @@ constantExpression:
 
 (* BLOCKS AND STATEMENTS *)
 
+(* Was forced to use EmptyBlock instead of just blockStatements? because for some reason I couldn't make it work. *)
 block:
   | LBRACE RBRACE                         { [EmptyBlock] }
   | LBRACE bs = blockStatements RBRACE    { bs }
@@ -343,13 +351,13 @@ expressionStatement:
   | se = statementExpression SC    { se }
 
 statementExpression:
-  | ass = assignment          { ass }
-  | INCR u = unaryExpression            { Unopleft(Ulincr, u) }
-  | DECR u = unaryExpression            { Unopleft(Uldecr, u) }
-  | p = postfixExpression INCR          { Unopright(p, Urincr) }
-  | p = postfixExpression DECR          { Unopright(p, Urdecr) }
-  (*| mi = methodInvocation          { mi }
-  | cie = classInstanceCreationExpression  { cie }*)
+  | ass = assignment                       { ass }
+  | INCR u = unaryExpression               { Unopleft(Ulincr, u) }
+  | DECR u = unaryExpression               { Unopleft(Uldecr, u) }
+  | p = postfixExpression INCR             { Unopright(p, Urincr) }
+  | p = postfixExpression DECR             { Unopright(p, Urdecr) }
+  | mi = methodInvocation                  { mi }
+  (*| cie = classInstanceCreationExpression  { cie }*)
 
 assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
