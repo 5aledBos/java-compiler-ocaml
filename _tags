@@ -3,3 +3,5 @@ true: use_menhir
 true: warn_a
 true: explain
 
+<Test>: include
+true: use_alcotest

@@ -1,6 +1,6 @@
 (* Utils *)
 
-type primitive = 
+type primitive =
   | Int | Float | Double | Char | Boolean | Byte | Short | Long
 
 type typ =
@@ -25,7 +25,7 @@ exception Illegal_ConstructorException
 
 exception Illegal_package
 
-exception Illegal_variable 
+exception Illegal_variable
 
 exception Illegal_result
 
@@ -82,6 +82,7 @@ type expression =
   | String of string
   | Null
   | CVoid
+  (*| TClass of typ*)
   | This of expression option
   | Var of string
   | Name of expression list
@@ -110,7 +111,7 @@ type expression =
   | VarDecl of expression * expression option
   | LocalVarDecl of modifier list option * typ * expression list
 
-and modifier = 
+and modifier =
   | Public | Protected | Private | Static | Abstract | Final | Strictfp | Volatile | Transient | Annotation of expression
 
 type statement =
@@ -227,6 +228,7 @@ let rec string_of_expr expr =
   | Null -> "null"
   | Var v -> v
   | CVoid -> "void.class"
+  (*| TClass t -> (string_of_type t) ^ ".class"*)
   | This None -> "this"
   | This Some(e) -> (string_of_expr e) ^ ".this"
 
@@ -307,4 +309,3 @@ let rec string_of_modifiers l = match l with
   | Some([]) -> ""
   | Some(x::xs) -> string_of_modifier(x) ^ " " ^ string_of_modifiers(Some(xs))
   | None -> "No modifier"
-

@@ -1,4 +1,4 @@
-(* Build with `ocamlbuild -pkg alcotest test.byte` *)
+(* Build with `ocamlbuild -pkg alcotest testlexer.byte` *)
 
 let string_of_token t =
     match t with
@@ -24,7 +24,7 @@ let token =
 
 (* A module with functions to test *)
 module To_test = struct
-    let lex token = LexExpr.nexttoken token
+    let lex token = Lexer.nexttoken token
 end
 
 (* The tests *)

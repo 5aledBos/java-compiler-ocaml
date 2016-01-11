@@ -78,7 +78,7 @@ primary:
 
 primaryNoNewArray:
   | l = literal                              { l }
-  (*| t = typ POINT c = clas                   {}*)
+  (*| t = typ POINT CLASS                      { TClass(t) }*)
   | VOID POINT CLASS                         { CVoid }
   | THIS                                     { This(None) }
   | id = IDENT POINT THIS                    { This(Some(Var id)) }
@@ -229,7 +229,7 @@ variableDeclarators:
 
 variableDeclarator:
   | vdi = variableDeclaratorId vc = variableDeclaratorCompl?    { VarDecl(vdi, vc) }
-  
+
 variableDeclaratorCompl:
   | ASS vi = variableInitializer     { vi }
 
