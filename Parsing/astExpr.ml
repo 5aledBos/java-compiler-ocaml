@@ -53,7 +53,7 @@ type expression =
   | Default
   | ArrayAccess of expression * expression
   | ArrayCreation of typ * expression option list
-  | ArrayCreationInit of typ * expression list * expression
+  | ArrayCreationInit of typ * (unit * unit) list * expression
   | ArrayInit of expression list
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ

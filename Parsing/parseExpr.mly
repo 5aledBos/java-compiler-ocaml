@@ -73,6 +73,11 @@ className:
 
 (* EXPRESSIONS *)
 
+expression:
+  (*| c = conditionalExpression  { c }*)
+  | ass = assignment           { ass }
+  | p = primary                { p }
+
 primary:
   | pna = primaryNoNewArray          { pna }
   | ac = arrayCreationExpression     { ac }
@@ -82,11 +87,11 @@ primaryNoNewArray:
   (*| t = typ POINT c = clas                   {}*)
   | VOID POINT CLASS                         { CVoid }
   | THIS                                     { This(None) }
-  | id = IDENT POINT THIS                { This(Some(Var id)) }
+  | id = IDENT POINT THIS                    { This(Some(Var id)) }
   | LPAR e = expression RPAR                 { e }
   (*| cie = classInstanceCreationExpression    { cie }*)
   | fa = fieldAccess                         { fa }
-  (*| mi = methodInvocation                   { mi }*)
+  | mi = methodInvocation                   { mi }
   | aa = arrayAccess                         { aa }
 
 literal:
@@ -107,10 +112,10 @@ fieldAccess:
   (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
 
 methodInvocation:
-  | mn = pathName LPAR al = argumentList RPAR                                                          { Method(mn, al) }
-  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                 { MethodP(p, nwa, Var id, al) }*)
+  | mn = pathName LPAR al = argumentList RPAR        { Method(mn, al) }
+  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                 { MethodP(p, nwa, Var id, al) }
   | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                       { MethodS(nwa, Var id, al) }
-  (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
+  | cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
   | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList RPAR               { MethodT(tn, nwa, Var id, al) }*)
 
 nonWildTypeArguments:
@@ -121,13 +126,13 @@ argumentList:
   | l = separated_list(COMA, expression)   { l }
 
 arrayAccess:
-  | en = pathName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
+  | en = pathName LBRACKET e = expression RBRACKET            { ArrayAccess(en, e) }
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
 arrayCreationExpression:
   | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET, expression?, RBRACKET))                    { ArrayCreation(pt, de) }
   (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }
-  | NEW pt = primitiveType d = dims ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
+  | NEW pt = primitiveType d = nonempty_list(pair(LBRACKET, RBRACKET)) ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
   | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 arrayInitializer:
@@ -211,14 +216,9 @@ assignment:
   | l = leftHandSide ass = assign e = expression  { Assign(l, ass, e) }
 
 leftHandSide:
-  | en = pathName          { en }
+  | en = pathName                { en }
   | fa = fieldAccess             { fa }
-  (*| aa = arrayAccess             { aa }*)
-
-expression:
-  | c = conditionalExpression  { c }
-  | ass = assignment           { ass }
-  | p = primary                { p }
+  | aa = arrayAccess             { aa }
 
 
 (* BLOCKS AND STATEMENTS *)
