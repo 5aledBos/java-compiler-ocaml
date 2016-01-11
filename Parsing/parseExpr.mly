@@ -97,11 +97,6 @@ literal:
   | str = STRING                      { String str }
   | NULL                              { Null }
 
-assignmentExpression:
-  (*| c = conditionalExpression  { c }*)
-  | ass = assignment           { ass }
-  | p = primary                { p }
-
 (*classInstanceCreationExpression:
   | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
   | p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList? RPAR cb = classBody?   {}*)
@@ -136,7 +131,7 @@ arrayCreationExpression:
   | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 arrayInitializer:
-  | LBRACE vi = separated_list(COMA, variableInitializer) c = COMA? RBRACE    { ArrayInit(vi, c) }
+  | LBRACE vi = separated_list(COMA, variableInitializer) (*COMA?*) RBRACE    { ArrayInit(vi) }
 
 %public
 variableInitializer:
@@ -213,18 +208,17 @@ postfixExpression:
   | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }*)
 
 assignment:
-  | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
+  | l = leftHandSide ass = assign e = expression  { Assign(l, ass, e) }
 
 leftHandSide:
   | en = pathName          { en }
-  (*| fa = fieldAccess             { fa }
-  | aa = arrayAccess             { aa }*)
+  | fa = fieldAccess             { fa }
+  (*| aa = arrayAccess             { aa }*)
 
 expression:
-  | ae = assignmentExpression    { ae }
-
-constantExpression:
-  | e = expression               { e }
+  (*| c = conditionalExpression  { c }*)
+  | ass = assignment           { ass }
+  | p = primary                { p }
 
 
 (* BLOCKS AND STATEMENTS *)
@@ -276,8 +270,8 @@ statementWithoutTrailingSubstatement:
   (*| b = block                                         { Statements(b) }
   | SC                                                { EmptyStatement }*)
   | es = expressionStatement                          { Expression(es) }
-  (*| ast = assertStatement                             { ast }
-  | ss = switchStatement                              { ss }
+  | ast = assertStatement                             { ast }
+  (*| ss = switchStatement                              { ss }
   | ds = doStatement                                  { ds }
   | BREAK id = IDENT? SC                              { Break(id) }
   | CONTINUE id = IDENT? SC                           { Continue(id) }
@@ -298,11 +292,11 @@ statementExpression:
   | mi = methodInvocation                  { mi }
   | cie = classInstanceCreationExpression  { cie }*)
 
-(*assertStatement:
+assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-switchStatement:
+(*switchStatement:
   | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
 
 switchBlock:
@@ -312,7 +306,7 @@ switchBlockStatementGroup:
   | l = nonempty_list(switchLabel) bs = list(blockStatement)           { SwitchGroup(l, b) }
 
 switchLabel:
-  | CASE c = constantExpression COLON                                  { Case(c) }
+  | CASE c = expression COLON                                  { Case(c) }
   | CASE e = enumConstantName COLON                                    { Case(e) }
   | DEFAULT COLON                                                      { Default }
 

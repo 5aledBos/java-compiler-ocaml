@@ -11,9 +11,12 @@ public class test extends machin implements testable, truc  {
 	public final String test;
 
 	private test() {
-        
+
     abc *= 6.2;
     t = new long[3][5][];
+
+    assert a = 1;
+    assert a = 1 : b = 3;
   }
 
 }
