@@ -10,6 +10,8 @@ public class test extends machin implements testable, truc  {
 	transient public int i, j;
 	public final String test;
 
+	
+
 	private test(int i) {
 	super(5, 6, 8);
     // assignments

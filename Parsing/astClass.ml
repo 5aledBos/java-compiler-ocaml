@@ -89,6 +89,7 @@ and classBodyAst = classBodyDeclaration list option
 and classBodyDeclaration =
   | ClassMemberType of classMemberType
   | ConstructorType of constructorAst
+  | InstanceInitializerType of blockstmts
 
 and classMemberType =
   | MethodClass of methodClassType

@@ -138,11 +138,14 @@ classBodyDeclarations:
 
 classBodyDeclaration:
   | decl = classMemberDeclaration	{ ClassMemberType(decl) } (*TODO* faire types pour celui là *)
-(*  | instanceInitializer		{}*)
+  | decl = instanceInitializer		{ InstanceInitializerType(decl) }
 (*  | staticInitializer		{}*)
   | constructor = constructorDeclaration	{ constructor }
 
 (*classMemberDeclaration*)
+
+instanceInitializer:
+  | stmts=block		{ BlockStatements(stmts) }
 
 classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
