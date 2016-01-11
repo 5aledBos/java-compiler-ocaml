@@ -57,7 +57,8 @@ type expression =
   | ArrayInit of expression list
   | Ternary of expression * expression * expression
   | Instanceof of expression * typ
-  (*| Cast of typ * expression *)
+  | Cast of typ * expression
+  | CastP of typ * int * expression
   | Method of expression * expression list
   | MethodP of expression * typ list option * expression * expression list
   | MethodS of typ list option * expression * expression list
@@ -83,8 +84,7 @@ type statement =
   | Tryfin of statement list * statement list * statement list
   | CatchClause of expression * statement list
   | Label of string * statement
-  | If of expression * statement
-  | Ifelse of expression * statement * statement
+  | If of expression * statement * statement option
   | While of expression * statement
   | DoWhile of statement * expression
   | For of expression list option * expression option * expression list * statement
@@ -200,6 +200,8 @@ let rec string_of_expr expr =
   | ArrayInit(l) -> (string_of_list string_of_expr l)
   | Ternary(c, e1, e2) -> (string_of_expr c) ^ " ? " ^ (string_of_expr e1) ^ " : " ^ (string_of_expr e2)
   | Instanceof(e, t) -> (string_of_expr e) ^ " instance of " ^ (string_of_type t)
+  | Cast(t, e) -> "(" ^ (string_of_type t) ^ ") " ^ (string_of_expr e)
+  | CastP(t, d, e) -> "(" ^ (string_of_type t) ^ " " ^ (string_of_int d) ^ ") " ^ (string_of_expr e)
   | Method(e1, e2) -> (string_of_expr e1) ^ "(" ^ (string_of_list string_of_expr e2) ^ ")"
   (* TODO: Remove the "METHODP at the beginning. Just here to know when it works" *)
   | MethodP(e1, t, e2, l) -> "METHODP" ^ (string_of_expr e1) ^ "." ^ (string_of_opt (string_of_list string_of_type) t) ^ (string_of_expr e2) ^ "(" ^ (string_of_list string_of_expr l) ^ ")"
@@ -228,9 +230,7 @@ let rec string_of_statement stat =
   | Throw(e) -> "(throw " ^ (string_of_expr e) ^ ")"
   | Synchro(e, s) -> "(synchronized (" ^ (string_of_expr e) ^ ") {" ^ (string_of_list string_of_statement s) ^ "}"
   | Label(v, s) -> v ^ " : " ^ (string_of_statement s)
-  | If(e, s) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
-  | Ifelse(e, s1, s2) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s1) ^ "}"
-                          ^ " else {" ^ (string_of_statement s2) ^ "}"
+  | If(e, s, es) -> "if(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ " else {" ^ (string_of_opt string_of_statement es) ^ "}"
   | While(e, s) -> "while(" ^ (string_of_expr e) ^ ") {" ^ (string_of_statement s) ^ "}"
   | DoWhile(s, e) -> "do {" ^ (string_of_statement s) ^ "} while(" ^ (string_of_expr e) ^ ")"
   | For(f, e, es, s) -> "for(" ^ (string_of_opt (string_of_list string_of_expr) f) ^ ";" ^ (string_of_opt string_of_expr e) ^ ";" ^ (string_of_list string_of_expr es) ^ ") {" ^ (string_of_statement s) ^ "}"
