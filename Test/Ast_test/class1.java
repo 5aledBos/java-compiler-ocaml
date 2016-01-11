@@ -100,7 +100,7 @@ public class test extends machin implements testable, truc  {
 		}
 	}
 
-
+	
 
 	protected void getName(String s, int i) {
 
@@ -131,9 +131,13 @@ public class test extends machin implements testable, truc  {
         break;
  	}
 
-public void setInt(int k) {
-	i = k;
-}
+	public void setInt(int k) {
+		i = k;
+	}
+
+
+	private class innerclass {
+	}
 
 }
 

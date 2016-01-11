@@ -131,8 +131,8 @@ classBodyDeclaration:
 classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
   | decl = methodDeclaration		{ MethodClass(decl) }
-(*  | nestedClass			{}*)
-(*  | nestedInterface		{}*)
+  | decl = classDeclaration			{ InnerClass(decl)	}
+(*  | interfaceDeclaration	{}*)
 
 
 	(*declaration des attributs*)
