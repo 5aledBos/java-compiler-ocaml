@@ -194,9 +194,9 @@ constructorBody:
 
 
 
-explicitConstructorInvocation:
-  | THIS LPAR liste=argumentList? RPAR SC	{ { invocator=This; argumentlist=liste } }
-  | SUPER LPAR liste=argumentList? RPAR SC		{ {invocator=Super; argumentlist=liste } }
+explicitConstructorInvocation: 
+  | THIS LPAR liste=argumentList RPAR SC	{ { invocator=This; argumentlist=liste } }
+  | SUPER LPAR liste=argumentList RPAR SC		{ {invocator=Super; argumentlist=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
 

@@ -62,13 +62,11 @@
 /*********/
 
 statements:
-  | s = statement                     { [s] }
-  | s = statement rest = statements   { s::rest }
+  | s = nonempty_list(statement)    { s }
 
 
 (* NAMES *)
 
-(*TODO: check in the Java spec*)
 className:
   | id = IDENT                                { Var id }
 
@@ -114,40 +112,31 @@ fieldAccess:
   (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
 
 methodInvocation:
-  | mn = pathName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
-  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 { MethodP(p, nwa, Var id, al) }*)
-  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       { MethodS(nwa, Var id, al) }
-  (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  { MethodCS(cn, nwa, Var id, al) }
-  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList? RPAR               { MethodT(tn, nwa, Var id, al) }*)
+  | mn = pathName LPAR al = argumentList RPAR                                                          { Method(mn, al) }
+  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                 { MethodP(p, nwa, Var id, al) }*)
+  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                       { MethodS(nwa, Var id, al) }
+  (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
+  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList RPAR               { MethodT(tn, nwa, Var id, al) }*)
 
 nonWildTypeArguments:
-  | LT l = referenceTypeList GT             { l }
-
-referenceTypeList:
-  | t = referenceType                       { [t] }
-  | t = referenceType l = referenceTypeList { t::l }
+  | LT l = nonempty_list(referenceType) GT   { l }
 
 %public
 argumentList:
-  | e = expression                         { [e] }
-  | e = expression COMA al = argumentList  { e::al }
+  | l = separated_list(COMA, expression)   { l }
 
 arrayAccess:
   | en = pathName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
 arrayCreationExpression:
-  | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET,expression?,RBRACKET))                    { ArrayCreation(pt, de) }
+  | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET, expression?, RBRACKET))                    { ArrayCreation(pt, de) }
   (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }
   | NEW pt = primitiveType d = dims ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
   | NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
 arrayInitializer:
-  | LBRACE vi = variableInitializers? c = COMA? RBRACE    { ArrayInit(vi, c) }
-
-variableInitializers:
-  | vi = variableInitializer                                  { [vi] }
-  | vs = variableInitializers COMA vi = variableInitializer   { vi::vs }
+  | LBRACE vi = separated_list(COMA, variableInitializer) c = COMA? RBRACE    { ArrayInit(vi, c) }
 
 %public
 variableInitializer:
@@ -240,14 +229,8 @@ constantExpression:
 
 (* BLOCKS AND STATEMENTS *)
 
-(* Was forced to use EmptyBlock instead of just blockStatements? because for some reason I couldn't make it work. *)
 block:
-  | LBRACE RBRACE                         { [EmptyBlock] }
-  | LBRACE bs = blockStatements RBRACE    { bs }
-
-blockStatements:
-  | bs = blockStatement                         { [bs] }
-  | bs = blockStatement rest = blockStatements  { bs::rest }
+  | LBRACE bs = list(blockStatement) RBRACE    { bs }
 
 blockStatement:
   (*| lv = localvariabledeclstat
@@ -261,15 +244,13 @@ localVariableDeclaration:
   | vm = variableModifiers t = typ vd = variableDeclarators
 
 variableModifiers:
-  | vm = variableModifier                         { [vm] }
-  | vs = variablemMdifiers vm = variableModifier  { vs::vm }
+  | vm = nonempty_list(variableModifier)          { vm }
 
 variableModifier:
   | (* TODO: Use the class parser? *)
 
 variableDeclarators:
-  | vd = variableDeclarator                                 { [vd] }
-  | vs = variableDeclarators COMA vd = variableDeclarator   { vs::vd }
+  | vd = separated_nonempty_list(COMA, variableDeclarator)      { vd }
 
 variableDeclarator:
   | vdi = variableDeclaratorId
@@ -303,11 +284,7 @@ statementWithoutTrailingSubstatement:
   | RETURN e = expression? SC                          { Return(e) }
   | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
   | THROW e = expression SC                           { Throw(e) }
-  | ts = tryStatement                                 { ts }
-
-expressionStatements:
-  | es = expressionStatement                         { [es] }
-  | es = expressionStatement rest = expressionStatements   { es::rest }*)
+  | ts = tryStatement                                 { ts }*)
 
 expressionStatement:
   | se = statementExpression SC    { se }
@@ -329,18 +306,10 @@ switchStatement:
   | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
 
 switchBlock:
-  | LBRACE sbg = switchBlockStatementGroups? sl = switchLabels? RBRACE   { SwitchBlock(sbg, sl) }
-
-switchBlockStatementGroups:
-  | sbsg = switchBlockStatementGroup                                   { [sbsg] }
-  | s = switchBlockStatementGroup g = switchBlockStatementGroups       { s::g }
+  | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
-  | l = switchLabels b = blockStatements                               { SwitchGroup(l, b) }
-
-switchLabels:
-  | s = switchLabel                                                    { [s] }
-  | s = switchLabel  sls = switchLabels                                { s::sls }
+  | l = nonempty_list(switchLabel) bs = list(blockStatement)           { SwitchGroup(l, b) }
 
 switchLabel:
   | CASE c = constantExpression COLON                                  { Case(c) }
@@ -351,15 +320,11 @@ enumConstantName:
   | id = IDENT                                                         { Var id }
 
 tryStatement:
-  | TRY b = block c = catches                                          { Try(b, c) }
-  | TRY b = block c = catches FINALLY f = block                        { Tryfin(b, Some(c), f) }
+  | TRY b = block c = nonempty_list(catchClause)                       { Try(b, c) }
+  | TRY b = block c = nonempty_list(catchClause) FINALLY f = block     { Tryfin(b, Some(c), f) }
   | TRY b = block FINALLY f = block                                    { Tryfin(b, None, f) }
   (* Could be the following, but give the error: Error: do not know how to resolve a reduce/reduce conflict
-  | TRY b = block c = catches? FINALLY f = block                        { Tryfin(b, c, f) }*)
-
-catches:
-  | cc = catchClause                                                   { [cc] }
-  | cc = catchClause c = catches                                       { cc::c }
+  | TRY b = block c = list(catchClause) FINALLY f = block                        { Tryfin(b, c, f) }*)
 
 (*TODO: use formalParameter from parseClass*)
 catchClause:
@@ -398,16 +363,11 @@ forStatement:
   | ef = enhancedForStatement    { ef }
 
 basicForStatement:
-  | FOR LPAR fi = forInit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
+  | FOR LPAR fi = forInit? SC e = expression? SC es = separated_list(COMA, statementExpression) RPAR s = statement   { For(fi, e, es, s) }
 
-(* TODO: Change this to accept coma seperated declaration *)
 forInit:
-  | es = statementExpressionList                             { es }
-  (*| lv = localvariabledecl                                   { lv }*)
-
-statementExpressionList:
-  | e = statementExpression                                  { [e] }
-  | e = statementExpression COMA l = statementExpressionList { e::l }
+  | es = separated_nonempty_list(COMA, statementExpression)   es }
+  (*| lv = localvariabledecl                                    { lv }*)
 
 (* TODO: add type *)
 enhancedForStatement:
