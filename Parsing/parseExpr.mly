@@ -152,6 +152,7 @@ referenceTypeList:
   | t = referenceType                       { [t] }
   | t = referenceType l = referenceTypeList { t::l }
 
+%public
 argumentList:
   | e = expression                         { [e] }
   | e = expression COMA al = argumentList  { e::al }

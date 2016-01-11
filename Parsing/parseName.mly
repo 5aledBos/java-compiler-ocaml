@@ -39,9 +39,9 @@ packageName:
   | id = IDENT                                { Var id }
   | pn = packageName POINT id = IDENT         { Name(pn, id) }
 
-typeName:
+(*typeName:
   | id = IDENT                                { Var id }
-  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }
+  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }*)
 
 (*expressionName:*)
 (*  | id = IDENT                                { Var id }*)
