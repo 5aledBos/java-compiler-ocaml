@@ -1,7 +1,6 @@
 %{
   open AstClass
-  open AstUtil
-%}	
+%}
 
 
 
@@ -30,6 +29,7 @@
 %token POINT
 %token VOID
 %token THROWS
+%token AT
 
 %start compilationUnit
 
@@ -39,15 +39,18 @@
 
 %%
 
-compilationUnit: 
+compilationUnit:
   | packname=packageDeclaration? imp=importDeclarations? liste=typeDeclarations? EOF { FileType({packagename=packname; listImport=imp; listClass=liste; })}
 
+
 packageDeclaration:
-  | PACKAGE str=packageName SC { Package(str) }
+  | PACKAGE str=pathName SC { Package(str) }
+  (*| error {raise Illegal_package}*)
 
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
   | p=importDeclarations str=importDeclaration 	{ p @ [Import(str)] }
+  (*| error { raise Illegal_import }*)
 
 importDeclaration:
   | decl = 	singleTypeImportDeclaration			{ decl }
@@ -55,32 +58,41 @@ importDeclaration:
   | decl = singleStaticImportDeclaration		{ decl }
   | decl = staticImportOnDemandDeclaration		{ decl }
 
+
+(*singleTypeImportDeclaration:*)
+(*  | IMPORT str=typeName SC { { name=str; isStatic=false } }*)
+
+(*typeImportOnDemandDeclaration:*)
+(*  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }*)
+
+(*singleStaticImportDeclaration:*)
+(*  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }*)
+
+(*staticImportOnDemandDeclaration:*)
+(*  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }*)
+
 singleTypeImportDeclaration:
-  | IMPORT str=typeName SC { { name=str; isStatic=false; isOnDemand = false } }
+  | IMPORT str=typeName SC { { name=str; isStatic=false; isOnDemand=false } }
 
 typeImportOnDemandDeclaration:
-  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false; isOnDemand = true } }
+  | IMPORT p=typeName POINT TIMES SC		{ { name=p; isStatic=false; isOnDemand=true } }
 
 singleStaticImportDeclaration:
-  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true; isOnDemand = false} }
+  | IMPORT STATIC p=typeName SC { { name=p; isStatic=true; isOnDemand=false} }
 
 staticImportOnDemandDeclaration:
-  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true ; isOnDemand = true } }
+  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true; isOnDemand = true } }
 
 typeDeclarations:
   |  decl = typeDeclaration { [decl] }
   | liste = typeDeclarations decl = typeDeclaration { liste @ [decl] }
+  | error { raise External_error }
 
 typeDeclaration:
   | decl = classDeclaration		{ decl }
   | decl = interfaceDeclaration	{ decl }
-  
 
-(*typeName:*)
-(*  | str=IDENT	{ str }*)
-(*  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }*)
-
-
+%public
 classDeclaration:
   | decl = normalClassDeclaration	{ decl }
   | enum = enumDeclaration			{ enum }
@@ -97,22 +109,29 @@ interfaceDeclaration:
 
 interfaceBody:
   | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
+  | error { raise Illegal_interfaceBody }
+
 
 interfaceMemberDeclarations:
   | decl=interfaceMemberDeclaration	{  }
   | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
+  | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
-(*  | constantDeclaration		{ }*)
+  | constantDeclaration		{ }
   | abstractMethodDeclaration	{ }
   | decl=classDeclaration		{  }
   | decl=interfaceDeclaration	{  }
 
+constantDeclaration:
+  | classModifiers? typ variableDeclarators SC	{ }
+
 abstractMethodDeclaration:
-  | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) typ methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
-  | cons=enumConstants? COMA? decl=enumBodyDeclarations	{ { enumConstants = cons; enumDeclarations= decl } }
+  | cons=enumConstants?  decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
 
 enumConstants:
   | e=enumConstant	(*classBody?*)		{ [e] }
@@ -120,12 +139,13 @@ enumConstants:
 
 enumConstant:
   | str=IDENT liste=arguments?	{ { name=str; argumentlist=liste } }
+    | error {raise Illegal_enumConstant}
 
 arguments:
   | LPAR liste=argumentList RPAR		{ liste }
 
 enumBodyDeclarations:
-  | SC? decl=classBodyDeclarations?		{ decl }
+  | SC decl=classBodyDeclarations?		{ decl }
 
 
 classBody:
@@ -137,11 +157,17 @@ classBodyDeclarations:
 
 classBodyDeclaration:
   | decl = classMemberDeclaration	{ ClassMemberType(decl) } (*TODO* faire types pour celui là *)
-(*  | instanceInitializer		{}*)
-(*  | staticInitializer		{}*)
+  | decl = instanceInitializer		{ InstanceInitializerType(decl) }
+  | decl = staticInitializer	{ StaticInitializerType(decl) }
   | constructor = constructorDeclaration	{ constructor }
-	
+
 (*classMemberDeclaration*)
+
+instanceInitializer:
+  | stmts=block		{ BlockStatements(stmts) }
+
+staticInitializer:
+  | STATIC stmts=block		{ BlockStatements(stmts) }
 
 classMemberDeclaration:
   | attribut = fieldDeclaration		{ Attribut(attribut) }
@@ -157,34 +183,13 @@ classMemberDeclaration:
 fieldDeclaration:
   | modi=classModifiers? str=typ n=variableDeclarators SC { { names=n; typeof=str; modifiers=modi } }
 
-variableDeclarators:
-  | str=variableDeclarator					{ [str] }
-  | listdecl = variableDeclarators COMA str=variableDeclarator 	{ listdecl @ [str] }
-
-variableDeclarator:
-  | str=IDENT 	{ str }
-  | str=IDENT EQUAL variableInitializer	{ str }
-
-
-(*variableInitializer:
-  | e=expression	{ e }
-(*  | arrayInitializer { }*)
-  
-arrayInitializer:
-  | LBRACE variableInitializers? COMA? RBRACE		{ }
-
-variableInitializers:
-  | variableInitializer			{ }
-  | variableInitializers COMA variableInitializer		{ }*)
-
-
-(*déclaration de constructeurs* Rq: manque encore modifer dans les paramètres*)
 constructorDeclaration:
   | modi=classModifiers? result=constructorDeclarator LBRACE body=constructorBody? RBRACE	{ match result with
 																					| (str, parameterliste) -> ConstructorType{name = str; access = modi; parameters = parameterliste; constructorbody = body } }
- 
+
 constructorDeclarator:
   | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
+  | error { raise Illegal_ConstructorException}
 
 constructorModifiers:
   | modifier		{ }
@@ -195,8 +200,8 @@ constructorBody:
 
 
 explicitConstructorInvocation: 
-  | THIS LPAR liste=argumentList? RPAR SC	{ { invocator=This; argumentlist=liste } }
-  | SUPER LPAR liste=argumentList? RPAR SC		{ {invocator=Super; argumentlist=liste } }
+  | THIS LPAR liste=argumentList RPAR SC	{ { invocator=This; argumentlist=liste } }
+  | SUPER LPAR liste=argumentList RPAR SC		{ {invocator=Super; argumentlist=liste } }
 (*  | PRIMARY POINT SUPER parameterList? RBRACE SC*)
 
 
@@ -204,10 +209,14 @@ explicitConstructorInvocation:
 (* déclaration de méthodes*)
 methodDeclaration:
   | decl=methodHeader body=methodBody { match decl with
-													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} } 
+													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
-  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }
+  | modi=classModifiers? r=VOID temp=methodDeclarator throws?	{ modi, temp, Void }
+  | modi=classModifiers? r=typ temp=methodDeclarator throws?	{ modi, temp, AttributType(r) }
+
+(*methodHeader:*)
+(*  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }*)
 
 methodDeclarator:
   | str=IDENT LPAR liste=formalParameterList? RPAR	{ str, liste }
@@ -223,24 +232,14 @@ exceptionType:
   | classType		{ }
 (*  | typeVariable	{ }*)
 
-(*methodModifiers:*)
-(*  | modifier	{ }*)
-
 methodBody:
-  | stmts = block { BlockStatements(stmts) }	
+  | stmts = block { BlockStatements(stmts) }
+  | error { raise Illegal_methodeBody } 
 (*  | SC {  }*)
 
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
-
-result:
-  | VOID 	{ Void }
-  | str=typ	{ AttributType(str) }
-
-(*instanceInitializer*)
-(*instanceInitializer:*)
-(*  | str=IDENT str=IDENT EQUAL *)
-
+| error { raise Illegal_methodeBody } 
 
 (* utilisé par les ClassBody*)
 
@@ -259,21 +258,17 @@ lastFormalParameter:
 formalParameter:
   | variableModifiers? var=variableType id=variableDeclaratorId		{ { name = id; parametertype=var} }
 
-
+%public
 variableModifiers:
-  | variableModifier	{ }
-  | variableModifiers variableModifier		{}
+  | modifier = variableModifier	{ [modifier] }
+  | liste = variableModifiers modifier = variableModifier		{ liste @ [modifier] }
 
 variableModifier:
-  | f = FINAL 	{ AstUtil.Final }
-
-variableDeclaratorId:
-  | str=IDENT		{ str }
-  | str=variableDeclaratorId LBRACKET RBRACKET		{ str ^ "[]" }
+  | f = FINAL 	{ AstExpr.Final }
 
 variableType:
   | str=typ { str }
-
+  | error {raise Illegal_variable}
 
 parameterList:
   | p=parameter			{ [p] }
@@ -285,56 +280,58 @@ parameter:
 
 
 
+
 (*Def in parseExpr
 argumentList:
   | e=expression	{ [e] }
   | liste=argumentList COMA e=expression { liste @ [e] }*)
 
+annotations:
+  |  annotation		{ }
+  |  annotations annotation		{ }
 
+annotation:
+(*  |  normalAnnotation		{}*)
+  |  expr = markerAnnotation			{ Annotation(expr) }
+(*  |  singleElementAnnotation		{ }*)
 
-declaration:
-  | statements {  }
-(*  | d=declaration str=attributDeclaration { }*)
-(*  | d=declaration str=methodeDeclaration {  }*)
-(*  | str=methodeDeclaration {  }*)
-(*  | str=attributDeclaration {}*)
+(*normalAnnotation:*)
+(*  | AT typeName LPAR elementValuePairs? RPAR	{ }*)
 
+(*elementValuePairs:*)
+(*  | elementValuePair	{ }*)
+(*  | elementValuePairs COMA elementValuePair { }*)
 
-(*boucle:*)
-(*  | IF LPAR stri=condition RPAR  LBRACE str=contenuMethode RBRACE { str}*)
-(*   *)
-(* *)
+(*elementValuePair:*)
+(*  | IDENT ASS elementValue	{ }*)
 
-(*condition:*)
-(*  | str=IDENT { str } *)
-(*  | NEQUAL  str=IDENT { str } *)
+(*elementValue:*)
+(*  | conditionalExpression		{ }*)
+(*  | annotation			{ }*)
+(*  | elementValueArrayInitializer		{ }*)
+
+(*elementValueArrayInitializer:*)
+(*  | LBRACE elementValues? COMA? RBRACE 	{ }*)
+
+(*elementValues:*)
+(*  | elementValue		{ }*)
+(*  | elementValues COMA elementValue 		{ }*)
+
+markerAnnotation:
+  | AT str=IDENT		{ Var str }
+
 
 (* Caracteres speciaux *)
 
 (*egalite:*)
 (*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
 
-interfaceModifiers:
-  | m=interfaceModifier		{ [m]}
-  | liste=interfaceModifiers m=interfaceModifier	{ liste @ [m] }
-
-interfaceModifier:
-  | m=accessModifier	{ m }
-  | m=modifier		{ m }
-
-fieldModifiers:
-  | m=fieldModifier		{ [m] }
-  | liste=fieldModifiers m=fieldModifier { liste @ [m] }
-
-fieldModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierStatic | m= modifierFinal | m=modifierTransient | m=modifierVolatile	{ m }
-
 classModifiers:
   | m=classModifier		{ [m]}
   | liste=classModifiers m=classModifier	{ liste @ [m] }
 
 classModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp {m }
+  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile | m=annotation {m } 
 
 accessModifier:
   | PUBLIC { Public }
@@ -344,13 +341,8 @@ accessModifier:
 modifier:
   | ABSTRACT		{ Abstract }
   | STATIC			{ Static }
-  | STRICTFP		{ AstUtil.Strictfp }
+  | STRICTFP		{ AstExpr.Strictfp }
 
-(*modifierStatic:*)
-(*  | STATIC 	{ Static }*)
-
-(*modifierAbstract:*)
-(*  | ABSTRACT { Abstract }*)
 
 modifierStrictfp:
   | STRICTFP		{ Strictfp }
@@ -365,7 +357,7 @@ modifierProtected:
   | PROTECTED 	{ Protected }
 
 modifierFinal:
-  | FINAL			{ AstUtil.Final }
+  | FINAL			{ AstExpr.Final }
 
 modifierStatic:
   | STATIC 	{ Static }
@@ -378,6 +370,7 @@ modifierTransient:
 
 modifierVolatile:
   | VOLATILE { Volatile }
+
 
 super:
   | EXTENDS str=classType { "test" }
@@ -395,10 +388,4 @@ interfaceType:
 classType:
   | str=IDENT	{ str }
 
-primitive:
-  | PINT { AstUtil.Int } 
-
-
-
-(*attribut*)
 

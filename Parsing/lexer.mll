@@ -57,7 +57,7 @@ let digits = digit+
 let space = [' ' '\t']
 let newline = ('\010' | '\013' | "\013\010")
 
-let input_character = (letter | digit |  [' ''[''{''}''('')''['']''=''!''&''|'';''.''<''>'','])  (* a completer *)
+let input_character = (letter | digit |  [' ''[''{''}''('')''['']''=''!''&''|'';''.''<''>'',''+''-''*''/''=''"'':'])  (* a completer *)
 let escape_sequence = ('\b')(* | "\t" | "\n" | "\r" | "\"" | "\'" | "\\")*)
 
 (* Identifier *)
@@ -119,7 +119,7 @@ rule nexttoken = parse
   | "break"                  { BREAK }
   | "continue"               { CONTINUE }
   | "return"                 { RETURN }
-  | "throws"				{ THROWS }
+  | "throws"				         { THROWS }
   | "throw"                  { THROW }
   | "synchronized"           { SYNCHRONIZED }
   | "try"                    { TRY }
@@ -139,7 +139,7 @@ rule nexttoken = parse
   | "."                      { POINT }
   | "new"                    { NEW }
   | "instanceof"             { INSTANCEOF }
-  | "@"							{ AT }
+  | "@"							         { AT }
 
   (* Statements *)
   | "if"                     { IF }

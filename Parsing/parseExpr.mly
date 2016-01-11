@@ -33,13 +33,13 @@
 /* Priorities and associativity */
 /********************************/
 
-%left OR
+(*%left OR
 %left AND
-(*%left EQUAL NEQUAL
-%left GT GE LT LE*)
+%left EQUAL NEQUAL
+%left GT GE LT LE
 %left PLUS MINUS
 %left TIMES DIV MOD
-(*%right UMINUS UPLUS NOT INCR DECR BITWISE*)
+%right UMINUS UPLUS NOT INCR DECR BITWISE*)
 
 /******************************/
 /* Entry points of the parser */
@@ -61,42 +61,16 @@
 /*********/
 
 statements:
-  | s = statement                     { [s] }
-  | s = statement rest = statements   { s::rest }
-
-
-(* NAMES *)
-
-(*packageName:
-  | id = IDENT                                { Var id }
-  | pn = packageName POINT id = IDENT         { Name(pn, id) }
-
-typeName:
-  | id = IDENT                                { Var id }
-  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }*)
-
-expressionName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
-methodName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
-packageOrTypeName:
-  | id = IDENT                                { Var id }
-  | ptn = packageOrTypeName POINT id = IDENT  { Name(ptn, id) }
-
-ambiguousName:
-  | id = IDENT                                { Var id }
-  | an = ambiguousName POINT id = IDENT       { Name(an, id) }
-
-(*TODO: check in the Java spec*)
-className:
-  | id = IDENT                                { Var id }
+  | s = nonempty_list(statement)    { s }
 
 
 (* EXPRESSIONS *)
+
+expression:
+  | c = conditionalExpression  { c }
+  | ass = assignment           { ass }
+  | p = primary                { p }
+  | error { raise Illegal_expression }
 
 primary:
   | pna = primaryNoNewArray          { pna }
@@ -104,16 +78,14 @@ primary:
 
 primaryNoNewArray:
   | l = literal                              { l }
-  (*| t = typ POINT c = clas                   {}*)
+  (*| t = typ POINT CLASS                      { TClass(t) }*)
   | VOID POINT CLASS                         { CVoid }
   | THIS                                     { This(None) }
-  (*| cn = className POINT THIS                { This(Some(cn)) } *)
+  | id = IDENT POINT THIS                    { This(Some(Var id)) }
   | LPAR e = expression RPAR                 { e }
-  | LPAR e = expression                      { raise (Err(Illegal_bracket ')')) }
-  (* TODO: | e = expression RPAR               { raise (Err(Illegal_bracket '(')) }*)
   (*| cie = classInstanceCreationExpression    { cie }*)
   | fa = fieldAccess                         { fa }
-  (*| mi = methodInvocation                   { mi }*)
+  | mi = methodInvocation                   { mi }
   | aa = arrayAccess                         { aa }
 
 literal:
@@ -124,10 +96,6 @@ literal:
   | str = STRING                      { String str }
   | NULL                              { Null }
 
-assignmentExpression:
-  | c = conditionalExpression  { c }
-  | ass = assignment           { ass }
-
 (*classInstanceCreationExpression:
   | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
   | p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList? RPAR cb = classBody?   {}*)
@@ -135,55 +103,34 @@ assignmentExpression:
 fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
   | SUPER POINT id = IDENT                        { Fieldaccesssuper(id) }
-  (*| cn = className POINT SUPER POINT id = IDENT   { Fieldaccessclass(cn, id) }*)
+  (*| id = IDENT POINT SUPER POINT id = IDENT       { Fieldaccessclass(id, id) }*)
 
 methodInvocation:
-  | mn = methodName LPAR al = argumentList? RPAR                                                          { Method(mn, al) }
-  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                 { MethodP(p, nwa, Var id, al) }*)
-  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR                       { MethodS(nwa, Var id, al) }
-  (*| cn = className POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList? RPAR  { MethodCS(cn, nwa, Var id, al) }
-  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList? RPAR               { MethodT(tn, nwa, Var id, al) }*)
+  | mn = pathName LPAR al = argumentList RPAR        { Method(mn, al) }
+  (*| p = primary POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                 { MethodP(p, nwa, Var id, al) }
+  | SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR                       { MethodS(nwa, Var id, al) }
+  | id = IDENT POINT SUPER POINT nwa = nonWildTypeArguments? id = IDENT LPAR al = argumentList RPAR  { MethodCS(cn, nwa, Var id, al) }
+  | tn = typeName POINT nwa = nonWildTypeArguments id = IDENT LPAR al = argumentList RPAR               { MethodT(tn, nwa, Var id, al) }*)
 
 nonWildTypeArguments:
-  | LT l = referenceTypeList GT             { l }
-
-referenceTypeList:
-  | t = referenceType                       { [t] }
-  | t = referenceType l = referenceTypeList { t::l }
+  | LT l = nonempty_list(referenceType) GT   { l }
 
 %public
 argumentList:
-  | e = expression                         { [e] }
-  | e = expression COMA al = argumentList  { e::al }
+  | l = separated_list(COMA, expression)   { l }
 
 arrayAccess:
-  | en = expressionName LBRACKET e = expression RBRACKET      { ArrayAccess(en, e) }
+  | en = pathName LBRACKET e = expression RBRACKET            { ArrayAccess(en, e) }
   | pna = primaryNoNewArray LBRACKET e = expression RBRACKET  { ArrayAccess(pna, e) }
 
 arrayCreationExpression:
-  | NEW pt = primitiveType de = dimExprs d = dims?                 { ArrayCreation(pt, de, d) }
+  | NEW pt = primitiveType de = nonempty_list(delimited(LBRACKET, expression?, RBRACKET))                    { ArrayCreation(pt, de) }
   (*| NEW coi = classOrInterfaceType de = dimExprs d = dims?         { ArrayCreation(coi, de, d) }*)
-  | NEW pt = primitiveType d = dims ai = arrayInitializer          { ArrayCreationInit(pt, d, ai) }
+  | NEW pt = primitiveType d = nonempty_list(pair(LBRACKET, RBRACKET)) ai = arrayInitializer          { ArrayCreationInit(pt, List.length(d), ai) }
   (*| NEW coi = classOrInterfaceType d = dims ai = arrayInitializer  { ArrayCreation(coi, de, ai) }*)
 
-dimExprs:
-  | de = dimExpr                { [de] }
-  | de = dimExpr ds = dimExprs  { de::ds }
-
-dimExpr:
-  | LBRACKET e = expression RBRACKET    { Dimexpr(e) }
-
-(*TODO: solve here*)
-dims:
-  | LBRACKET RBRACKET            { [Dim] }
-  | LBRACKET RBRACKET d = dims   { Dim::d }
-
 arrayInitializer:
-  | LBRACE vi = variableInitializers? c = COMA? RBRACE    { ArrayInit(vi, c) }
-
-variableInitializers:
-  | vi = variableInitializer                                  { [vi] }
-  | vs = variableInitializers COMA vi = variableInitializer   { vi::vs }
+  | LBRACE vi = separated_list(COMA, variableInitializer) (*COMA?*) RBRACE    { ArrayInit(vi) }
 
 %public
 variableInitializer:
@@ -246,110 +193,72 @@ unaryExpressionNotPlusMinus:
   | pe = postfixExpression       { pe }
   | BITWISE u = unaryExpression  { Unopleft(Ubitwise, u) }
   | NOT u = unaryExpression      { Unopleft(Unot, u) }
-  (*| ca = castExpression          { ca }*)
+  | ca = castExpression          { ca }
 
 postfixExpression:
   | p = primary                  { p }
-  | en = expressionName          { en }
+  | en = pathName                { en }
   | p = postfixExpression INCR   { Unopright(p, Urincr) }
   | p = postfixExpression DECR   { Unopright(p, Urdecr) }
 
-(*castExpression:
-  | LPAR pt = primitiveType RPAR ue = unaryExpression              { Cast(pt, ue) }
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }
-  | LPAR pt = primitiveType d = dims? RPAR ue = unaryExpression    { Cast(pt, ue) }
-  | LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus   { Cast(rt, u) }*)
+castExpression:
+  | LPAR pt = primitiveType l = list(pair(LBRACKET, RBRACKET)) RPAR ue = unaryExpression    { CastP(pt, List.length(l), ue) }
+  (*| LPAR rt = referenceType RPAR u = unaryExpressionNotPlusMinus                            { Cast(rt, u) }*)
 
 assignment:
-  | l = leftHandSide ass = assign e = assignmentExpression  { Assign(l, ass, e) }
+  | l = leftHandSide ass = assign e = expression  { Assign(l, ass, e) }
 
 leftHandSide:
-  | en = expressionName          { en }
+  | en = pathName                { en }
   | fa = fieldAccess             { fa }
   | aa = arrayAccess             { aa }
-
-expression:
-  | ae = assignmentExpression    { ae }
-
-constantExpression:
-  | e = expression               { e }
 
 
 (* BLOCKS AND STATEMENTS *)
 
-(* Was forced to use EmptyBlock instead of just blockStatements? because for some reason I couldn't make it work. *)
 block:
-  | LBRACE RBRACE                         { [EmptyBlock] }
-  | LBRACE bs = blockStatements RBRACE    { bs }
-  | LBRACE bs = blockStatements           { raise (Err(Illegal_bracket '}')) }
-  (* TODO: | bs = blockStatements RBRACE               { raise (Err(Illegal_bracket '{')) }*)
-
-blockStatements:
-  | bs = blockStatement                         { [bs] }
-  | bs = blockStatement rest = blockStatements  { bs::rest }
+  | LBRACE bs = list(blockStatement) RBRACE    { bs }
 
 blockStatement:
-  (*| lv = localvariabledeclstat
-  | cd = classdeclar*)
-  | s = statement       { s }
+  | vm = variableModifiers? t = typ vd = variableDeclarators SC     { LocalVarDeclS(vm, t, vd) }
+  (*| cd = classDeclaration                                           { cd }*)
+  | s = statement                                                   { s }
 
-(*localVariableDeclarationStatement:
-  | lv = localVariableDeclaration SC     { lv }
-
-localVariableDeclaration:
-  | vm = variableModifiers t = typ vd = variableDeclarators
-
-variableModifiers:
-  | vm = variableModifier                         { [vm] }
-  | vs = variablemMdifiers vm = variableModifier  { vs::vm }
-
-variableModifier:
-  | (* TODO: Use the class parser? *)
-
+%public
 variableDeclarators:
-  | vd = variableDeclarator                                 { [vd] }
-  | vs = variableDeclarators COMA vd = variableDeclarator   { vs::vd }
+  | vd = separated_nonempty_list(COMA, variableDeclarator)      { vd }
 
 variableDeclarator:
-  | vdi = variableDeclaratorId
-  | vdi = variableDeclaratorId ASS vi = variableInitializer
+  | vdi = variableDeclaratorId vc = variableDeclaratorCompl?    { VarDecl(vdi, vc) }
 
+variableDeclaratorCompl:
+  | ASS vi = variableInitializer     { vi }
+
+%public
 variableDeclaratorId:
-  | id = IDENT
-  | vdi = variableDeclaratorId LBRACKET RBRACKET
-
-variableInitializer:
-  | e = expression
-  | ai = arrayInitializer*)
+  | id = IDENT                                     { Var id }
+  (*| vdi = variableDeclaratorId LBRACKET RBRACKET   {}*)
 
 statement:
-  | s = statementWithoutTrailingSubstatement { s }
-  | ls = labeledStatement                    { ls }
-  | i = ifThenStatement                      { i }
-  | ie = ifThenElseStatement                 { ie }
-  | ws = whileStatement                      { ws }
-  | fs = forStatement                        { fs }
+  | s = statementWithoutTrailingSubstatement                          { s }
+  | id = IDENT COLON s = statement                                    { Label(id, s) }
+  | IF LPAR e = expression RPAR s = statement es = elseStatement?     { If(e, s, es) }
+  | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
+  | fs = forStatement                                                 { fs }
 
 statementWithoutTrailingSubstatement:
-  | b = block                                         { Statements(b) }
-  | SC                                                { EmptyStatement }
-  | es = expressionStatement                          { Expression(es) }
-  | ast = assertStatement                             { ast }
-  | ss = switchStatement                              { ss }
-  | ds = doStatement                                  { ds }
-  | BREAK id = IDENT? SC                              { Break(id) }
-  | CONTINUE id = IDENT? SC                           { Continue(id) }
-  | RETURN e = expression? SC                          { Return(e) }
-  | SYNCHRONIZED LPAR e = expression RPAR b = block   { Synchro(e, b) }
-  | THROW e = expression SC                           { Throw(e) }
-  | ts = tryStatement                                 { ts }
-
-expressionStatements:
-  | es = expressionStatement                         { [es] }
-  | es = expressionStatement rest = expressionStatements   { es::rest }
-
-expressionStatement:
-  | se = statementExpression SC    { se }
+  | b = block                                             { Statements(b) }
+  | SC                                                    { EmptyStatement }
+  | se = statementExpression SC                           { Expression(se) }
+  | ast = assertStatement                                 { ast }
+  (*| SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }*)
+  | DO s = statement WHILE LPAR e = expression RPAR SC    { DoWhile(s, e) }
+  | BREAK id = IDENT? SC                                  { Break(id) }
+  | CONTINUE id = IDENT? SC                               { Continue(id) }
+  | RETURN e = expression? SC                             { Return(e) }
+  | SYNCHRONIZED LPAR e = expression RPAR b = block       { Synchro(e, b) }
+  | THROW e = expression SC                               { Throw(e) }
+  | ts = tryStatement                                     { ts }
 
 statementExpression:
   | ass = assignment                       { ass }
@@ -364,94 +273,42 @@ assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-switchStatement:
-  | SWITCH LPAR id = IDENT RPAR sb = switchBlock                       { Switch(Var id, sb) }
-
-switchBlock:
-  | LBRACE sbg = switchBlockStatementGroups? sl = switchLabels? RBRACE   { SwitchBlock(sbg, sl) }
-
-switchBlockStatementGroups:
-  | sbsg = switchBlockStatementGroup                                   { [sbsg] }
-  | s = switchBlockStatementGroup g = switchBlockStatementGroups       { s::g }
+(*switchBlock:
+  | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
-  | l = switchLabels b = blockStatements                               { SwitchGroup(l, b) }
-
-switchLabels:
-  | s = switchLabel                                                    { [s] }
-  | s = switchLabel  sls = switchLabels                                { s::sls }
+  | l = nonempty_list(switchLabel) bs = list(blockStatement)           { SwitchGroup(l, bs) }
 
 switchLabel:
-  | CASE c = constantExpression COLON                                  { Case(c) }
-  | CASE e = enumConstantName COLON                                    { Case(e) }
-  | DEFAULT COLON                                                      { Default }
+  | CASE c = expression COLON                                  { Case(c) }
+  | CASE e = enumConstantName COLON                            { Case(e) }
+  | DEFAULT COLON                                              { Default }
 
 enumConstantName:
-  | id = IDENT                                                         { Var id }
+  | id = IDENT                                                 { Var id }*)
 
 tryStatement:
-  | TRY b = block c = catches                                          { Try(b, c) }
-  | TRY b = block c = catches FINALLY f = block                        { Tryfin(b, Some(c), f) }
-  | TRY b = block FINALLY f = block                                    { Tryfin(b, None, f) }
-  (* Could be the following, but give the error: Error: do not know how to resolve a reduce/reduce conflict
-  | TRY b = block c = catches? FINALLY f = block                        { Tryfin(b, c, f) }*)
-
-catches:
-  | cc = catchClause                                                   { [cc] }
-  | cc = catchClause c = catches                                       { cc::c }
+  | TRY b = block c = nonempty_list(catchClause)                { Try(b, c) }
+  | TRY b = block c = list(catchClause) FINALLY f = block       { Tryfin(b, c, f) }
 
 (*TODO: use formalParameter from parseClass*)
 catchClause:
-  | CATCH LPAR fp = formalParam RPAR b = block                 { CatchClause(fp, b) }
+  | CATCH LPAR fp = formalParam RPAR b = block                  { CatchClause(fp, b) }
 
 formalParam:
-  | vdi = IDENT                                                        { Var vdi }
+  | vdi = IDENT                                                  { Var vdi }
   (*| vm = variableModifiers t = typ vdi = variableDeclaratorId     {}*)
 
-labeledStatement:
-  | id = IDENT COLON s = statement                                     { Label(id, s) }
-
-ifThenStatement:
-  | IF LPAR e = expression RPAR s = statement                          { If(e, s) }
-
-ifThenElseStatement:
-  | IF LPAR e = expression RPAR s1 = statement ELSE s2 = statement     { Ifelse(e, s1, s2) }
-  (* TODO: replace previous by
-  | IF LPAR e = expression RPAR s1 = statementNoShortIf ELSE s2 = statement    { Ifelse(e, s1, s2) }*)
-
-(*statementNoShortIf:
-  | StatementWithoutTrailingSubstatement
-  | LabeledStatementNoShortIf
-  | IfThenElseStatementNoShortIf
-  | WhileStatementNoShortIf
-  | ForStatementNoShortIf*)
-
-whileStatement:
-  | WHILE LPAR e = expression RPAR s = statement                      { While(e, s) }
-
-doStatement:
-  | DO s = statement WHILE LPAR e = expression RPAR SC                { DoWhile(s, e) }
+elseStatement:
+  | ELSE s = statement                                                { s }
 
 forStatement:
-  | bf = basicForStatement       { bf }
-  | ef = enhancedForStatement    { ef }
+  | FOR LPAR fi = forInit? SC e = expression? SC es = separated_list(COMA, statementExpression) RPAR s = statement   { For(fi, e, es, s) }
+  | FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }
 
-basicForStatement:
-  | FOR LPAR fi = forInit? SC e = expression? SC es = statementExpressionList? RPAR s = statement   { For(fi, e, es, s) }
-
-(* TODO: Change this to accept coma seperated declaration *)
 forInit:
-  | es = statementExpressionList                             { es }
-  (*| lv = localvariabledecl                                   { lv }*)
-
-statementExpressionList:
-  | e = statementExpression                                  { [e] }
-  | e = statementExpression COMA l = statementExpressionList { e::l }
-
-(* TODO: add type *)
-enhancedForStatement:
-  | FOR LPAR id = IDENT COLON e = expression RPAR s = statement  { EFor(Var id, e, s) }
-  (*| FOR LPAR vm = variableModifiers? t = typ id = IDENT COLON e = expression RPAR s = statement  { EFor(vm, t, Var id, e, s) }*)
+  | es = separated_nonempty_list(COMA, statementExpression)    { es }
+  | vm = variableModifiers? t = typ vd = variableDeclarators   { [LocalVarDecl(vm, t, vd)] }
 
 
 %inline binopmul:
@@ -475,8 +332,6 @@ enhancedForStatement:
   | DECR      { Uldecr }
   | PLUS      { Uplus }
   | MINUS     { Uminus }
-  | BITWISE   { Ubitwise }
-  | NOT       { Unot }
 
 %inline assign:
   | ASS         { Ass }

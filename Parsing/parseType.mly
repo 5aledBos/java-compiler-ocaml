@@ -1,5 +1,5 @@
 %{
-    open AstUtil
+    open AstExpr
 %}
 
 /******************************/
@@ -7,19 +7,16 @@
 /******************************/
 
 %start typ
-%type <AstUtil.typ> typ
+%type <AstExpr.typ> typ
 
 %start primitiveType
-%type <AstUtil.typ> primitiveType
+%type <AstExpr.typ> primitiveType
 
 %start referenceType
-%type <AstUtil.typ> referenceType
+%type <AstExpr.typ> referenceType
 
-%start typeVariable
-%type <AstUtil.typ> typeVariable
-
-%start classType
-%type <unit> classType
+(*%start classType*)
+(*%type <AstExpr.> classType*)
 
 %%
 
@@ -52,9 +49,9 @@ floatingPointType:
   | PFLOAT      { Primitive(Float) }
   | PDOUBLE     { Primitive(Double) }
 
-(*referenceType:*)
+referenceType:
   (*| cit = classOrInterfaceType    { cit }*)
-(*  | tv = typeVariable             { tv }*)
+  | id = IDENT             { Type id }
   (*| at = arrayType                { at }
 
 classOrInterfaceType:
@@ -74,9 +71,6 @@ classOrInterfaceType:
 (*typeName:*)
 (*  | id = IDENT                       { Var id }*)
 (*  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
-
-(*typeVariable:*)
-(*  | id = IDENT    { Type id }*)
 
 (*arrayType:
   | typ LBRACKET RBRACKET   { ArrayType(typ) }
@@ -98,53 +92,4 @@ wildcard:
 wildcardBounds:
   | EXTENDS rt = referenceType    {}
   | SUPER rt = referenceType      {}*)
-
-
-referenceType:
-  | cit = classOrInterfaceType    {  }
-  | tv = typeVariable             {  }
-  | at = arrayType                {  }
-
-classOrInterfaceType:
-  | ct = classType                {  }
-  | it = interfaceType            { }
-
-(*classType:*)
-(*  | tds = typeDeclSpecifier ta = typeArguments?   {  }*)
-
-interfaceType:
-  | tds = typeDeclSpecifier ta = typeArguments?   { } 
-
-typeDeclSpecifier:
-  | tn = typeName                                 {  }
-  | cit = classOrInterfaceType POINT id = IDENT   {  }
-
-typeName:
-  | id = IDENT                       {  }
-  | tn = typeName POINT id = IDENT   {  }
-
-typeVariable:
-  | id = IDENT    {  }
-
-arrayType:
-  | typ LBRACKET RBRACKET   {  }
-
-typeArguments:
-  | LT ata = actualTypeArgumentList GT  {  }
-
-actualTypeArgumentList:
-  | at = actualTypeArgument                                     {  }
-  | atl = actualTypeArgumentList COMA at = actualTypeArgument   { }
-
-actualTypeArgument:
-  | rt = referenceType    {  }
-  | w = wildcard          { }
-
-wildcard:
-  | QUESTMARK wb = wildcardBounds?   {}
-
-wildcardBounds:
-  | EXTENDS rt = referenceType    {}
-  | SUPER rt = referenceType      {}
-%%
 %%
