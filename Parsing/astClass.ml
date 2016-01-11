@@ -108,7 +108,7 @@ and classContentAst =
 and enumBodyAst = 
 {
   enumConstants : enumConstant list option;
-  enumDeclarations : classBodyDeclaration list option
+  enumDeclarations : classBodyDeclaration list option option
 }
 and enumConstant =
   {
@@ -239,9 +239,24 @@ let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)
   | ClassMemberType(member) -> string_of_classmember(member)
 
+let string_of_classDeclarationOption decl = match decl with
+  | Some(ConstructorType(constructor)) -> string_of_constructor(constructor)
+  | Some(ClassMemberType(member)) -> string_of_classmember(member)
+  | None -> ""
+
 let rec string_of_classDeclarations liste = match liste with
   | Some([]) -> ""
   | Some(x::xs) -> string_of_classDeclaration(x) ^ "\n" ^ string_of_classDeclarations(Some(xs))
+  | None -> ""
+
+
+(*let rec string_of_classDeclarationsOption liste = match liste with*)
+(*  | Some([]) -> ""*)
+(*  | Some(x::xs) -> string_of_classDeclarations(x) ^ "\n" ^ string_of_classDeclarations(Some(xs))*)
+(*  | None -> ""*)
+
+let string_of_enumBodyDeclarations liste = match liste with
+  | Some(liste) -> string_of_classDeclarations(liste)
   | None -> ""
 
 let string_of_enumConstant cons = match cons with
@@ -253,7 +268,7 @@ let rec string_of_enumConstants liste = match liste with
   | None -> ""
 
 let string_of_enumBody body = match body with
-  | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_classDeclarations(decl)
+  | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_enumBodyDeclarations(decl)
 
 
 let printClassDeclaration decl = match decl with

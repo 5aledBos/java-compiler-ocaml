@@ -26,5 +26,7 @@ public class secondClass {
 
 
 public enum testable {
-	BLACK, RED, LIGHT
+	BLACK, RED, LIGHT;
+	public void test() {
+	}
 }

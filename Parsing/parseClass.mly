@@ -112,7 +112,7 @@ abstractMethodDeclaration:
   | modi=classModifiers? (*typeParameters?*) result methodDeclarator (*throws*)	SC	{ }
 
 enumBody:
-  | cons=enumConstants? COMA? decl=enumBodyDeclarations	{ { enumConstants = cons; enumDeclarations= decl } }
+  | cons=enumConstants? COMA? decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
 
 enumConstants:
   | e=enumConstant	(*classBody?*)		{ [e] }
@@ -125,7 +125,7 @@ arguments:
   | LPAR liste=argumentList RPAR		{ liste }
 
 enumBodyDeclarations:
-  | SC? decl=classBodyDeclarations?		{ decl }
+  | SC decl=classBodyDeclarations?		{ decl }
 
 
 classBody:
