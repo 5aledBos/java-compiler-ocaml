@@ -8,7 +8,8 @@ type import = Import of importType
 and importType =
   {
 	isStatic : bool;
- 	name : string;
+ 	name :AstExpr.expression;
+	isOnDemand : bool
   }
 type importList = import list
 
@@ -163,7 +164,7 @@ type fileType = FileType of fileAst
 
 
 let string_of_import i = match i with
-  | Import({ name=str; isStatic=b }) -> if(b) then "static " ^ str else str
+  | Import({ name=str; isStatic=b ; isOnDemand=c }) -> if(b) then "static " ^ AstExpr.string_of_expr(str) else AstExpr.string_of_expr(str)
 
 let string_of_inheritance i = match i with
   | Some(i) -> "extends " ^ i

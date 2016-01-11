@@ -18,8 +18,8 @@
 %start typeVariable
 %type <AstUtil.typ> typeVariable
 
-(*%start classType*)
-(*%type <AstUtil.> classType*)
+%start classType
+%type <unit> classType
 
 %%
 
@@ -52,9 +52,9 @@ floatingPointType:
   | PFLOAT      { Primitive(Float) }
   | PDOUBLE     { Primitive(Double) }
 
-referenceType:
+(*referenceType:*)
   (*| cit = classOrInterfaceType    { cit }*)
-  | tv = typeVariable             { tv }
+(*  | tv = typeVariable             { tv }*)
   (*| at = arrayType                { at }
 
 classOrInterfaceType:
@@ -75,8 +75,8 @@ classOrInterfaceType:
 (*  | id = IDENT                       { Var id }*)
 (*  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
 
-typeVariable:
-  | id = IDENT    { Type id }
+(*typeVariable:*)
+(*  | id = IDENT    { Type id }*)
 
 (*arrayType:
   | typ LBRACKET RBRACKET   { ArrayType(typ) }
@@ -98,4 +98,53 @@ wildcard:
 wildcardBounds:
   | EXTENDS rt = referenceType    {}
   | SUPER rt = referenceType      {}*)
+
+
+referenceType:
+  | cit = classOrInterfaceType    {  }
+  | tv = typeVariable             {  }
+  | at = arrayType                {  }
+
+classOrInterfaceType:
+  | ct = classType                {  }
+  | it = interfaceType            { }
+
+(*classType:*)
+(*  | tds = typeDeclSpecifier ta = typeArguments?   {  }*)
+
+interfaceType:
+  | tds = typeDeclSpecifier ta = typeArguments?   { } 
+
+typeDeclSpecifier:
+  | tn = typeName                                 {  }
+  | cit = classOrInterfaceType POINT id = IDENT   {  }
+
+typeName:
+  | id = IDENT                       {  }
+  | tn = typeName POINT id = IDENT   {  }
+
+typeVariable:
+  | id = IDENT    {  }
+
+arrayType:
+  | typ LBRACKET RBRACKET   {  }
+
+typeArguments:
+  | LT ata = actualTypeArgumentList GT  {  }
+
+actualTypeArgumentList:
+  | at = actualTypeArgument                                     {  }
+  | atl = actualTypeArgumentList COMA at = actualTypeArgument   { }
+
+actualTypeArgument:
+  | rt = referenceType    {  }
+  | w = wildcard          { }
+
+wildcard:
+  | QUESTMARK wb = wildcardBounds?   {}
+
+wildcardBounds:
+  | EXTENDS rt = referenceType    {}
+  | SUPER rt = referenceType      {}
+%%
 %%

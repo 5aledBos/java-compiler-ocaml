@@ -1,6 +1,5 @@
 %{
     open AstExpr
-    open AstUtil
 %}
 
 /**********/
@@ -190,6 +189,7 @@ variableInitializers:
 variableInitializer:
   | e = expression         { e }
   | ai = arrayInitializer  { ai }
+
 
 conditionalExpression:
   | co = conditionalOrExpression         { co }

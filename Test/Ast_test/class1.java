@@ -7,7 +7,7 @@ import static java.io.*;
 
 public class test extends machin implements testable, truc  {
 
-	public int i, j;
+	public int i;
 	public final String test;
 
 	private test() {
@@ -149,7 +149,7 @@ public class test extends machin implements testable, truc  {
 	}
 
 	interface clonable {
-		public void methodname(int i);
+		public int methodname(int i);
 	}
 
 }
