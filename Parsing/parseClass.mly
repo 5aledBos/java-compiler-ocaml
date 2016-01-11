@@ -60,17 +60,29 @@ importDeclaration:
   | decl = staticImportOnDemandDeclaration		{ decl }
 
 
+(*singleTypeImportDeclaration:*)
+(*  | IMPORT str=typeName SC { { name=str; isStatic=false } }*)
+
+(*typeImportOnDemandDeclaration:*)
+(*  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }*)
+
+(*singleStaticImportDeclaration:*)
+(*  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }*)
+
+(*staticImportOnDemandDeclaration:*)
+(*  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }*)
+
 singleTypeImportDeclaration:
-  | IMPORT str=typeName SC { { name=str; isStatic=false } }
+  | IMPORT str=typeName SC { { name=str; isStatic=false; isOnDemand=false } }
 
 typeImportOnDemandDeclaration:
-  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }
+  | IMPORT p=typeName POINT TIMES SC		{ { name=p; isStatic=false; isOnDemand=true } }
 
 singleStaticImportDeclaration:
-  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }
+  | IMPORT STATIC p=typeName SC { { name=p; isStatic=true; isOnDemand=false} }
 
 staticImportOnDemandDeclaration:
-  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }
+  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true; isOnDemand = true } }
 
 typeDeclarations:
   |  decl = typeDeclaration { [decl] }
@@ -82,9 +94,9 @@ typeDeclaration:
   | decl = interfaceDeclaration	{ decl }
 
 
-typeName:
-  | str=IDENT	{ str }
-  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }
+(*typeName:*)
+(*  | str=IDENT	{ str }*)
+(*  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }*)
 
 %public
 classDeclaration:

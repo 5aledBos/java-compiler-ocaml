@@ -5,7 +5,8 @@ type import = Import of importType
 and importType =
   {
 	isStatic : bool;
- 	name : string;
+ 	name : AstExpr.expression;
+	isOnDemand: bool
   }
 type importList = import list
 
@@ -162,7 +163,11 @@ type fileType = FileType of fileAst
 
 
 let string_of_import i = match i with
-  | Import({ name=str; isStatic=b }) -> if(b) then "static " ^ str else str
+  | Import({ name=Name(expr); isStatic=b; isOnDemand=c }) -> match (b, c) with
+		| (true, false) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr
+		| (true, true) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
+		| (false, false) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr
+		| (false, true) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
 
 let string_of_inheritance i = match i with
   | Some(i) -> "extends " ^ i
@@ -292,7 +297,7 @@ let rec string_of_classes classes = match classes with
   | None -> ""
 
 let string_of_package pack = match pack with
-  | Some(Package(Name(expr))) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr
+  | Some(Package(Name(expr))) -> AstExpr.string_of_list "\\" AstExpr.string_of_expr expr
   | None -> "No package"
 
 
