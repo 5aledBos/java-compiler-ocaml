@@ -58,3 +58,13 @@ exception Illegal_variable
 exception Illegal_result
 
 exception Illegal_methodeBody
+
+exception Illegal_variableDeclarator
+
+ exception Illegal_interfaceBody
+
+exception Illegal_enumConstant
+
+exception Illegal_import
+
+exception External_error

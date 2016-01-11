@@ -47,3 +47,20 @@ with
 | Illegal_methodeBody ->
      print_string("erreur au sein d'une methode");
      print_newline()
+| Illegal_variableDeclarator ->
+     print_string("erreur declaration d'une variable");
+     print_newline()
+
+| Illegal_interfaceBody ->
+     print_string("erreur declaration d'une interface");
+     print_newline()
+| Illegal_enumConstant ->
+     print_string("erreur declaration d'une enumeration constant");
+     print_newline()
+
+| Illegal_import ->
+     print_string("erreur declaration d'un import ou à la suite d'un import");
+     print_newline()
+ |External_error ->
+     print_string("erreur entre deux classes/interfaces ");
+     print_newline()

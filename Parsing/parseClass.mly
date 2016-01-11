@@ -43,6 +43,7 @@
 compilationUnit:
   | packname=packageDeclaration? imp=importDeclarations? liste=typeDeclarations? EOF { FileType({packagename=packname; listImport=imp; listClass=liste; })}
 
+
 packageDeclaration:
   | PACKAGE str=pathName SC { Package(str) }
   | error {raise Illegal_package}
@@ -56,6 +57,7 @@ importDeclaration:
   | decl = typeImportOnDemandDeclaration		{ decl }
   | decl = singleStaticImportDeclaration		{ decl }
   | decl = staticImportOnDemandDeclaration		{ decl }
+  | error { raise Illegal_import }
 
 singleTypeImportDeclaration:
   | IMPORT str=typeName SC { { name=str; isStatic=false } }
@@ -72,6 +74,7 @@ staticImportOnDemandDeclaration:
 typeDeclarations:
   |  decl = typeDeclaration { [decl] }
   | liste = typeDeclarations decl = typeDeclaration { liste @ [decl] }
+  | error { raise External_error }
 
 typeDeclaration:
   | decl = classDeclaration		{ decl }
@@ -99,10 +102,13 @@ interfaceDeclaration:
 
 interfaceBody:
   | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
+  | error { raise Illegal_interfaceBody }
+
 
 interfaceMemberDeclarations:
   | decl=interfaceMemberDeclaration	{  }
   | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
+  | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
 (*  | constantDeclaration		{ }*)
@@ -123,6 +129,7 @@ enumConstants:
 
 enumConstant:
   | str=IDENT liste=arguments?	{ { name=str; argumentlist=liste } }
+    | error {raise Illegal_enumConstant}
 
 arguments:
   | LPAR liste=argumentList RPAR		{ liste }
@@ -173,6 +180,7 @@ variableDeclarators:
 variableDeclarator:
   | str=IDENT 	{ str }
   | str=IDENT EQUAL variableInitializer	{ str }
+  | error {raise Illegal_variableDeclarator }
 
 
 (*variableInitializer:
