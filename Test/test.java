@@ -38,6 +38,9 @@ public class test extends machin implements testable, truc  {
     x = abc.this[10];
   }
 
+	public void getSomething() throws something {
+	}
+
 }
 
 
@@ -49,6 +52,6 @@ public class secondClass {
 
 public enum testable {
 	BLACK, RED, LIGHT;
-	public int test(int i) {
+	public int test(int i) throws something {
 	}
 }

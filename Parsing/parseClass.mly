@@ -214,8 +214,8 @@ methodDeclaration:
 													| (modi, (str, liste), result) -> { name=str; access=modi;methodbody=body; parameters=liste; resultType= result} }
 
 methodHeader:
-  | modi=classModifiers? r=VOID temp=methodDeclarator (*throws?*)	{ modi, temp, Void }
-  | modi=classModifiers? r=typ temp=methodDeclarator (*throws?*)	{ modi, temp, AttributType(r) }
+  | modi=classModifiers? r=VOID temp=methodDeclarator throws?	{ modi, temp, Void }
+  | modi=classModifiers? r=typ temp=methodDeclarator throws?	{ modi, temp, AttributType(r) }
 
 (*methodHeader:*)
 (*  | modi=classModifiers? r=result temp=methodDeclarator (*throws?*)	{ modi, temp, r }*)
@@ -234,24 +234,12 @@ exceptionType:
   | classType		{ }
 (*  | typeVariable	{ }*)
 
-(*methodModifiers:*)
-(*  | modifier	{ }*)
-
 methodBody:
   | stmts = block { BlockStatements(stmts) }
 (*  | SC {  }*)
 
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
-
-(*result:*)
-(*  | VOID 	{ Void }*)
-(*  | str=typ	{ AttributType(str) }*)
-
-(*instanceInitializer*)
-(*instanceInitializer:*)
-(*  | str=IDENT str=IDENT EQUAL *)
-
 
 (* utilisé par les ClassBody*)
 
@@ -285,45 +273,6 @@ variableDeclaratorId:
 variableType:
   | str=typ { str }
 
-
-parameterList:
-  | p=parameter			{ [p] }
-  | params=parameterList COMA p=parameter	{ params @ [p] }
-
-
-parameter:
-  | t=typ str=IDENT	{ {parametertype=t; name=str} }
-
-
-
-(*Def in parseExpr
-argumentList:
-  | e=expression	{ [e] }
-  | liste=argumentList COMA e=expression { liste @ [e] }*)
-
-
-
-
-(* Caracteres speciaux *)
-
-(*egalite:*)
-(*  | str=IDENT EQUAL stri=IDENT SC {str^ " egale " ^ stri}*)
-
-interfaceModifiers:
-  | m=interfaceModifier		{ [m]}
-  | liste=interfaceModifiers m=interfaceModifier	{ liste @ [m] }
-
-interfaceModifier:
-  | m=accessModifier	{ m }
-  | m=modifier		{ m }
-
-fieldModifiers:
-  | m=fieldModifier		{ [m] }
-  | liste=fieldModifiers m=fieldModifier { liste @ [m] }
-
-fieldModifier:
-  | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierStatic | m= modifierFinal | m=modifierTransient | m=modifierVolatile	{ m }
-
 classModifiers:
   | m=classModifier		{ [m]}
   | liste=classModifiers m=classModifier	{ liste @ [m] }
@@ -341,11 +290,6 @@ modifier:
   | STATIC			{ Static }
   | STRICTFP		{ AstUtil.Strictfp }
 
-(*modifierStatic:*)
-(*  | STATIC 	{ Static }*)
-
-(*modifierAbstract:*)
-(*  | ABSTRACT { Abstract }*)
 
 modifierStrictfp:
   | STRICTFP		{ Strictfp }
@@ -390,9 +334,4 @@ interfaceType:
 classType:
   | str=IDENT	{ str }
 
-primitive:
-  | PINT { AstUtil.Int }
 
-
-
-(*attribut*)
