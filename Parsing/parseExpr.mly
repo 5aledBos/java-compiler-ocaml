@@ -77,6 +77,7 @@ expression:
   | c = conditionalExpression  { c }
   | ass = assignment           { ass }
   | p = primary                { p }
+  | error { raise Illegal_expression }
 
 primary:
   | pna = primaryNoNewArray          { pna }

@@ -61,7 +61,9 @@ exception Illegal_methodeBody
 
 exception Illegal_variableDeclarator
 
- exception Illegal_interfaceBody
+exception Illegal_interfaceBody
+
+exception Illegal_expression
 
 exception Illegal_enumConstant
 

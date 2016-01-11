@@ -64,3 +64,6 @@ with
  |External_error ->
      print_string("erreur entre deux classes/interfaces ");
      print_newline()
+|Illegal_expression -> 
+print_string("erreur d'une expression ");
+     print_newline()

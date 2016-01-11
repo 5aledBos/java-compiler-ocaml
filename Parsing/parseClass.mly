@@ -46,18 +46,19 @@ compilationUnit:
 
 packageDeclaration:
   | PACKAGE str=pathName SC { Package(str) }
-  | error {raise Illegal_package}
+  (*| error {raise Illegal_package}*)
 
 importDeclarations:
   | str=importDeclaration { [Import(str)] }
   | p=importDeclarations str=importDeclaration 	{ p @ [Import(str)] }
+  (*| error { raise Illegal_import }*)
 
 importDeclaration:
   | decl = 	singleTypeImportDeclaration			{ decl }
   | decl = typeImportOnDemandDeclaration		{ decl }
   | decl = singleStaticImportDeclaration		{ decl }
   | decl = staticImportOnDemandDeclaration		{ decl }
-  | error { raise Illegal_import }
+
 
 singleTypeImportDeclaration:
   | IMPORT str=typeName SC { { name=str; isStatic=false } }
@@ -254,7 +255,7 @@ methodBody:
 
 blockstmts:
   | stmts = statements	{ BlockStatements(stmts) }
-
+| error { raise Illegal_methodeBody } 
 
 (* utilisé par les ClassBody*)
 
