@@ -93,7 +93,20 @@ enumDeclaration:
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT LBRACE str=classBody? RBRACE  { InterfaceType{interfacename = id; access = modi} }
+  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) str=interfaceBody   { InterfaceType{interfacename = id; access = modi} }
+
+interfaceBody:
+  | LBRACE interfaceMemberDeclarations? RBRACE 	{ }
+
+interfaceMemberDeclarations:
+  | interfaceDeclaration	{ }
+  | interfaceMemberDeclarations interfaceMemberDeclaration	{ }
+
+interfaceMemberDeclaration:
+(*  | constantDeclaration		{ }*)
+(*  | abstractMethodDeclaration	{ }*)
+  | classDeclaration		{ }
+  | interfaceDeclaration	{ }
 
 
 enumBody:
