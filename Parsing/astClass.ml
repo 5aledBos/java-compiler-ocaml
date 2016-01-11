@@ -292,7 +292,7 @@ let rec string_of_classes classes = match classes with
   | None -> ""
 
 let string_of_package pack = match pack with
-  | Some(Package(expr)) -> AstExpr.string_of_expr(expr)
+  | Some(Package(Name(expr))) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr
   | None -> "No package"
 
 
