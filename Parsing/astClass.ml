@@ -90,6 +90,7 @@ and classBodyDeclaration =
   | ClassMemberType of classMemberType
   | ConstructorType of constructorAst
   | InstanceInitializerType of blockstmts
+  | StaticInitializerType of blockstmts
 
 and classMemberType =
   | MethodClass of methodClassType
@@ -239,6 +240,8 @@ let string_of_classmember c = match c with
 let string_of_classDeclaration decl = match decl with
   | ConstructorType(constructor) -> string_of_constructor(constructor)
   | ClassMemberType(member) -> string_of_classmember(member)
+  | InstanceInitializerType(BlockStatements(blockstmts)) -> string_of_statements(blockstmts)
+  | StaticInitializerType(BlockStatements(blockstmts)) -> string_of_statements(blockstmts)
 
 let string_of_classDeclarationOption decl = match decl with
   | Some(ConstructorType(constructor)) -> string_of_constructor(constructor)
