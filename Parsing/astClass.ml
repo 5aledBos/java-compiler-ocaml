@@ -42,7 +42,7 @@ type blockstmts = BlockStatements of AstExpr.statement list
 type methodClassType =
 {
   name : string;
-  access : AstExpr.modifiers option;
+  access : AstExpr.modifiers option;		(* liste des modifiers défini dans parseExpr, le type modifiers peut être de type de tous les modifiers *)
   parameters : parameter list option;
   resultType : resultTypeAst;
   methodbody: blockstmts
@@ -212,9 +212,9 @@ let string_of_listparameters stmts = match stmts with
 
 
 			(*string d'expressions*)
-let string_of_statements stmts = string_of_list "\n" AstExpr.string_of_statement stmts
+let string_of_statements stmts = "\t\t\t" ^ string_of_list "\n\t\t\t" AstExpr.string_of_statement stmts
 
-let string_of_expressions stmts = string_of_list "\n" AstExpr.string_of_expr stmts
+let string_of_expressions stmts = "\t\t\t" ^string_of_list "\n\t\t\t" AstExpr.string_of_expr stmts
 
 let string_of_expressions2 stmts = string_of_list ", " AstExpr.string_of_expr stmts
 
@@ -251,14 +251,14 @@ let string_of_constructor c = match c with
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstExpr.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
   | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstExpr.string_of_modifiers(modi) ^ AstExpr.string_of_type(a) ^ " " ^ (AstExpr.string_of_list ", " AstExpr.string_of_expr str)
-  | InnerClass(classe) -> "innerclass: " 
-  | InnerInterface(interface) -> "innerInterface: "
+  | InnerClass(classe) -> "innerclass, pas encore de print" 
+  | InnerInterface(interface) -> "innerInterface, pas encore de print"
 
 let string_of_classDeclaration decl = match decl with
-  | ConstructorType(constructor) -> string_of_constructor(constructor)
-  | ClassMemberType(member) -> string_of_classmember(member)
-  | InstanceInitializerType(BlockStatements(blockstmts)) -> string_of_statements(blockstmts)
-  | StaticInitializerType(BlockStatements(blockstmts)) -> string_of_statements(blockstmts)
+  | ConstructorType(constructor) -> "\t" ^ string_of_constructor(constructor) ^ "\n"
+  | ClassMemberType(member) -> string_of_classmember(member) ^ "\n"
+  | InstanceInitializerType(BlockStatements(blockstmts)) -> string_of_statements(blockstmts) ^ "\n"
+  | StaticInitializerType(BlockStatements(blockstmts)) -> "\tstatic {\n\t\t" ^ string_of_statements(blockstmts) ^ "\n\t	}" ^ "\n"
 
 let string_of_classDeclarationOption decl = match decl with
   | Some(ConstructorType(constructor)) -> string_of_constructor(constructor)
@@ -278,7 +278,7 @@ let string_of_enumConstant cons = match cons with
   | { name=str; argumentlist=liste } -> str ^ "(" ^ string_of_expressionsOption(liste) ^ ")"
 
 let string_of_enumConstants liste = match liste with
-  | Some(liste) -> string_of_list ", " string_of_enumConstant liste
+  | Some(liste) -> "\t" ^ string_of_list ", " string_of_enumConstant liste
   | None -> ""
 
 let string_of_enumBody body = match body with
@@ -320,9 +320,9 @@ let string_of_package pack = match pack with
   | Some(Package(Name(expr))) -> "Package " ^ AstExpr.string_of_list "\\" AstExpr.string_of_expr expr
   | None -> "No package"
 
-(*let string_of_File file = match file with*)
+(*let string_of_File file = m	atch file with*)
 (*| FileType({packagename=package; listImport=imports; listClass=classes}) -> "Package: " ^ string_of_package(package) ^ string_of_imports(imports) ^ string_of_classes(classes)*)
 
 			(* print de l'AST *)
 let printFileTree c = match c with
-  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_endline(string_of_package(package)); print_endline(string_of_imports(imports)); print_endline(string_of_classes(classes))
+  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_endline("\n" ^ string_of_package(package)); print_endline("\n" ^ string_of_imports(imports)); print_endline( "\n" ^ string_of_classes(classes))

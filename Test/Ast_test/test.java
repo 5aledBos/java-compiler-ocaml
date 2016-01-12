@@ -130,6 +130,9 @@ public class test extends machin implements testable, truc  {
 	@Override
 	public void getSomething(final int i) throws something {
 		return i;
+	    synchronized(5) {
+      PA.count();
+    }
 
 	}
 

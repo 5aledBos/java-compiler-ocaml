@@ -181,8 +181,6 @@ constructorDeclarator:
   | str=IDENT LPAR parameters = formalParameterList? RPAR	{ str, parameters  }
   | error { raise Illegal_ConstructorException}
 
-constructorModifiers:
-  | modifier		{ }
 
 constructorBody:
   | inv=explicitConstructorInvocation? stmts = blockstmts	{ { liststatements = stmts;  invocation=inv } }		(* blockstatements peut etre à redéfinir dans Expr*)
@@ -260,22 +258,6 @@ variableType:
   | str=typ { str }
   | error {raise Illegal_variable}
 
-parameterList:
-  | p=parameter			{ [p] }
-  | params=parameterList COMA p=parameter	{ params @ [p] }
-
-
-parameter:
-  | t=typ str=IDENT	{ {parametertype=t; name=str} }
-
-
-
-
-(*Def in parseExpr
-argumentList:
-  | e=expression	{ [e] }
-  | liste=argumentList COMA e=expression { liste @ [e] }*)
-
 annotations:
   |  annotation		{ }
   |  annotations annotation		{ }
@@ -322,16 +304,6 @@ classModifiers:
 
 classModifier:
   | m=modifierPrivate | m=modifierProtected | m=modifierPublic | m=modifierAbstract | m=modifierStatic | m=modifierFinal | m=modifierStrictfp | m=modifierTransient | m=modifierVolatile | m=annotation {m } 
-
-accessModifier:
-  | PUBLIC { Public }
-  | PROTECTED { Protected }
-  | PRIVATE { Private }
-
-modifier:
-  | ABSTRACT		{ Abstract }
-  | STATIC			{ Static }
-  | STRICTFP		{ AstExpr.Strictfp }
 
 
 modifierStrictfp:
