@@ -34,6 +34,10 @@ public class test extends machin implements testable, truc  {
 
     // field access
     u = "field".access;
+    
+    // class instance creation
+    a = new a();
+    czw = new <? extends coucou, test> baba(1,3,5);
 
     c = (long[][])-a;
     // method invocation
@@ -47,6 +51,7 @@ public class test extends machin implements testable, truc  {
     if(true) {
       abc *= 6.2;
       x.get();
+      new a();
     }
     
     if (false) i -= 1; else i += 1;

@@ -83,9 +83,9 @@ primaryNoNewArray:
   | THIS                                     { This(None) }
   | id = IDENT POINT THIS                    { This(Some(Var id)) }
   | LPAR e = expression RPAR                 { e }
-  (*| cie = classInstanceCreationExpression    { cie }*)
+  | cie = classInstanceCreationExpression    { cie }
   | fa = fieldAccess                         { fa }
-  | mi = methodInvocation                   { mi }
+  | mi = methodInvocation                    { mi }
   | aa = arrayAccess                         { aa }
 
 literal:
@@ -96,9 +96,9 @@ literal:
   | str = STRING                      { String str }
   | NULL                              { Null }
 
-(*classInstanceCreationExpression:
-  | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
-  | p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList? RPAR cb = classBody?   {}*)
+classInstanceCreationExpression:
+  | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList RPAR                                           { ClassInstCrea(ta, cit, al) }
+  (*| p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList RPAR cb = classBody?   { ClassInstCreaP(p, tp, Var id, ta, al, cb) }*)
 
 fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
@@ -267,7 +267,7 @@ statementExpression:
   | p = postfixExpression INCR             { Unopright(p, Urincr) }
   | p = postfixExpression DECR             { Unopright(p, Urdecr) }
   | mi = methodInvocation                  { mi }
-  (*| cie = classInstanceCreationExpression  { cie }*)
+  | cie = classInstanceCreationExpression  { cie }
 
 assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }

@@ -3,9 +3,13 @@
 type primitive =
   | Int | Float | Double | Char | Boolean | Byte | Short | Long
 
+type wild =
+  | Extends | Super
+
 type typ =
   | Primitive of primitive
   | Type of string
+  | Wild of wild * typ
 
 let string_of_primitive = function
   | Int -> "int"
@@ -17,9 +21,14 @@ let string_of_primitive = function
   | Byte -> "byte"
   | Short -> "short"
 
-let string_of_type t = match t with
+let string_of_wild = function
+  | Extends -> "extends"
+  | Super -> "super"
+
+let rec string_of_type t = match t with
   | Primitive p -> string_of_primitive p
   | Type t -> t
+  | Wild(w, t) -> "?" ^ (string_of_wild w) ^ (string_of_type t)
 
 exception Illegal_ConstructorException
 
@@ -110,6 +119,10 @@ type expression =
   | MethodT of expression * typ list * expression * expression list
   | VarDecl of expression * expression option
   | LocalVarDecl of modifier list option * typ * expression list
+  | Types of expression * expression option
+  | TypeArgs of typ list
+  | TypeDecl of expression * expression
+  | ClassInstCrea of expression option * expression * expression list
 
 and modifier =
   | Public | Protected | Private | Static | Abstract | Final | Strictfp | Volatile | Transient | Annotation of expression
@@ -261,6 +274,14 @@ let rec string_of_expr expr =
   | VarDecl(e1, None) -> "(" ^ (string_of_expr e1) ^ ")"
   | VarDecl(e1, Some(e2)) -> "(" ^ (string_of_expr e1) ^ "=" ^ (string_of_expr e2) ^ ")"
   | LocalVarDecl(ml, t, el) -> "(" ^ (string_of_opt (string_of_list ", " string_of_modifier) ml) ^ " " ^ (string_of_type t) ^ " " ^ (string_of_list ", " string_of_expr el) ^ ")"
+  
+  
+  | Types(e, None) -> (string_of_expr e)
+  | Types(e1, Some(e2)) -> (string_of_expr e1) ^ "<" ^ (string_of_expr e2) ^ ">"
+  | TypeArgs(l) -> (string_of_list ", " string_of_type l)
+  | TypeDecl(e1, e2) -> (string_of_expr e1) ^ "." ^ (string_of_expr e2)
+  | ClassInstCrea(None, e2, el) -> "new " ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr el) ^ ")"
+  | ClassInstCrea(Some(e1), e2, el) -> "new <" ^ (string_of_expr e1) ^ "> " ^ (string_of_expr e2) ^ "(" ^ (string_of_list ", " string_of_expr el) ^ ")"
 
 (* Modifiers *)
 and string_of_modifier c = match c with

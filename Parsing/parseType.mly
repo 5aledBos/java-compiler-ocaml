@@ -52,44 +52,32 @@ floatingPointType:
 referenceType:
   (*| cit = classOrInterfaceType    { cit }*)
   | id = IDENT             { Type id }
-  (*| at = arrayType                { at }
+  (*| at = arrayType                { at }*)
 
+%public
 classOrInterfaceType:
-  | ct = classType                { ct }
-  | it = interfaceType            { it }*)
+  | tds = typeDeclSpecifier ta = typeArguments?   { Types(tds, ta) }
 
-(*classType:*)
-(*  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Class, tds, ta) }*)
-
-(*interfaceType:*)
-(*  | tds = typeDeclSpecifier ta = typeArguments?   { Types(Interface, tds, ta) }*)
-
-(*typeDeclSpecifier:*)
-(*  | tn = typeName                                 { tn }*)
-(*  | cit = classOrInterfaceType POINT id = IDENT   { TypeDecl(cit, id) }*)
-
-(*typeName:*)
-(*  | id = IDENT                       { Var id }*)
-(*  | tn = typeName POINT id = IDENT   { TypeName(tn, id) }*)
+typeDeclSpecifier:
+  | tn = typeName                                 { tn }
+  | cit = classOrInterfaceType POINT id = IDENT   { TypeDecl(cit, Var id) }
 
 (*arrayType:
-  | typ LBRACKET RBRACKET   { ArrayType(typ) }
+  | typ LBRACKET RBRACKET   { ArrayType(typ) }*)
 
+%public
 typeArguments:
-  | LT ata = actualTypeArgumentList GT  { TypeArgs(ata) }
-
-actualTypeArgumentList:
-  | at = actualTypeArgument                                     { [at] }
-  | atl = actualTypeArgumentList COMA at = actualTypeArgument   { at::atl }
+  | LT ata = separated_nonempty_list(COMA, actualTypeArgument) GT  { TypeArgs(ata) }
 
 actualTypeArgument:
   | rt = referenceType    { rt }
   | w = wildcard          { w }
 
 wildcard:
-  | QUESTMARK wb = wildcardBounds?   {}
+  | QUESTMARK wb = wildcardBounds   { wb }
 
 wildcardBounds:
-  | EXTENDS rt = referenceType    {}
-  | SUPER rt = referenceType      {}*)
+  | EXTENDS rt = referenceType      { Wild(Extends, rt) }
+  | SUPER rt = referenceType        { Wild(Super, rt) }
+
 %%
