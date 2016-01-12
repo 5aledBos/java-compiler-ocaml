@@ -134,7 +134,7 @@ public class test extends machin implements testable, truc  {
 	}
 
 }
-
+@test
 public class secondClass {
 		public test(final int i, int j) {
 

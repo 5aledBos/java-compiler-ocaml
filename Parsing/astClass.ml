@@ -3,7 +3,7 @@ open AstExpr
 
 type package = Package of AstExpr.expression
 
-
+	(* type pour les import d'un fichier *)
 type import = Import of importType
 and importType =
   {
@@ -11,32 +11,34 @@ and importType =
  	name : AstExpr.expression;
 	isOnDemand: bool
   }
+
 type importList = import list
 
 
-
+		(* type pour le return type des signatures de fonctions *)
 type resultTypeAst = 
   | AttributType of AstExpr.typ | Void
 
+		(* type des paramètres d'une fonction *)
 type parameter = 
 {
   parametertype : AstExpr.typ;
   name : AstExpr.expression
 }
 
-
+		(* type de déclaration d'attributs dans les classes *)
 type attributAst = {
   typeof : AstExpr.typ;
   names : AstExpr.expression list;
   modifiers : AstExpr.modifiers option
 }
 
-
-
 type attributList = attributAst list
 
+		
 type blockstmts = BlockStatements of AstExpr.statement list
-
+	
+	(* type de conteneur de méthode *)
 type methodClassType =
 {
   name : string;
@@ -46,18 +48,19 @@ type methodClassType =
   methodbody: blockstmts
 }
 
-
-
 and constructorBodyAst =
 {
   invocation : constructorInvocation option;
   liststatements : blockstmts;
 }
+
+		(* type pour l'invocation d'autres constructeurs de la classe ou d'une classe héritée *)
 and constructorInvocation =
   { 
 	invocator : thisOrSuper;
 	argumentlist: AstExpr.expression list
 }
+
 and thisOrSuper =
   |This | Super
 
@@ -76,7 +79,7 @@ and constructorType = ConstructorType of constructorAst
 
 
 
-
+		(* type de conteneur de classe *)
 type classAst =
   {
     classename : string;
@@ -107,7 +110,7 @@ and classContentAst =
   listClassMember : classMemberType list;
   listConstructors : constructorType list;
 }
-
+	(* conteneur d'enum *)
 and enumBodyAst = 
 {
   enumConstants : enumConstant list option;
@@ -129,6 +132,7 @@ and enumAst =
 	enumbody : enumBodyAst;
   }
 
+	(* types pour les interfaces *)
 and interfaceAst =
 { 
   interfacename : string;
@@ -159,7 +163,8 @@ and classType =
   | EnumType of enumAst
 
 type classList = classType list
-
+	
+	(* type pour conteneur du fichier *)
 type fileAst =
 {
   packagename: package option;
