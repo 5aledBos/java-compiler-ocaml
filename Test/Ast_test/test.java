@@ -79,7 +79,7 @@ public class test extends machin implements testable, truc  {
     break;
     throw abc *= 5.3;
     
-    // switch statement
+     //switch statement
 //    switch (variable) {
 //        case 2: i = 3;
 //        case 4: i = 4;
