@@ -277,8 +277,18 @@ let string_of_enumConstants liste = match liste with
 let string_of_enumBody body = match body with
   | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_enumBodyDeclarations(decl)
 
-(*let string_of_interfaceBody body = match body with*)
-(*  | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_enumBodyDeclarations(decl)*)
+let string_of_abstractMethodDeclaration a = match a with
+  | { name = methodname; access=modi; parameters = parameterlist; resultType=result } -> string_of_modifiers(modi) ^ string_of_resultType(result) ^ " " ^ methodname ^ " " ^ "(" ^ string_of_listparameters(parameterlist) ^ ")"
+
+let string_of_interfaceMemberDeclaration i = match i with
+  | InterfaceInnerInterface(decl) -> "InnerInterface: "
+  | InterfaceInnerClass(decl) -> "InnerClass: "
+  | AbstractMethodDeclarationType(decl) -> string_of_abstractMethodDeclaration(decl)
+  | ConstantDeclarationType -> ""
+
+let string_of_interfaceMemberDeclarations liste = match liste with
+  | Some(liste) -> string_of_list "\n" string_of_interfaceMemberDeclaration liste
+  | None -> ""
 
 
 let printClassDeclaration decl = match decl with
@@ -286,10 +296,9 @@ let printClassDeclaration decl = match decl with
   | ClassMemberType(member) -> print_endline(string_of_classmember(member))
 
 
-
 let string_of_classTree classe = match classe with
   | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
-  | InterfaceType({interfacename=name; access=acc}) -> AstExpr.string_of_modifiers(acc) ^ " interface " ^ name
+  | InterfaceType({interfacename=name; access=acc; interfaceBody=body}) -> AstExpr.string_of_modifiers(acc) ^ " interface " ^ name ^ "\n" ^ string_of_interfaceMemberDeclarations(body)
   | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "enum " ^ name ^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
 
 

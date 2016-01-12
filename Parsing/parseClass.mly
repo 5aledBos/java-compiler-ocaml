@@ -58,19 +58,6 @@ importDeclaration:
   | decl = singleStaticImportDeclaration		{ decl }
   | decl = staticImportOnDemandDeclaration		{ decl }
 
-
-(*singleTypeImportDeclaration:*)
-(*  | IMPORT str=typeName SC { { name=str; isStatic=false } }*)
-
-(*typeImportOnDemandDeclaration:*)
-(*  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }*)
-
-(*singleStaticImportDeclaration:*)
-(*  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }*)
-
-(*staticImportOnDemandDeclaration:*)
-(*  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }*)
-
 singleTypeImportDeclaration:
   | IMPORT str=typeName SC { { name=str; isStatic=false; isOnDemand=false } }
 
@@ -93,10 +80,6 @@ typeDeclaration:
   | decl = interfaceDeclaration	{ decl }
 
 
-(*typeName:*)
-(*  | str=IDENT	{ str }*)
-(*  | str=typeName POINT str2=IDENT	{ str ^ "." ^ str2 }*)
-
 %public
 classDeclaration:
   | decl = normalClassDeclaration	{ decl }
@@ -113,13 +96,13 @@ interfaceDeclaration:
   | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) body=interfaceBody   { InterfaceType{interfacename = id; access = modi; interfaceBody=body } }
 
 interfaceBody:
-  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
+  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ liste }
   | error { raise Illegal_interfaceBody }
 
 
 interfaceMemberDeclarations:
-  | decl=interfaceMemberDeclaration	{  }
-  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
+  | decl=interfaceMemberDeclaration	{ [decl] }
+  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{ liste @ [decl] }
   | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
@@ -377,7 +360,6 @@ modifierTransient:
 
 modifierVolatile:
   | VOLATILE { Volatile }
-
 
 super:
   | EXTENDS str=classType { str }
