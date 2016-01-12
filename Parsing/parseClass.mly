@@ -44,7 +44,7 @@ compilationUnit:
 
 
 packageDeclaration:
-  | (*annotations?*) PACKAGE str=pathName SC { Package(str) }
+  | annotations? PACKAGE str=pathName SC { Package(str) }
   (*| error {raise Illegal_package}*)
 
 importDeclarations:

@@ -83,9 +83,9 @@ primaryNoNewArray:
   | THIS                                     { This(None) }
   | id = IDENT POINT THIS                    { This(Some(Var id)) }
   | LPAR e = expression RPAR                 { e }
-  (*| cie = classInstanceCreationExpression    { cie }*)
+  | cie = classInstanceCreationExpression    { cie }
   | fa = fieldAccess                         { fa }
-  | mi = methodInvocation                   { mi }
+  | mi = methodInvocation                    { mi }
   | aa = arrayAccess                         { aa }
 
 literal:
@@ -96,9 +96,9 @@ literal:
   | str = STRING                      { String str }
   | NULL                              { Null }
 
-(*classInstanceCreationExpression:
-  | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList? RPAR   {}
-  | p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList? RPAR cb = classBody?   {}*)
+classInstanceCreationExpression:
+  | NEW ta = typeArguments? cit = classOrInterfaceType LPAR al = argumentList RPAR                                           { ClassInstCrea(ta, cit, al) }
+  (*| p = primary POINT NEW tp = typeArguments? id = IDENT ta = typeArguments? LPAR al = argumentList RPAR cb = classBody?   { ClassInstCreaP(p, tp, Var id, ta, al, cb) }*)
 
 fieldAccess:
   | p = primary POINT id = IDENT                  { Fieldaccess(p, id) }
@@ -251,7 +251,7 @@ statementWithoutTrailingSubstatement:
   | SC                                                    { EmptyStatement }
   | se = statementExpression SC                           { Expression(se) }
   | ast = assertStatement                                 { ast }
-  (*| SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }*)
+  | SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }
   | DO s = statement WHILE LPAR e = expression RPAR SC    { DoWhile(s, e) }
   | BREAK id = IDENT? SC                                  { Break(id) }
   | CONTINUE id = IDENT? SC                               { Continue(id) }
@@ -267,13 +267,13 @@ statementExpression:
   | p = postfixExpression INCR             { Unopright(p, Urincr) }
   | p = postfixExpression DECR             { Unopright(p, Urdecr) }
   | mi = methodInvocation                  { mi }
-  (*| cie = classInstanceCreationExpression  { cie }*)
+  | cie = classInstanceCreationExpression  { cie }
 
 assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-(*switchBlock:
+switchBlock:
   | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
@@ -281,11 +281,8 @@ switchBlockStatementGroup:
 
 switchLabel:
   | CASE c = expression COLON                                  { Case(c) }
-  | CASE e = enumConstantName COLON                            { Case(e) }
+  | CASE id = IDENT COLON                                      { Case(Var id) }
   | DEFAULT COLON                                              { Default }
-
-enumConstantName:
-  | id = IDENT                                                 { Var id }*)
 
 tryStatement:
   | TRY b = block c = nonempty_list(catchClause)                { Try(b, c) }
