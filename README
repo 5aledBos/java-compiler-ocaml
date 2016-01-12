@@ -85,7 +85,19 @@ To parse a file containing an error and see how it is returned, run:
 
 ####Unit_test
 
-To unit test, we use the **Alcotest** library. For now, a file from the `Parsing` folder is unit test in a file with the same name in the `Test/Unit_test` folder.
+To unit test, we use the **Alcotest** library.
+To run the unit test, run the following:
+
+```
+ocamlbuild -pkg alcotest testlexer.byte --
+```
+
+or
+
+```
+ocamlbuild -pkg alcotest testlexer.byte
+./testlexer.byte
+```
 
 ###Utils
 
@@ -108,4 +120,3 @@ This folder will be used in the second part of the minijavac compiler project. I
 ###Evaluator
 
 This folder will also be used in the second part of the minijavac compiler project. It will contain the files aiming to evaluate the typed AST in order to compute the values of the program.
-
