@@ -251,7 +251,7 @@ statementWithoutTrailingSubstatement:
   | SC                                                    { EmptyStatement }
   | se = statementExpression SC                           { Expression(se) }
   | ast = assertStatement                                 { ast }
-  (*| SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }*)
+  | SWITCH LPAR id = IDENT RPAR sb = switchBlock          { Switch(Var id, sb) }
   | DO s = statement WHILE LPAR e = expression RPAR SC    { DoWhile(s, e) }
   | BREAK id = IDENT? SC                                  { Break(id) }
   | CONTINUE id = IDENT? SC                               { Continue(id) }
@@ -273,7 +273,7 @@ assertStatement:
   | ASSERT es = statementExpression SC                                 { Assert(es) }
   | ASSERT e1 = statementExpression COLON e2 = statementExpression SC  { BAssert(e1, e2) }
 
-(*switchBlock:
+switchBlock:
   | LBRACE sbg = list(switchBlockStatementGroup) sl = list(switchLabel) RBRACE   { SwitchBlock(sbg, sl) }
 
 switchBlockStatementGroup:
@@ -281,11 +281,8 @@ switchBlockStatementGroup:
 
 switchLabel:
   | CASE c = expression COLON                                  { Case(c) }
-  | CASE e = enumConstantName COLON                            { Case(e) }
+  | CASE id = IDENT COLON                                      { Case(Var id) }
   | DEFAULT COLON                                              { Default }
-
-enumConstantName:
-  | id = IDENT                                                 { Var id }*)
 
 tryStatement:
   | TRY b = block c = nonempty_list(catchClause)                { Try(b, c) }

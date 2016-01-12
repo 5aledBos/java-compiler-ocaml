@@ -19,9 +19,9 @@ public class test extends machin implements testable, truc  {
 	}
 
 	private test(int i) {
-	
+
 	  super(5, 6, 8);
-	
+
     // assignments
     abc *= 6.2;
     array[5] = 5;
@@ -34,7 +34,7 @@ public class test extends machin implements testable, truc  {
 
     // field access
     u = "field".access;
-    
+
     // class instance creation
     a = new a();
     czw = new <? extends coucou, test> baba(1,3,5);
@@ -46,30 +46,30 @@ public class test extends machin implements testable, truc  {
     // array access
     w = arr.ay["access"];
     x = abc.this[10];
-    
+
     // if statement
     if(true) {
       abc *= 6.2;
       x.get();
       new a();
     }
-    
+
     if (false) i -= 1; else i += 1;
-    
+
     // while statement
     while(true) abc *= 6.2;
-    
+
     // labeled statement
     ident : while(false) {
       final long test;
       double az = "erty";
     }
-    
+
     // for statement
     for (i = 0; i < 5; i++) j--;
-    
+
     for (final int k = 27; k >= 8; k -= 3) {
-      
+
       w = arr.ay["access"];
       x = abc.this[10];
       b = new int[]{};
@@ -78,19 +78,19 @@ public class test extends machin implements testable, truc  {
     for (double idnt : "test") {
         c += 54;
     }
-    
+
     return;
     continue;
     break;
     throw abc *= 5.3;
-    
+
     // switch statement
-//    switch (variable) {
-//        case 2: i = 3;
-//        case 4: i = 4;
-//        default: {}
-//    }
-    
+   switch (variable) {
+       case 2: i = 3;
+       case 4: i = 4;
+       default: {}
+   }
+
     // try statement
     try {
         ++test;
@@ -115,29 +115,29 @@ public class test extends machin implements testable, truc  {
     } finally {
         byebye++;
     }
-    
-    // synchronized statement 
+
+    // synchronized statement
     synchronized(5) {
       PA.count();
     }
-    
+
     // do statement
     do {
         abc *= 5.3; abc++;
     } while (true);
   }
-  
+
 	@Override
 	public void getSomething(final int i) throws something {
 		return i;
-	  
+
 	}
 
 }
 
 public class secondClass {
 		public test(final int i, int j) {
-		
+
 		}
 
 		interface innerinterface {
