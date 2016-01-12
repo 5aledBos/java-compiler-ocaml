@@ -139,9 +139,12 @@ public class secondClass {
 		public test(final int i, int j) {
 		
 		}
+
+		interface innerinterface {
+		}
 }
 public interface testable {
-	int test();
+	abstract int test();
 	public int variable = 54;
 }
 

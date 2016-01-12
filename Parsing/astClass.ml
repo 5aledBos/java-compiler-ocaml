@@ -1,3 +1,6 @@
+open AstExpr
+
+
 type package = Package of AstExpr.expression
 
 
@@ -130,13 +133,22 @@ and interfaceAst =
 { 
   interfacename : string;
   access : AstExpr.modifiers option;
-(*  interfaceBody : interfaceMemberDeclaration list option*)
+  interfaceBody : interfaceMemberDeclaration list option
 }
 
 and interfaceMemberDeclaration = 
   | InterfaceInnerInterface of classType
   | InterfaceInnerClass of classType
-(*  | AbstractDeclarationType of abstractDeclarationType*)
+  | AbstractMethodDeclarationType of abstractMethodDeclarationType
+  | ConstantDeclarationType
+
+and abstractMethodDeclarationType =
+{
+  name : string;
+  access : AstExpr.modifiers option;
+  parameters : parameter list option;
+  resultType : resultTypeAst;
+} 
 
 and interfaceType = 
   | InterfaceType of interfaceAst
@@ -161,50 +173,49 @@ type fileType = FileType of fileAst
 
 (* affichage de l'AST *)
 
-
 let string_of_import i = match i with
   | Import({ name=Name(expr); isStatic=b; isOnDemand=c }) -> match (b, c) with
-	| (true, false) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr
-	| (true, true) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
-	| (false, false) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr
-	| (false, true) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
+		| (true, false) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr
+		| (true, true) -> "static " ^ AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
+		| (false, false) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr
+		| (false, true) -> AstExpr.string_of_list "." AstExpr.string_of_expr expr  ^ ".*"
+
+let string_of_imports stmts = match stmts with
+  | Some(liste) -> "import " ^ string_of_list "\nimport " string_of_import liste
+  | None -> ""
 
 let string_of_inheritance i = match i with
   | Some(i) -> "extends " ^ i
   | None -> ""
 
-let rec string_of_interfaces liste = match liste with
-  | Some([]) -> ""
-  | Some(x::xs) -> x ^ " " ^ string_of_interfaces(Some(xs))
-  | None -> "nothing"
+let string_of_interface interface = interface
 
-let rec printListImport liste = match liste with
-  | Some([]) -> print_endline("End of Import" ^ "\n")
-  | Some(x::xs) -> print_endline("Import: " ^ string_of_import(x)); printListImport(Some(xs))
-  | None -> print_endline("No import in file")
-
-
-
-let string_of_paramater p = match p with
-  | { parametertype=typeof; name=str } -> AstExpr.string_of_type(typeof) ^ " " ^ (AstExpr.string_of_expr str)
-
-let rec string_of_listparameters params = match params with
-  | Some([]) -> ""
-  | Some(x::xs)-> " " ^ string_of_paramater(x) ^" "^ string_of_listparameters(Some(xs))
+let string_of_interfaces stmts = match stmts with
+  | Some(liste) -> "implements " ^ string_of_list ", " string_of_interface liste
   | None -> ""
 
+(*let rec printListImport liste = match liste with*)
+(*  | Some([]) -> print_endline("End of Import" ^ "\n")*)
+(*  | Some(x::xs) -> print_endline("Import: " ^ string_of_import(x)); printListImport(Some(xs))*)
+(*  | None -> print_endline("No import in file")*)
 
-let rec string_of_statements stmts = match stmts with
-  | [] -> ""
-  | (x::xs) -> "\t" ^ "\t"  ^ "\t" ^ AstExpr.string_of_statement(x) ^ "\n" ^ string_of_statements(xs)
 
-let rec string_of_expressions stmts = match stmts with
-  | [] -> ""
-  | (x::xs) -> " " ^ AstExpr.string_of_expr(x) ^ string_of_expressions(xs)
 
-let rec string_of_expressionsOption stmts = match stmts with
-  | Some([]) -> ""
-  | Some(x::xs) -> " " ^ AstExpr.string_of_expr(x) ^ string_of_expressionsOption(Some(xs))	
+let string_of_parameter p = match p with
+  | { parametertype=typeof; name=str } -> AstExpr.string_of_type(typeof) ^ " " ^ (AstExpr.string_of_expr str)
+
+let string_of_listparameters stmts = match stmts with
+  | Some(liste) -> string_of_list ", " string_of_parameter liste
+  | None -> ""
+
+let string_of_statements stmts = string_of_list "\n" AstExpr.string_of_statement stmts
+
+let string_of_expressions stmts = string_of_list "\n" AstExpr.string_of_expr stmts
+
+let string_of_expressions2 stmts = string_of_list ", " AstExpr.string_of_expr stmts
+
+let string_of_expressionsOption stmts = match stmts with
+  | Some(liste) -> string_of_list "\n" AstExpr.string_of_expr liste
   | None -> ""
 
 let string_of_thisorsuper str = match str with
@@ -216,12 +227,9 @@ let string_of_resultType t = match t with
   | Void -> "void"
   | AttributType(a) -> AstExpr.string_of_type(a)
 
-let rec string_of_attributs liste = match liste with
-  | [] -> ""
-  | (x::xs) -> " " ^ x ^ string_of_attributs(xs)
 
 let string_of_constructorinvocation inv = match inv with
-  | Some({ invocator = i ; argumentlist=params }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions(params) ^ ")"
+  | Some({ invocator = i ; argumentlist=params }) -> "\t" ^ "\t" ^ "\t" ^ string_of_thisorsuper(i) ^ "(" ^ string_of_expressions2(params) ^ ")"
   | None -> ""
 
 
@@ -236,7 +244,7 @@ let string_of_constructor c = match c with
 let string_of_classmember c = match c with
   | MethodClass( { name=str; access=modi; resultType=result; parameters=liste; methodbody=BlockStatements(body)  }) -> "\tMethod: " ^ string_of_resultType(result) ^ " " ^ str ^ "(" ^ string_of_listparameters(liste) ^ "), access: " ^ AstExpr.string_of_modifiers(modi) ^ "\n \t\tMethod Body : \n" ^ string_of_statements(body)
   | Attribut( { typeof=a; names=str; modifiers=modi } ) -> AstExpr.string_of_modifiers(modi) ^ AstExpr.string_of_type(a) ^ " " ^ (AstExpr.string_of_list ", " AstExpr.string_of_expr str)
-  | InnerClass(classe) -> "innerclass: "(*string_of_classTree(classe)*)
+  | InnerClass(classe) -> "innerclass: " 
   | InnerInterface(interface) -> "innerInterface: "
 
 let string_of_classDeclaration decl = match decl with
@@ -250,16 +258,10 @@ let string_of_classDeclarationOption decl = match decl with
   | Some(ClassMemberType(member)) -> string_of_classmember(member)
   | None -> ""
 
-let rec string_of_classDeclarations liste = match liste with
-  | Some([]) -> ""
-  | Some(x::xs) -> string_of_classDeclaration(x) ^ "\n" ^ string_of_classDeclarations(Some(xs))
+let string_of_classDeclarations liste = match liste with
+  | Some(liste) -> string_of_list "\n" string_of_classDeclaration liste
   | None -> ""
 
-
-(*let rec string_of_classDeclarationsOption liste = match liste with*)
-(*  | Some([]) -> ""*)
-(*  | Some(x::xs) -> string_of_classDeclarations(x) ^ "\n" ^ string_of_classDeclarations(Some(xs))*)
-(*  | None -> ""*)
 
 let string_of_enumBodyDeclarations liste = match liste with
   | Some(liste) -> string_of_classDeclarations(liste)
@@ -268,38 +270,49 @@ let string_of_enumBodyDeclarations liste = match liste with
 let string_of_enumConstant cons = match cons with
   | { name=str; argumentlist=liste } -> str ^ "(" ^ string_of_expressionsOption(liste) ^ ")"
 
-let rec string_of_enumConstants liste = match liste with
-  | Some([]) -> ""
-  | Some(x::xs)-> " " ^ string_of_enumConstant(x) ^ string_of_enumConstants(Some(xs))
+let string_of_enumConstants liste = match liste with
+  | Some(liste) -> string_of_list ", " string_of_enumConstant liste
   | None -> ""
 
 let string_of_enumBody body = match body with
   | {  enumConstants=constants; enumDeclarations=decl } -> string_of_enumConstants(constants) ^ "\n" ^ string_of_enumBodyDeclarations(decl)
+
+let string_of_abstractMethodDeclaration a = match a with
+  | { name = methodname; access=modi; parameters = parameterlist; resultType=result } -> string_of_modifiers(modi) ^ string_of_resultType(result) ^ " " ^ methodname ^ " " ^ "(" ^ string_of_listparameters(parameterlist) ^ ")"
+
+let string_of_interfaceMemberDeclaration i = match i with
+  | InterfaceInnerInterface(decl) -> "InnerInterface: "
+  | InterfaceInnerClass(decl) -> "InnerClass: "
+  | AbstractMethodDeclarationType(decl) -> string_of_abstractMethodDeclaration(decl)
+  | ConstantDeclarationType -> ""
+
+let string_of_interfaceMemberDeclarations liste = match liste with
+  | Some(liste) -> string_of_list "\n" string_of_interfaceMemberDeclaration liste
+  | None -> ""
 
 
 let printClassDeclaration decl = match decl with
   | ConstructorType(constructor) -> print_endline(string_of_constructor(constructor))
   | ClassMemberType(member) -> print_endline(string_of_classmember(member))
 
-let rec printClassBodyDeclarations liste = match liste with
-  | Some([]) -> print_endline("end of declarations")
-  | Some(x::xs) -> printClassDeclaration(x) ; printClassBodyDeclarations(Some(xs))
-  | None -> print_endline("")
 
 let string_of_classTree classe = match classe with
-  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
-  | InterfaceType({interfacename=name; access=acc}) -> "Interface: " ^ name ^ ", " ^ AstExpr.string_of_modifiers(acc)
-  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "enum " ^ name ^ " implements:  "^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
+  | ClassType({classename=name; access=acc; inheritance=herit; interfaces=listeinterface; classbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "class " ^ name ^ " " ^ string_of_inheritance(herit) ^ string_of_interfaces(listeinterface) ^ "\n" ^ string_of_classDeclarations(body)
+  | InterfaceType({interfacename=name; access=acc; interfaceBody=body}) -> AstExpr.string_of_modifiers(acc) ^ " interface " ^ name ^ "\n" ^ string_of_interfaceMemberDeclarations(body)
+  | EnumType({enumname=name; access=acc; interfaces=listeinterface; enumbody=body}) -> AstExpr.string_of_modifiers(acc) ^ "enum " ^ name ^ string_of_interfaces(listeinterface) ^ "\n"^ string_of_enumBody(body)
 
-let rec string_of_classes classes = match classes with
-  | Some([]) -> ""
-  | Some(x::xs) -> string_of_classTree(x) ^ string_of_classes(Some(xs))
+
+let string_of_classes liste = match liste with
+  | Some(liste) -> string_of_list "\n" string_of_classTree liste
   | None -> ""
 
 let string_of_package pack = match pack with
-  | Some(Package(Name(expr))) -> AstExpr.string_of_list "\\" AstExpr.string_of_expr expr
+  | Some(Package(Name(expr))) -> "Package " ^ AstExpr.string_of_list "\\" AstExpr.string_of_expr expr
   | None -> "No package"
+
+(*let string_of_File file = match file with*)
+(*| FileType({packagename=package; listImport=imports; listClass=classes}) -> "Package: " ^ string_of_package(package) ^ string_of_imports(imports) ^ string_of_classes(classes)*)
 
 
 let printFileTree c = match c with
-  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_string("Package: "); print_endline(string_of_package(package)); printListImport(imports); print_endline(string_of_classes(classes))
+  | FileType({packagename=package; listImport=imports; listClass=classes}) -> print_endline(string_of_package(package)); print_endline(string_of_imports(imports)); print_endline(string_of_classes(classes))

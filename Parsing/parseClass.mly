@@ -44,7 +44,7 @@ compilationUnit:
 
 
 packageDeclaration:
-  | PACKAGE str=pathName SC { Package(str) }
+  | (*annotations?*) PACKAGE str=pathName SC { Package(str) }
   (*| error {raise Illegal_package}*)
 
 importDeclarations:
@@ -57,19 +57,6 @@ importDeclaration:
   | decl = typeImportOnDemandDeclaration		{ decl }
   | decl = singleStaticImportDeclaration		{ decl }
   | decl = staticImportOnDemandDeclaration		{ decl }
-
-
-(*singleTypeImportDeclaration:*)
-(*  | IMPORT str=typeName SC { { name=str; isStatic=false } }*)
-
-(*typeImportOnDemandDeclaration:*)
-(*  | IMPORT p=typeName POINT TIMES SC		{ { name=p ^ ".*"; isStatic=false } }*)
-
-(*singleStaticImportDeclaration:*)
-(*  | IMPORT STATIC p=typeName SC { { name=p ^ ".*"; isStatic=true} }*)
-
-(*staticImportOnDemandDeclaration:*)
-(*  | IMPORT STATIC p=typeName POINT TIMES SC { { name=p; isStatic=true } }*)
 
 singleTypeImportDeclaration:
   | IMPORT str=typeName SC { { name=str; isStatic=false; isOnDemand=false } }
@@ -92,6 +79,7 @@ typeDeclaration:
   | decl = classDeclaration		{ decl }
   | decl = interfaceDeclaration	{ decl }
 
+
 %public
 classDeclaration:
   | decl = normalClassDeclaration	{ decl }
@@ -105,30 +93,32 @@ enumDeclaration:
 
 
 interfaceDeclaration:
-  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) interfaceBody   { InterfaceType{interfacename = id; access = modi(*; interfaceBody=str*)} }
+  | modi=classModifiers? INTERFACE id=IDENT  (*typeParameters?*) (*extendsInterface?*) body=interfaceBody   { InterfaceType{interfacename = id; access = modi; interfaceBody=body } }
 
 interfaceBody:
-  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ None }
+  | LBRACE liste = interfaceMemberDeclarations? RBRACE 	{ liste }
   | error { raise Illegal_interfaceBody }
 
 
 interfaceMemberDeclarations:
-  | decl=interfaceMemberDeclaration	{  }
-  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{  }
+  | decl=interfaceMemberDeclaration	{ [decl] }
+  | liste=interfaceMemberDeclarations decl=interfaceMemberDeclaration	{ liste @ [decl] }
   | error { raise Illegal_interfaceBody }
 
 interfaceMemberDeclaration:
-  | constantDeclaration		{ }
-  | abstractMethodDeclaration	{ }
-  | decl=classDeclaration		{  }
-  | decl=interfaceDeclaration	{  }
+  | constantDeclaration		{ ConstantDeclarationType }
+  | decl=abstractMethodDeclaration	{ AbstractMethodDeclarationType(decl) }
+  | decl=classDeclaration		{ InterfaceInnerClass(decl)  }
+  | decl=interfaceDeclaration	{ InterfaceInnerInterface(decl) }
 
 constantDeclaration:
   | classModifiers? typ variableDeclarators SC	{ }
 
 abstractMethodDeclaration:
-  | modi=classModifiers? (*typeParameters?*) VOID methodDeclarator (*throws*)	SC	{ }
-  | modi=classModifiers? (*typeParameters?*) typ methodDeclarator (*throws*)	SC	{ }
+  | modi=classModifiers? (*typeParameters?*) VOID decl = methodDeclarator (*throws*)	SC	{ match decl with 
+		| (methodname, listeparameter) -> { name=methodname; access=modi;parameters=listeparameter; resultType= Void }  }
+  | modi=classModifiers? (*typeParameters?*) letype=typ decl=methodDeclarator (*throws*)	SC	{ match decl with 
+		| (methodname, listeparameter) -> { name=methodname; access=modi;parameters=listeparameter; resultType=AttributType(letype) } }
 
 enumBody:
   | cons=enumConstants?  decl=enumBodyDeclarations?	{ { enumConstants = cons; enumDeclarations= decl } }
@@ -371,9 +361,8 @@ modifierTransient:
 modifierVolatile:
   | VOLATILE { Volatile }
 
-
 super:
-  | EXTENDS str=classType { "test" }
+  | EXTENDS str=classType { str }
 
 interfaces:
   | IMPLEMENTS liste=interfaceTypeList  { liste }
