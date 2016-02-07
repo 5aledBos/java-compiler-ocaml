@@ -12,6 +12,8 @@ let type_val v =
 let rec type_expression e =
   match e.edesc with
   | AssignExp(e1,op,e2) -> type_expression e1; type_expression e2
+  | Pre(op, e) -> type_expression e
+  | Post(e, op) -> type_expression e
   | Val v -> e.etype <- type_val v
 
 let type_statement s =
