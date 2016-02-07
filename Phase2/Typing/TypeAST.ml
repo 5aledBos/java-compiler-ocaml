@@ -11,13 +11,29 @@ let type_val v =
 
 let rec type_expression e =
   match e.edesc with
-  | AssignExp(e1,op,e2) -> type_expression e1; type_expression e2
-  | Pre(op, e) -> type_expression e
-  | Post(e, op) -> type_expression e
+  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
   | Val v -> e.etype <- type_val v
+  | AssignExp(e1,op,e2) -> type_expression e1; type_expression e2
+  | Post(e, op) -> type_expression e
+  | Pre(op, e) -> type_expression e
+  | Op(e1, op, e2) -> type_expression e1; type_expression e2
+  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
+  | Cast(t,e) -> type_expression e
+  | Type t -> ()
+  | ClassOf t -> ()
+  | Instanceof(e, t) -> type_expression e
+  | VoidClass -> ()
 
-let type_statement s =
+let rec type_statement s =
   match s with
+  | Block b -> List.iter type_statement b
+  | Nop -> ()
+  | While(e, s) -> type_expression e; type_statement s
+  | If(e, s, None) -> type_expression e; type_statement s
+  | If(e, s1, Some(s2)) -> type_expression e; type_statement s1; type_statement s2
+  | Return None -> ()
+  | Return Some(e) -> type_expression e
+  | Throw e -> type_expression e
   | Expr e -> type_expression e
 
 let type_method m = List.iter type_statement m.mbody
