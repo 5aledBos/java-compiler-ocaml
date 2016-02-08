@@ -15,16 +15,16 @@ let rec type_expression e =
   | NewArray(t, [Some(e)], None) -> type_expression e
   | NewArray(t, [], Some(e)) -> type_expression e
   | NewArray(t, [Some(e1)], Some(e2)) -> type_expression e1; type_expression e2 *)
-  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
+  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3; CheckAST.check_if_test_type e1.etype
   | Val v -> e.etype <- type_val v
   | AssignExp(e1, op, e2) -> type_expression e1; type_expression e2; CheckAST.check_aop_type e1.etype op e2.etype
-  | Post(e, op) -> type_expression e
-  | Pre(op, e) -> type_expression e
-  | Op(e1, op, e2) -> type_expression e1; type_expression e2
+  | Post(exp, op) -> type_expression exp; e.etype <- exp.etype
+  | Pre(op, exp) -> type_expression exp; e.etype <- exp.etype
+  | Op(e1, op, e2) -> type_expression e1; type_expression e2; CheckAST.check_op_type e1.etype op e2.etype; e.etype <- e1.etype
   | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3; CheckAST.check_tern_type e1.etype e2.etype e3.etype; e.etype <- e2.etype
   | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)
-  | Type t -> ()
-  | ClassOf t -> ()
+  | Type t -> e.etype <- Some(t)
+  | ClassOf t -> e.etype <-Some(t)
   | Instanceof(e, t) -> type_expression e
   | VoidClass -> ()
 
@@ -33,8 +33,8 @@ let rec type_statement s =
   | Block b -> List.iter type_statement b
   | Nop -> ()
   | While(e, s) -> type_expression e; type_statement s
-  | If(e, s, None) -> type_expression e; type_statement s
-  | If(e, s1, Some(s2)) -> type_expression e; type_statement s1; type_statement s2
+  | If(e, s, None) -> type_expression e; type_statement s; CheckAST.check_if_test_type e.etype
+  | If(e, s1, Some(s2)) -> type_expression e; type_statement s1; type_statement s2; CheckAST.check_if_test_type e.etype
   | Return None -> ()
   | Return Some(e) -> type_expression e
   | Throw e -> type_expression e
