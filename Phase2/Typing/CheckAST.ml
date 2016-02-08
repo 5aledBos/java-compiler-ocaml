@@ -10,9 +10,30 @@ let stringOf_prim = function
   | Some(Type.Primitive(Type.Float)) -> "float"
   | Some(Type.Ref({tpath=[]; tid="String"})) -> "string"
 
+(* ERRORS *)
+
 exception Wrong_types_aop of Type.t option * assign_op * Type.t option
 exception Wrong_type_tern of Type.t option
 exception Type_mismatch_tern of Type.t option * Type.t option
+
+(* String of errors *)
+let print_wrong_types_aop x op y =
+  print_string ("L'operateur " ^ (AST.string_of_assign_op op));
+  print_string (" attend deux arguments de meme type");
+  print_string (" et il recoit " ^ (stringOf_prim x));
+  print_endline (" et " ^ (stringOf_prim y))
+
+let print_wrong_type_tern test =
+  print_string ("La condition d'une expression ternaire doit etre un booleen");
+  print_endline (" et elle recoit un " ^ stringOf_prim test)
+
+let print_type_mismatch_tern x y =
+  print_string ("Les deux expressions d'une expression ternaire doivent etre du meme type");
+  print_string (" et elle recoit " ^ (stringOf_prim x));
+  print_endline (" et " ^ (stringOf_prim y))
+
+
+(* CHECKS *)
 
 let check_aop_type x op y =
   if x <> y then raise(Wrong_types_aop(x, op, y))

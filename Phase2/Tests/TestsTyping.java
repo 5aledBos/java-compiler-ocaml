@@ -3,11 +3,11 @@ package tutu.titi.toto;
 public class A {
     int test() {
         4 = 3;
+        43.0 = (float)43;
         'c' = true;
         "Test" -= null;
         "float" += 4.6;
         4++;
-        43.0 = (float)43;
 
         "void.class" = void.class;
         "int.class" = int.class;

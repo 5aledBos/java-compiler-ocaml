@@ -7,15 +7,9 @@ let execute lexbuf verbose =
     TypeAST.type_program ast;
     if verbose then AST.print_program ast
   with
-    | CheckAST.Wrong_types_aop(x, op, y) ->
-      print_string ("L'operateur " ^ (AST.string_of_assign_op op));
-      print_string (" attend deux arguments de meme type");
-      print_string (" et il reçoit " ^ (CheckAST.stringOf_prim x));
-      print_endline (" et " ^ (CheckAST.stringOf_prim y))
-    | CheckAST.Wrong_type_tern(test) ->
-      print_endline ("Not bool tern")
-    | CheckAST.Type_mismatch_tern(x, y) ->
-      print_endline ("Mismatch tern")
+    | CheckAST.Wrong_types_aop(x, op, y) -> CheckAST.print_wrong_types_aop x op y
+    | CheckAST.Wrong_type_tern(test) -> CheckAST.print_wrong_type_tern test
+    | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch_tern x y
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)
