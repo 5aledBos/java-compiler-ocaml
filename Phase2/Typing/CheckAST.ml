@@ -11,6 +11,12 @@ let stringOf_prim = function
   | Some(Type.Ref({tpath=[]; tid="String"})) -> "string"
 
 exception Wrong_types_aop of Type.t option * assign_op * Type.t option
+exception Wrong_type_tern of Type.t option
+exception Type_mismatch_tern of Type.t option * Type.t option
 
 let check_aop_type x op y =
   if x <> y then raise(Wrong_types_aop(x, op, y))
+
+let check_tern_type test x y =
+  if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_tern(test));
+  if x <> y then raise(Type_mismatch_tern(x, y))

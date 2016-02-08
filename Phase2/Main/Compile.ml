@@ -12,6 +12,10 @@ let execute lexbuf verbose =
       print_string (" attend deux arguments de meme type");
       print_string (" et il reçoit " ^ (CheckAST.stringOf_prim x));
       print_endline (" et " ^ (CheckAST.stringOf_prim y))
+    | CheckAST.Wrong_type_tern(test) ->
+      print_endline ("Not bool tern")
+    | CheckAST.Type_mismatch_tern(x, y) ->
+      print_endline ("Mismatch tern")
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)

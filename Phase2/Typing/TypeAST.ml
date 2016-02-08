@@ -21,7 +21,7 @@ let rec type_expression e =
   | Post(e, op) -> type_expression e
   | Pre(op, e) -> type_expression e
   | Op(e1, op, e2) -> type_expression e1; type_expression e2
-  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
+  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3; CheckAST.check_tern_type e1.etype e2.etype e3.etype; e.etype <- e2.etype
   | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)
   | Type t -> ()
   | ClassOf t -> ()
