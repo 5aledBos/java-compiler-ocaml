@@ -6,6 +6,6 @@ public class A {
         if (true) {
           (true? 1: 2);
         }
-        //"c" = (true? 1: 2);
+        (true? null: 2);
     }
 }

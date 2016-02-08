@@ -21,10 +21,13 @@ let rec type_expression e =
   | Post(exp, op) -> type_expression exp; e.etype <- exp.etype
   | Pre(op, exp) -> type_expression exp; e.etype <- exp.etype
   | Op(e1, op, e2) -> type_expression e1; type_expression e2; CheckAST.check_op_type e1.etype op e2.etype; e.etype <- e1.etype
-  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3; CheckAST.check_tern_type e1.etype e2.etype e3.etype; e.etype <- e2.etype
+  | CondOp(e1, e2, e3) ->
+    type_expression e1; type_expression e2; type_expression e3;
+    CheckAST.check_tern_type e1.etype e2.etype e3.etype;
+    if e2.etype <> None then e.etype <- e2.etype else e.etype <- e3.etype
   | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)
   | Type t -> e.etype <- Some(t)
-  | ClassOf t -> e.etype <-Some(t)
+  | ClassOf t -> e.etype <- Some(t)
   | Instanceof(e, t) -> type_expression e
   | VoidClass -> ()
 

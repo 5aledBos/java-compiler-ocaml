@@ -50,6 +50,10 @@ let rec stringOf = function
   | Primitive prim -> stringOf_prim prim
   | Ref rt -> stringOf_ref rt
 
+let stringOfOpt = function
+  | None -> "null"
+  | Some(t) -> stringOf t
+
 let mk_array size t =
   match size,t with
   | 0  , _           -> t
