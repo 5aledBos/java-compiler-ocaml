@@ -22,7 +22,7 @@ let rec type_expression e =
   | Pre(op, e) -> type_expression e
   | Op(e1, op, e2) -> type_expression e1; type_expression e2
   | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
-  | Cast(t,e) -> type_expression e
+  | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)
   | Type t -> ()
   | ClassOf t -> ()
   | Instanceof(e, t) -> type_expression e
