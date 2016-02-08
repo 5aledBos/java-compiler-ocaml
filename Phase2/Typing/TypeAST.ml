@@ -11,9 +11,13 @@ let type_val v =
 
 let rec type_expression e =
   match e.edesc with
+  (* | NewArray(t, [], None) -> ()
+  | NewArray(t, [Some(e)], None) -> type_expression e
+  | NewArray(t, [], Some(e)) -> type_expression e
+  | NewArray(t, [Some(e1)], Some(e2)) -> type_expression e1; type_expression e2 *)
   | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3
   | Val v -> e.etype <- type_val v
-  | AssignExp(e1,op,e2) -> type_expression e1; type_expression e2
+  | AssignExp(e1,op,e2) -> type_expression e1; type_expression e2; CheckAST.check_aop_type e1.etype op e2.etype
   | Post(e, op) -> type_expression e
   | Pre(op, e) -> type_expression e
   | Op(e1, op, e2) -> type_expression e1; type_expression e2
