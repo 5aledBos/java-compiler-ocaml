@@ -17,6 +17,9 @@ exception Wrong_type_if of Type.t option
 exception Type_mismatch_tern of Type.t option * Type.t option
 exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
+exception Type_mismatch_decl of Type.t option * Type.t option
+exception Variable_name_exist of string
+exception Unknown_variable of string
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -42,11 +45,6 @@ let print_wrong_type_tern test =
 let print_wrong_type_if test =
   print_not_bool_exception "if" test
 
-let print_type_mismatch_tern x y =
-  print_string ("L'expression ternaire attend deux expressions du meme type");
-  print_string (" et elle recoit " ^ (Type.stringOfOpt x));
-  print_endline (" et " ^ (Type.stringOfOpt y))
-
 let print_wrong_type_post x =
   print_string ("Les operateurs ++ et -- attendent un int ou un float");
   print_endline (" et recoivent un " ^ (Type.stringOfOpt x))
@@ -56,6 +54,22 @@ let print_wrong_type_pre op x =
   print_string (" attend un argument de type " ^ (string_of_prefix_type op));
   print_endline (" et il recoit " ^ (Type.stringOfOpt x))
 
+let print_type_mismatch expression x y =
+  print_string ("Les deux expressions d'une "^ expression ^" doivent etre du meme type");
+  print_string (" et elle recoit " ^ (Type.stringOfOpt x));
+  print_endline (" et " ^ (Type.stringOfOpt y))
+
+let print_type_mismatch_tern x y =
+  print_type_mismatch "expression ternaire" x y
+
+let print_type_mismatch_decl x y =
+  print_type_mismatch "declaration" x y
+
+let print_variable_name_exist name =
+  print_endline ("Le nom de variable " ^ name ^ "existe deja.")
+
+let print_unkown_variable name =
+  print_endline ("Pas de variable " ^ name ^ "dans le scope courant.")
 
 (* CHECKS *)
 let check_aop_type x op y =

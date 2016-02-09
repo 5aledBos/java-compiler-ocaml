@@ -10,6 +10,11 @@ public class A {
         4++;
         --27.;
 
+        int c = (3 + 3);
+        if (true) {
+          (true? c: 2);
+        }
+
         // "void.class" = void.class;
         // "int.class" = int.class;
         // "intarray.class" = int[].class;

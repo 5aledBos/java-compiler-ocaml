@@ -14,6 +14,9 @@ let execute lexbuf verbose =
     | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch_tern x y
     | CheckAST.Wrong_type_post(x) -> CheckAST.print_wrong_type_post x
     | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x
+    | CheckAST.Type_mismatch_decl(x, y) -> CheckAST.print_type_mismatch_decl x y
+    | CheckAST.Variable_name_exist(name) -> CheckAST.print_variable_name_exist name
+    | CheckAST.Unknown_variable(name) -> CheckAST.print_unkown_variable name
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)

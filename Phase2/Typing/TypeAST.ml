@@ -3,31 +3,31 @@ open AST
 let type_val v =
   match v with
   | String s -> Some(Type.Ref({tpath=[]; tid="String"}))
-  | Boolean b -> Some(Type.Primitive(Type.Boolean))
-  | Char c -> Some(Type.Primitive(Type.Char))
   | Int i -> Some(Type.Primitive(Type.Int))
   | Float f -> Some(Type.Primitive(Type.Float))
+  | Char c -> Some(Type.Primitive(Type.Char))
   | Null -> None
+  | Boolean b -> Some(Type.Primitive(Type.Boolean))
 
-let rec type_expression e =
+let rec type_expression scope e =
   match e.edesc with
   (* | NewArray(t, [], None) -> ()
   | NewArray(t, [Some(e)], None) -> type_expression e
   | NewArray(t, [], Some(e)) -> type_expression e
   | NewArray(t, [Some(e1)], Some(e2)) -> type_expression e1; type_expression e2 *)
-  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3;
-    CheckAST.check_if_test_type e1.etype
+  | Name(name) -> e.etype <- if (Hashtbl.mem scope name) <> true then raise(CheckAST.Unknown_variable(name)) else Some(Hashtbl.find scope name)
+  | If(e1, e2, e3) -> type_expression scope e1; type_expression scope e2; type_expression scope e3;
   | Val v -> e.etype <- type_val v
-  | AssignExp(e1, op, e2) -> type_expression e1; type_expression e2;
+  | AssignExp(e1, op, e2) -> type_expression scope e1; type_expression scope e2;
     CheckAST.check_aop_type e1.etype op e2.etype;
     e.etype <- e1.etype
-  | Post(exp, op) -> type_expression exp;
+  | Post(exp, op) -> type_expression scope exp;
     CheckAST.check_post_type exp.etype;
     e.etype <- exp.etype
-  | Pre(op, exp) -> type_expression exp;
+  | Pre(op, exp) -> type_expression scope exp;
     CheckAST.check_pre_type op exp.etype;
     e.etype <- exp.etype
-  | Op(e1, op, e2) -> type_expression e1; type_expression e2;
+  | Op(e1, op, e2) -> type_expression scope e1; type_expression scope e2;
     CheckAST.check_op_type e1.etype op e2.etype;
     (match op with
     | Op_cor | Op_cand
@@ -35,30 +35,38 @@ let rec type_expression e =
     | Op_or | Op_and | Op_xor
     | Op_shl | Op_shr | Op_shrr
     | Op_add | Op_sub | Op_mul | Op_div | Op_mod -> e.etype <- e1.etype)
-  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3;
+  | CondOp(e1, e2, e3) -> type_expression scope e1; type_expression scope e2; type_expression scope e3;
     CheckAST.check_tern_type e1.etype e2.etype e3.etype;
     if e2.etype <> None then e.etype <- e2.etype else e.etype <- e3.etype
-  | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)
+  | Cast(t,ex) -> type_expression scope ex; e.etype <- Some(t)
   | Type t -> e.etype <- Some(t)
   | ClassOf t -> e.etype <- Some(t)
-  | Instanceof(e, t) -> type_expression e
+  | Instanceof(e, t) -> type_expression scope e
   | VoidClass -> ()
 
-let rec type_statement s =
-  match s with
-  | Block b -> List.iter type_statement b
+let add_variable scope name typ = if (Hashtbl.mem scope name) <> true then Hashtbl.add scope name typ else raise(CheckAST.Variable_name_exist(name))
+
+let type_vardecl scope decl =
+  match decl with
+  | (t, name, None) -> add_variable scope name t
+  | (t, name, Some e) -> type_expression scope e; if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
+
+let rec type_statement scope statement =
+  match statement with
+  | VarDecl(l) -> List.iter (type_vardecl scope) l
+  | Block b -> (*create scope with current scope and pass it;*)List.iter (type_statement scope) b(*;destroy scope*)
   | Nop -> ()
-  | While(e, s) -> type_expression e; type_statement s
-  | If(e, s, None) -> type_expression e; type_statement s; CheckAST.check_if_test_type e.etype
-  | If(e, s1, Some(s2)) -> type_expression e; type_statement s1; type_statement s2; CheckAST.check_if_test_type e.etype
-  | Return None -> ()
-  | Return Some(e) -> type_expression e
-  | Throw e -> type_expression e
-  | Expr e -> type_expression e
+  | While(e, s) -> type_expression scope e; type_statement scope s
+  | If(e, s, None) -> type_expression scope e; type_statement scope s; CheckAST.check_if_test_type e.etype
+  | If(e, s1, Some(s2)) -> type_expression scope e; type_statement scope s1; type_statement scope s2; CheckAST.check_if_test_type e.etype
+  | Return None -> () (* Check with return type of the method *)
+  | Return Some(e) -> type_expression scope e (* Check with return type of the method *)
+  | Throw e -> type_expression scope e
+  | Expr e -> type_expression scope e
 
-let type_method m = List.iter type_statement m.mbody
+let type_method scope m = List.iter (type_statement scope) m.mbody
 
-let type_class c = List.iter type_method c.cmethods
+let type_class c = let scope = Hashtbl.create 20 in List.iter (type_method scope) c.cmethods
 
 let type_type t =
   match t.info with
