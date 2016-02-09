@@ -15,14 +15,27 @@ let rec type_expression e =
   | NewArray(t, [Some(e)], None) -> type_expression e
   | NewArray(t, [], Some(e)) -> type_expression e
   | NewArray(t, [Some(e1)], Some(e2)) -> type_expression e1; type_expression e2 *)
-  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3; CheckAST.check_if_test_type e1.etype
+  | If(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3;
+    CheckAST.check_if_test_type e1.etype
   | Val v -> e.etype <- type_val v
-  | AssignExp(e1, op, e2) -> type_expression e1; type_expression e2; CheckAST.check_aop_type e1.etype op e2.etype
-  | Post(exp, op) -> type_expression exp; e.etype <- exp.etype
-  | Pre(op, exp) -> type_expression exp; e.etype <- exp.etype
-  | Op(e1, op, e2) -> type_expression e1; type_expression e2; CheckAST.check_op_type e1.etype op e2.etype; e.etype <- e1.etype
-  | CondOp(e1, e2, e3) ->
-    type_expression e1; type_expression e2; type_expression e3;
+  | AssignExp(e1, op, e2) -> type_expression e1; type_expression e2;
+    CheckAST.check_aop_type e1.etype op e2.etype;
+    e.etype <- e1.etype
+  | Post(exp, op) -> type_expression exp;
+    CheckAST.check_post_type exp.etype;
+    e.etype <- exp.etype
+  | Pre(op, exp) -> type_expression exp;
+    CheckAST.check_pre_type op exp.etype;
+    e.etype <- exp.etype
+  | Op(e1, op, e2) -> type_expression e1; type_expression e2;
+    CheckAST.check_op_type e1.etype op e2.etype;
+    (match op with
+    | Op_cor | Op_cand
+    | Op_eq | Op_ne | Op_gt | Op_lt | Op_ge | Op_le -> e.etype <- Some(Type.Primitive(Type.Boolean))
+    | Op_or | Op_and | Op_xor
+    | Op_shl | Op_shr | Op_shrr
+    | Op_add | Op_sub | Op_mul | Op_div | Op_mod -> e.etype <- e1.etype)
+  | CondOp(e1, e2, e3) -> type_expression e1; type_expression e2; type_expression e3;
     CheckAST.check_tern_type e1.etype e2.etype e3.etype;
     if e2.etype <> None then e.etype <- e2.etype else e.etype <- e3.etype
   | Cast(t,ex) -> type_expression ex; e.etype <- Some(t)

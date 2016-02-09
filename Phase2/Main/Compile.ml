@@ -12,6 +12,8 @@ let execute lexbuf verbose =
     | CheckAST.Wrong_type_tern(test) -> CheckAST.print_wrong_type_tern test
     | CheckAST.Wrong_type_if(test) -> CheckAST.print_wrong_type_if test
     | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch_tern x y
+    | CheckAST.Wrong_type_post(x) -> CheckAST.print_wrong_type_post x
+    | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)

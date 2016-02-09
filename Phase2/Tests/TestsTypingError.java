@@ -6,6 +6,11 @@ public class A {
         if (true) {
           (true? 1: 2);
         }
-        (true? null: 2);
+        // (true? null: 2);
+        //
+        // if (52--=32) 12+=4;
+        //
+        // "test"++;
+        ++true;
     }
 }

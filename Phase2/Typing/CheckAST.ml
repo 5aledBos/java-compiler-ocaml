@@ -1,5 +1,13 @@
 open AST
 
+(* String of helpers *)
+
+let string_of_prefix_type = function
+  | Op_not -> "boolean"
+  | Op_bnot -> "int"
+  | Op_neg | Op_incr | Op_decr | Op_plus -> "int ou float"
+
+
 (* ERRORS *)
 
 exception Wrong_types_aop of Type.t option * assign_op * Type.t option
@@ -7,6 +15,8 @@ exception Wrong_types_op of Type.t option * infix_op * Type.t option
 exception Wrong_type_tern of Type.t option
 exception Wrong_type_if of Type.t option
 exception Type_mismatch_tern of Type.t option * Type.t option
+exception Wrong_type_post of Type.t option
+exception Wrong_type_unop of prefix_op * Type.t option
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -33,9 +43,18 @@ let print_wrong_type_if test =
   print_not_bool_exception "if" test
 
 let print_type_mismatch_tern x y =
-  print_string ("Les deux expressions d'une expression ternaire doivent etre du meme type");
+  print_string ("L'expression ternaire attend deux expressions du meme type");
   print_string (" et elle recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
+
+let print_wrong_type_post x =
+  print_string ("Les operateurs ++ et -- attendent un int ou un float");
+  print_endline (" et recoivent un " ^ (Type.stringOfOpt x))
+
+let print_wrong_type_pre op x =
+  print_string ("L'operateur " ^ (AST.string_of_prefix_op op));
+  print_string (" attend un argument de type " ^ (string_of_prefix_type op));
+  print_endline (" et il recoit " ^ (Type.stringOfOpt x))
 
 
 (* CHECKS *)
@@ -49,11 +68,20 @@ let check_op_type x op y =
 let check_tern_type test x y =
   if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_tern(test));
   match x, y with
-  | Some(Type.Primitive(typ)), None -> raise(Type_mismatch_tern(x, y))
-  | None, Some(Type.Primitive(typ)) -> raise(Type_mismatch_tern(x, y))
-  | Some(typ), None -> ()
-  | None, Some(typ) -> ()
+  | Some(Type.Primitive(_)), None -> raise(Type_mismatch_tern(x, y))
+  | None, Some(Type.Primitive(_)) -> raise(Type_mismatch_tern(x, y))
+  | Some(_), None -> ()
+  | None, Some(_) -> ()
   | Some(typ1), Some(typ2) ->  if typ1 <> typ2 then raise(Type_mismatch_tern(x, y))
 
 let check_if_test_type test =
-  if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_if(test));
+  if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_if(test))
+
+let check_post_type x =
+  if (x <> Some(Type.Primitive(Type.Int)) && x <> Some(Type.Primitive(Type.Float))) then raise(Wrong_type_post(x))
+
+let check_pre_type op x =
+  match op with
+  | Op_not -> if x <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_unop(op, x))
+  | Op_bnot -> if x <> Some(Type.Primitive(Type.Int)) then raise(Wrong_type_unop(op, x))
+  | Op_neg | Op_incr | Op_decr | Op_plus -> if (x <> Some(Type.Primitive(Type.Int)) && x <> Some(Type.Primitive(Type.Float))) then raise(Wrong_type_unop(op, x))
