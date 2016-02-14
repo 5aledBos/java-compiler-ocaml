@@ -23,9 +23,11 @@ public class A {
         throw 45=3;
 
         if (43==3) {
-            43++;
+          int d = 3;
+            d++;
         } else {
             43--;
+            c--;
         }
 
         while(true) {

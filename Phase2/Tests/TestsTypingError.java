@@ -7,6 +7,12 @@ public class A {
         // if (52--=32) 12+=4;
         //
         // "test"++;
-        ++true;
+        // boolean c = true;
+        // c++;
+        if (true) {
+          int d = 34;
+        }
+        d++;
+        //++true;
     }
 }

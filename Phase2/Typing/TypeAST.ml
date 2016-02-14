@@ -54,7 +54,7 @@ let type_vardecl scope decl =
 let rec type_statement scope statement =
   match statement with
   | VarDecl(l) -> List.iter (type_vardecl scope) l
-  | Block b -> (*create scope with current scope and pass it;*)List.iter (type_statement scope) b(*;destroy scope*)
+  | Block b -> let newscope = Hashtbl.copy scope in List.iter (type_statement newscope) b
   | Nop -> ()
   | While(e, s) -> type_expression scope e; type_statement scope s
   | If(e, s, None) -> type_expression scope e; type_statement scope s; CheckAST.check_if_test_type e.etype
@@ -64,9 +64,9 @@ let rec type_statement scope statement =
   | Throw e -> type_expression scope e
   | Expr e -> type_expression scope e
 
-let type_method scope m = List.iter (type_statement scope) m.mbody
+let type_method m = let scope = Hashtbl.create 20 in List.iter (type_statement scope) m.mbody
 
-let type_class c = let scope = Hashtbl.create 20 in List.iter (type_method scope) c.cmethods
+let type_class c = List.iter type_method c.cmethods
 
 let type_type t =
   match t.info with

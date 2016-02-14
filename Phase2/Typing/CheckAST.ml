@@ -66,10 +66,10 @@ let print_type_mismatch_decl x y =
   print_type_mismatch "declaration" x y
 
 let print_variable_name_exist name =
-  print_endline ("Le nom de variable " ^ name ^ "existe deja.")
+  print_endline ("Le nom de variable \"" ^ name ^ "\" existe deja.")
 
 let print_unkown_variable name =
-  print_endline ("Pas de variable " ^ name ^ "dans le scope courant.")
+  print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant.")
 
 (* CHECKS *)
 let check_aop_type x op y =
