@@ -4,9 +4,12 @@ public class A {
     int test() {
         4 = 3;
         43.0 = (float)43;
-        // 'c' = true;
-        // "Test" -= null;
-        // "float" += 4.6;
+
+        int[] myIntArray = new int[3];
+        int[] myArray = {1,2,3};
+        int[] myInt = new int[]{1,2,3};
+        float[] a = { 1.2, 2.3, 3.4 };
+
         4++;
         --27.;
 

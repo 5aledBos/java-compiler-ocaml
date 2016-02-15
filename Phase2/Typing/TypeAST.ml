@@ -11,13 +11,20 @@ let type_val v =
 
 let rec type_expression scope e =
   match e.edesc with
-  (* | NewArray(t, [], None) -> ()
-  | NewArray(t, [Some(e)], None) -> type_expression e
-  | NewArray(t, [], Some(e)) -> type_expression e
-  | NewArray(t, [Some(e1)], Some(e2)) -> type_expression e1; type_expression e2 *)
-  | Name(name) -> e.etype <- if (Hashtbl.mem scope name) <> true then raise(CheckAST.Unknown_variable(name)) else Some(Hashtbl.find scope name)
+  | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
+  | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
+  (* | Call(None, str, l) ->
+  | Call(Some(exp), str, l) ->
+  | Attr(exp, str) -> *)
   | If(e1, e2, e3) -> type_expression scope e1; type_expression scope e2; type_expression scope e3;
   | Val v -> e.etype <- type_val v
+  | Name(name) -> e.etype <- if (Hashtbl.mem scope name) <> true then raise(CheckAST.Unknown_variable(name)) else Some(Hashtbl.find scope name)
+  | ArrayInit(exp) -> List.iter (type_expression scope) exp;
+    CheckAST.check_array_list_type exp;
+    e.etype <- (match (List.hd exp).etype with
+      | Some(t) -> Some(Type.Array(t, 1)))
+  (* | Array(exp, []) ->
+  | Array(exp, Some(l)) -> *)
   | AssignExp(e1, op, e2) -> type_expression scope e1; type_expression scope e2;
     CheckAST.check_aop_type e1.etype op e2.etype;
     e.etype <- e1.etype

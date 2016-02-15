@@ -20,6 +20,7 @@ exception Wrong_type_unop of prefix_op * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
 exception Variable_name_exist of string
 exception Unknown_variable of string
+exception Wrong_type_list of Type.t option * Type.t option
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -71,6 +72,11 @@ let print_variable_name_exist name =
 let print_unkown_variable name =
   print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant.")
 
+let print_wrong_type_list x y =
+  print_string ("Toutes les entrees d'un tableau doivent etre de meme type ");
+  print_string (" et il recoit " ^ (Type.stringOfOpt x));
+  print_endline (" et " ^ (Type.stringOfOpt y))
+
 (* CHECKS *)
 let check_aop_type x op y =
   if x <> y then raise(Wrong_types_aop(x, op, y))
@@ -99,3 +105,11 @@ let check_pre_type op x =
   | Op_not -> if x <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_unop(op, x))
   | Op_bnot -> if x <> Some(Type.Primitive(Type.Int)) then raise(Wrong_type_unop(op, x))
   | Op_neg | Op_incr | Op_decr | Op_plus -> if (x <> Some(Type.Primitive(Type.Int)) && x <> Some(Type.Primitive(Type.Float))) then raise(Wrong_type_unop(op, x))
+
+let rec check_array_list_type exp =
+  match exp with
+  | [] -> ()
+  | h::t -> (match t with
+    | [] -> ()
+    | h2::t2 -> if h.etype <> h2.etype then raise(Wrong_type_list(h.etype, h2.etype)));
+    check_array_list_type t
