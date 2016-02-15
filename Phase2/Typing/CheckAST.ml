@@ -19,7 +19,11 @@ exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
 exception Variable_name_exist of string
+exception Method_name_exist of string
+exception Attribute_name_exist of string
 exception Unknown_variable of string
+exception Unknown_method of string
+exception Unknown_attribute of string
 exception Wrong_type_list of Type.t option * Type.t option
 
 (* String of errors *)
@@ -40,12 +44,6 @@ let print_not_bool_exception expression test =
   print_string ("La condition d'une expression " ^ expression ^ " doit etre un booleen");
   print_endline (" et elle recoit un " ^ (Type.stringOfOpt test))
 
-let print_wrong_type_tern test =
-  print_not_bool_exception "ternaire" test
-
-let print_wrong_type_if test =
-  print_not_bool_exception "if" test
-
 let print_wrong_type_post x =
   print_string ("Les operateurs ++ et -- attendent un int ou un float");
   print_endline (" et recoivent un " ^ (Type.stringOfOpt x))
@@ -60,22 +58,23 @@ let print_type_mismatch expression x y =
   print_string (" et elle recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
 
-let print_type_mismatch_tern x y =
-  print_type_mismatch "expression ternaire" x y
-
-let print_type_mismatch_decl x y =
-  print_type_mismatch "declaration" x y
-
-let print_variable_name_exist name =
-  print_endline ("Le nom de variable \"" ^ name ^ "\" existe deja.")
+let print_name_exist str name =
+  print_endline ("Le nom de " ^ str ^ " \"" ^ name ^ "\" existe deja")
 
 let print_unkown_variable name =
-  print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant.")
+  print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant")
+
+let print_unkown_method name =
+  print_endline ("Pas de method \"" ^ name ^ "\" dans le scope global")
+
+let print_unkown_attribute name =
+  print_endline ("Pas d'attribut \"" ^ name ^ "\" dans le scope global")
 
 let print_wrong_type_list x y =
-  print_string ("Toutes les entrees d'un tableau doivent etre de meme type ");
+  print_string ("Toutes les entrees d'un tableau doivent etre de meme type");
   print_string (" et il recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
+
 
 (* CHECKS *)
 let check_aop_type x op y =

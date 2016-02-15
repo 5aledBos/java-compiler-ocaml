@@ -9,14 +9,18 @@ let execute lexbuf verbose =
   with
     | CheckAST.Wrong_types_aop(x, op, y) -> CheckAST.print_wrong_types_aop x op y
     | CheckAST.Wrong_types_op(x, op, y) -> CheckAST.print_wrong_types_op x op y
-    | CheckAST.Wrong_type_tern(test) -> CheckAST.print_wrong_type_tern test
-    | CheckAST.Wrong_type_if(test) -> CheckAST.print_wrong_type_if test
-    | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch_tern x y
+    | CheckAST.Wrong_type_tern(test) -> CheckAST.print_not_bool_exception "ternaire" test
+    | CheckAST.Wrong_type_if(test) -> CheckAST.print_not_bool_exception "if" test
+    | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch "expression ternaire" x y
     | CheckAST.Wrong_type_post(x) -> CheckAST.print_wrong_type_post x
     | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x
-    | CheckAST.Type_mismatch_decl(x, y) -> CheckAST.print_type_mismatch_decl x y
-    | CheckAST.Variable_name_exist(name) -> CheckAST.print_variable_name_exist name
+    | CheckAST.Type_mismatch_decl(x, y) -> CheckAST.print_type_mismatch "declaration" x y
+    | CheckAST.Variable_name_exist(name) -> CheckAST.print_name_exist "variable" name
+    | CheckAST.Method_name_exist(name) -> CheckAST.print_name_exist "methode" name
+    | CheckAST.Attribute_name_exist(name) -> CheckAST.print_name_exist "attribut" name
     | CheckAST.Unknown_variable(name) -> CheckAST.print_unkown_variable name
+    | CheckAST.Unknown_method(name) -> CheckAST.print_unkown_method name
+    | CheckAST.Unknown_attribute(name) -> CheckAST.print_unkown_attribute name
     | CheckAST.Wrong_type_list(x, y) -> CheckAST.print_wrong_type_list x y
     | Error ->
       print_string "Syntax error: ";
