@@ -4,7 +4,9 @@ let execute lexbuf verbose =
   try
     let ast = compilationUnit Lexer.token lexbuf in
     print_endline "successfull parsing";
-    TypeAST.type_program ast;
+(*    TypeAST.type_program ast;*)
+      let data = Compilation.compile ast in
+      Compilation.printCompilationData(data);
     if verbose then AST.print_program ast
   with
     | CheckAST.Wrong_types_aop(x, op, y) -> CheckAST.print_wrong_types_aop x op y
