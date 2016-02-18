@@ -26,6 +26,8 @@ let execute lexbuf verbose =
     | CheckAST.Class_name_exist(name) -> CheckAST.print_name_exist "classe" name
     | CheckAST.Unknown_class(l) -> CheckAST.print_unknown_class (String.concat "." l)
     | CheckAST.Wrong_type_list(x, y) -> CheckAST.print_wrong_type_list x y
+    | CheckAST.Wrong_return_type(x, y) -> CheckAST.print_wrong_return_type x y
+    | CheckAST.Return_expression_no_type -> print_endline "Syntax error on return type"
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)
