@@ -102,7 +102,11 @@ let rec type_statement globalScope scope statement =
   | Throw e -> type_expression globalScope scope e
   | Expr e -> type_expression globalScope scope e
 
-let type_method globalScope m = let scope = {returntype = m.mreturntype; vars = Hashtbl.create 20} in List.iter (type_statement globalScope scope) m.mbody
+let add_method_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true then Hashtbl.add scope.vars a.pident a.ptype else raise(CheckAST.Variable_name_exist(a.pident))
+
+let type_method globalScope m = let scope = {returntype = m.mreturntype; vars = Hashtbl.create 20} in
+  List.iter (add_method_args scope) m.margstype;
+  List.iter (type_statement globalScope scope) m.mbody
 
 let type_class globalScope c = List.iter (type_method globalScope) c.cmethods
 

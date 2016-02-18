@@ -22,6 +22,10 @@ public class A {
         return "b.b";
     }
 
+    public void params(String toto, int tutu) {
+        tutu++;
+    }
+
     int test() {
 
         4 = 3;
