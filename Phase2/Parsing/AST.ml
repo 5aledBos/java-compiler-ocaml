@@ -80,7 +80,6 @@ type expression_desc =
   | ClassOf of Type.t
   | Instanceof of expression * Type.t
   | VoidClass
-  | QN of string list
 
 and expression =
     {
@@ -272,7 +271,6 @@ let rec string_of_expression_desc = function
      "{"^(ListII.concat_map "," string_of_expression el)^"}"
   | Cast(t,e) ->
       "("^(Type.stringOf t)^") "^(string_of_expression e)
-  | QN(sl) -> String.concat "." sl
   | Post(e,Incr) -> (string_of_expression e)^"++"
   | Post(e,Decr) -> (string_of_expression e)^"--"
   | Pre(op,e) -> (string_of_prefix_op op)^(string_of_expression e)

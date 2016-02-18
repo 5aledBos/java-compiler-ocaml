@@ -24,6 +24,8 @@ exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string
 exception Unknown_attribute of string
+exception Class_name_exist of string
+exception Unknown_class of string list
 exception Wrong_type_list of Type.t option * Type.t option
 
 (* String of errors *)
@@ -61,14 +63,17 @@ let print_type_mismatch expression x y =
 let print_name_exist str name =
   print_endline ("Le nom de " ^ str ^ " \"" ^ name ^ "\" existe deja")
 
-let print_unkown_variable name =
+let print_unknown_variable name =
   print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant")
 
-let print_unkown_method name =
+let print_unknown_method name =
   print_endline ("Pas de method \"" ^ name ^ "\" dans le scope global")
 
-let print_unkown_attribute name =
+let print_unknown_attribute name =
   print_endline ("Pas d'attribut \"" ^ name ^ "\" dans le scope global")
+
+let print_unknown_class name =
+  print_endline ("Pas de classe \"" ^ name ^ "\" visible")
 
 let print_wrong_type_list x y =
   print_string ("Toutes les entrees d'un tableau doivent etre de meme type");
