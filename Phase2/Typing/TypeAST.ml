@@ -1,8 +1,18 @@
 open AST
 
-type gscope = {
-  methods : (string, Type.t) Hashtbl.t ;
+type classscope = {
+  methods : (string, Type.t) Hashtbl.t;
   attributes : (string, Type.t) Hashtbl.t
+}
+
+type gscope = {
+  classes : (string, classscope) Hashtbl.t ;
+  mutable current : string
+}
+
+type scope = {
+  returntype: Type.t;
+  vars: (string, Type.t) Hashtbl.t
 }
 
 let type_val v =
@@ -16,17 +26,27 @@ let type_val v =
 
 let rec type_expression globalScope scope e =
   match e.edesc with
+  | New(None, l, []) ->   (*of string option * string list * expression list*)
+    let (last, lst) = ListII.extract_last l in
+      if (Hashtbl.mem globalScope.classes last) <> false
+      then e.etype <- Some(Type.Ref({ tpath = lst ; tid = last }))
+      else raise(CheckAST.Unknown_class(l))
   | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
   | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
   | Call(None, str, l) -> List.iter (type_expression globalScope scope) l;
-    e.etype <- if (Hashtbl.mem globalScope.methods str) <> true then raise(CheckAST.Unknown_method(str)) else Some(Hashtbl.find globalScope.methods str)
-  (* | Call(Some(exp), str, l) ->
-  | Attr(exp, str) -> *)
+    e.etype <- if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).methods str) <> true
+    then raise(CheckAST.Unknown_method(str))
+    else Some(Hashtbl.find (Hashtbl.find globalScope.classes globalScope.current).methods str)
+  (* | Call(Some(exp), str, l) ->*)
+  (* | Attr(exp, str) -> type_expression exp globalScope scope exp;*)
   | If(e1, e2, e3) -> type_expression globalScope scope e1; type_expression globalScope scope e2; type_expression globalScope scope e3
   | Val v -> e.etype <- type_val v
-  | Name(name) -> e.etype <- if (Hashtbl.mem scope name) <> true then (if (Hashtbl.mem globalScope.attributes name) <> true
-    then raise(CheckAST.Unknown_attribute(name)) else Some(Hashtbl.find globalScope.attributes name))
-    else Some(Hashtbl.find scope name)
+  | Name(name) -> e.etype <- if (Hashtbl.mem scope.vars name) <> true
+    then
+      (if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes name) <> true
+      then raise(CheckAST.Unknown_attribute(name))
+      else Some(Hashtbl.find (Hashtbl.find globalScope.classes globalScope.current).attributes name))
+    else Some(Hashtbl.find scope.vars name)
   | ArrayInit(exp) -> List.iter (type_expression globalScope scope) exp;
     CheckAST.check_array_list_type exp;
     e.etype <- (match (List.hd exp).etype with
@@ -59,7 +79,7 @@ let rec type_expression globalScope scope e =
   | Instanceof(e, t) -> type_expression globalScope scope e
   | VoidClass -> ()
 
-let add_variable scope name typ = if (Hashtbl.mem scope name) <> true then Hashtbl.add scope name typ else raise(CheckAST.Variable_name_exist(name))
+let add_variable scope name typ = if (Hashtbl.mem scope.vars name) <> true then Hashtbl.add scope.vars name typ else raise(CheckAST.Variable_name_exist(name))
 
 let type_vardecl globalScope scope decl =
   match decl with
@@ -70,34 +90,44 @@ let type_vardecl globalScope scope decl =
 let rec type_statement globalScope scope statement =
   match statement with
   | VarDecl(l) -> List.iter (type_vardecl globalScope scope) l
-  | Block b -> let newscope = Hashtbl.copy scope in List.iter (type_statement globalScope newscope) b
+  | Block b -> let newscope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in List.iter (type_statement globalScope newscope) b
   | Nop -> ()
   | While(e, s) -> type_expression globalScope scope e; type_statement globalScope scope s
   | If(e, s, None) -> type_expression globalScope scope e; type_statement globalScope scope s;
     CheckAST.check_if_test_type e.etype
   | If(e, s1, Some(s2)) -> type_expression globalScope scope e; type_statement globalScope scope s1; type_statement globalScope scope s2;
     CheckAST.check_if_test_type e.etype
-  | Return None -> () (* Check with return type of the method *)
-  | Return Some(e) -> type_expression globalScope scope e (* Check with return type of the method *)
+  | Return None -> if scope.returntype <> Type.Void then raise(CheckAST.Wrong_return_type(scope.returntype, Type.Void))
+  | Return Some(e) -> type_expression globalScope scope e; CheckAST.check_return_type scope.returntype e.etype
   | Throw e -> type_expression globalScope scope e
   | Expr e -> type_expression globalScope scope e
 
-let type_method globalScope m = let scope = Hashtbl.create 20 in List.iter (type_statement globalScope scope) m.mbody
+let type_method globalScope m = let scope = {returntype = m.mreturntype; vars = Hashtbl.create 20} in List.iter (type_statement globalScope scope) m.mbody
 
-let add_method globalScope m = if (Hashtbl.mem globalScope.methods m.mname) <> true
-  then Hashtbl.add globalScope.methods m.mname m.mreturntype else raise(CheckAST.Method_name_exist(m.mname))
-
-let add_attribute globalScope a = if (Hashtbl.mem globalScope.attributes a.aname) <> true
-  then Hashtbl.add globalScope.attributes a.aname a.atype else raise(CheckAST.Attribute_name_exist(a.aname))
-
-let type_class globalScope c = List.iter (add_method globalScope) c.cmethods;
-  List.iter (add_attribute globalScope) c.cattributes;
-  List.iter (type_method globalScope) c.cmethods
+let type_class globalScope c = List.iter (type_method globalScope) c.cmethods
 
 let type_type globalScope t =
   match t.info with
   | Class c -> type_class globalScope c
   | Inter -> ()
 
-let type_program p = let globalScope = { methods = Hashtbl.create 20; attributes = Hashtbl.create 20 }
-  in List.iter (type_type globalScope) p.type_list
+(* First add all the attibutes and methods from the classes so they can be then used in the methods body *)
+let add_method globalScope m = if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).methods m.mname) <> true
+  then Hashtbl.add (Hashtbl.find globalScope.classes globalScope.current).methods m.mname m.mreturntype else raise(CheckAST.Method_name_exist(m.mname))
+
+let add_attribute globalScope a = if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes a.aname) <> true
+  then Hashtbl.add (Hashtbl.find globalScope.classes globalScope.current).attributes a.aname a.atype else raise(CheckAST.Attribute_name_exist(a.aname))
+
+let add_class globalScope c = List.iter (add_method globalScope) c.cmethods;
+  List.iter (add_attribute globalScope) c.cattributes
+
+let add_type globalScope t =
+  match t.info with
+  | Class c -> if (Hashtbl.mem globalScope.classes t.id) <> true
+    then (globalScope.current <- t.id; Hashtbl.add globalScope.classes globalScope.current {attributes = (Hashtbl.create 20); methods = (Hashtbl.create 20)})
+    else raise(CheckAST.Class_name_exist(t.id)); add_class globalScope c
+  | Inter -> ()
+
+let type_program p = let globalScope = { classes = Hashtbl.create 20; current = "" }
+  in List.iter (add_type globalScope) p.type_list;
+  List.iter (type_type globalScope) p.type_list

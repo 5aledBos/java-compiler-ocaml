@@ -202,7 +202,6 @@ expression:
     }
   | o=expression LPAREN params=separated_list(COMMA,expression) RPAREN {
       match o with
-      | { edesc = QN(id) } -> let n, id = ListII.extract_last id in { edesc = Call(Some { edesc = QN(id); etype = None },n,params); etype = None }
       | { edesc = Name(id) } ->	{ edesc = Call(None,id,params); etype = None }
       | { edesc = Attr(o,id) } -> { edesc = Call(Some o,id,params); etype = None } }
   | o=expression DOT n=name  { { edesc = Attr(o,n); etype = None } }
@@ -232,7 +231,6 @@ expressionSansBracket:
   | o=expression DOT n=name  { { edesc = Attr(o,n); etype = None } }
   | o=expression LPAREN params=separated_list(COMMA,expression) RPAREN {
       match o with
-      | { edesc = QN(id) } -> let n, id = ListII.extract_last id in { edesc = Call(Some { edesc = QN(id); etype = None },n,params); etype = None }
       | { edesc = Name(id) } ->	{ edesc = Call(None,id,params); etype = None }
       | { edesc = Attr(o,id) } -> { edesc = Call(Some o,id,params); etype = None }
     }

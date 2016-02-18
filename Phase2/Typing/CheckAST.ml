@@ -24,7 +24,11 @@ exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string
 exception Unknown_attribute of string
+exception Class_name_exist of string
+exception Unknown_class of string list
 exception Wrong_type_list of Type.t option * Type.t option
+exception Wrong_return_type of Type.t * Type.t
+exception Return_expression_no_type
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -61,20 +65,25 @@ let print_type_mismatch expression x y =
 let print_name_exist str name =
   print_endline ("Le nom de " ^ str ^ " \"" ^ name ^ "\" existe deja")
 
-let print_unkown_variable name =
+let print_unknown_variable name =
   print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant")
 
-let print_unkown_method name =
+let print_unknown_method name =
   print_endline ("Pas de method \"" ^ name ^ "\" dans le scope global")
 
-let print_unkown_attribute name =
+let print_unknown_attribute name =
   print_endline ("Pas d'attribut \"" ^ name ^ "\" dans le scope global")
+
+let print_unknown_class name =
+  print_endline ("Pas de classe \"" ^ name ^ "\" visible")
 
 let print_wrong_type_list x y =
   print_string ("Toutes les entrees d'un tableau doivent etre de meme type");
   print_string (" et il recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
 
+let print_wrong_return_type x y =
+  print_endline ("The expected return type is " ^ (Type.stringOf x) ^ " but instead got " ^ (Type.stringOf y))
 
 (* CHECKS *)
 let check_aop_type x op y =
@@ -83,6 +92,11 @@ let check_aop_type x op y =
 (* TODO: Some of the ops only take bools *)
 let check_op_type x op y =
     if x <> y then raise(Wrong_types_op(x, op, y))
+
+let check_return_type x y =
+  match x, y with
+  | _, None -> raise(Return_expression_no_type)
+  | x, Some(z) -> if x <> z then raise(Wrong_return_type(x, z))
 
 let check_tern_type test x y =
   if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_tern(test));

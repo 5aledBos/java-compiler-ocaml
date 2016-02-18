@@ -1,5 +1,15 @@
 package tutu.titi.toto;
 
+
+public class B {
+
+    public String b = "coucou";
+
+    public String method() {
+        return "result";
+    }
+}
+
 public class A {
 
     int a1 = 1;
@@ -8,7 +18,8 @@ public class A {
     String a6 = "jsdjkndjk\njdsdjkf";
 
     private String method() {
-        return "result";
+        B b = new B();
+        return "b.b";
     }
 
     int test() {
