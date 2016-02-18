@@ -7,6 +7,9 @@ public class A {
     int[] a = { 3,4,5 };
     Bool a2 = false;
     String a6 = "jsdjkndjk\njdsdjkf";
+    String getA6() {
+		return a6;
+	}
 }
 abstract class B extends C {
     B() { super(); }

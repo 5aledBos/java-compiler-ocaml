@@ -16,7 +16,7 @@ type classDescriptor =
 
 type globalClassDescriptor =
   | ClassDescriptor of classDescriptor
-  | ObjectClass
+  | ObjectClass of classDescriptor
   | StringClass
   | IntegerClass
   | BooleanClass
@@ -32,19 +32,23 @@ type globalData =
 (*type descriptorClassTable = (string, classDescriptor) Hashtbl*)
 
 let addPredifinedClassesToDescriptorTable descriptorTable =
-  Hashtbl.add descriptorTable "Object" ObjectClass;
+  let cd = { cdname = "Object"; cdmethods = Hashtbl.create 20; attributes = [] } in
+  Hashtbl.add descriptorTable "Object" (ObjectClass(cd));
   Hashtbl.add descriptorTable"String" StringClass;
   Hashtbl.add descriptorTable "Int" IntegerClass;
   Hashtbl.add descriptorTable "Boolean" BooleanClass
 
-
 let printClassDescriptor cd = match cd with
   | ClassDescriptor(cd) -> print_endline("*****Method of the class*****");  Hashtbl.iter (fun key value -> print_endline(key)) cd.cdmethods;
 							print_endline("*****attributes of the class*****"); List.iter (print_attribute ("  ")) cd.attributes 
-  | ObjectClass -> ()
+  | ObjectClass(cd) -> ()
   | StringClass -> ()
   | IntegerClass -> ()
   | BooleanClass -> ()
+
+(*let print classDescriptorMethods cdmethods = match cdmethods with*)
+(*  | head::liste -> print_endline(head.)*)
+  
 
 let printClassDescriptorTable cdtable =
   print_endline("list of the classes");
@@ -64,10 +68,17 @@ let addMethodsToClassDesciptor cd methodTable m =
   Hashtbl.add cd.cdmethods m.mname (methodName);
   Hashtbl.add methodTable methodName m
 
+let addMethodsFromParent cdmethods parentcd = match parentcd with
+  | ClassDescriptor(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
+  | ObjectClass(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
+
 let addMethodsAndAttributesToDescriptors classDescriptorTable methodTable c cname =
  print_endline("------------compilation of the class " ^ cname ^ " -----------------");
  let cd = { cdname = cname; cdmethods = Hashtbl.create 20; attributes = c.cattributes  } in
-      List.iter (addMethodsToClassDesciptor cd methodTable) c.cmethods; Hashtbl.add classDescriptorTable cd.cdname (ClassDescriptor(cd))
+	  print_endline(c.cparent.tid);
+      addMethodsFromParent cd.cdmethods (Hashtbl.find classDescriptorTable c.cparent.tid);
+      List.iter (addMethodsToClassDesciptor cd methodTable) c.cmethods;
+	  Hashtbl.add classDescriptorTable cd.cdname (ClassDescriptor(cd))
 
 let isCompiled cname classDescriptorTable = match cname with
   | "Object" -> true
