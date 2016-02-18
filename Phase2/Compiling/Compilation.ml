@@ -49,12 +49,14 @@ add method, addattribute
 
 *)
 
-let addMethodsToClassDesciptor cd m=
-  Hashtbl.add cd.cdmethods m.mname (cd.cdname ^ "_" ^ m.mname)
+let addMethodsToClassDesciptor cd methodTable m =
+  let methodName = cd.cdname ^ "_" ^ m.mname in
+  Hashtbl.add cd.cdmethods m.mname (methodName);
+  Hashtbl.add methodTable methodName m
 
-let addMethodsAndAttributesToDescriptors classDescriptorTable ttype = match ttype.info with
+let addMethodsAndAttributesToDescriptors classDescriptorTable methodTable ttype = match ttype.info with
  | Class c -> let cd = { cdname = ttype.id; cdmethods = Hashtbl.create 20  } in
-      List.iter (addMethodsToClassDesciptor cd) c.cmethods; Hashtbl.add classDescriptorTable cd.cdname (ClassDescriptor(cd))
+      List.iter (addMethodsToClassDesciptor cd methodTable) c.cmethods; Hashtbl.add classDescriptorTable cd.cdname (ClassDescriptor(cd))
  | Inter -> ()
 
 
@@ -62,7 +64,7 @@ let compile ast =
   let compilationData = { methodTable = Hashtbl.create 20; classDescriptorTable = Hashtbl.create 20 }
   in
   addPredifinedClassesToDescriptorTable compilationData.classDescriptorTable;
-  List.iter (addMethodsAndAttributesToDescriptors compilationData.classDescriptorTable) ast.type_list;
+  List.iter (addMethodsAndAttributesToDescriptors compilationData.classDescriptorTable compilationData.methodTable) ast.type_list;
 (*  match fileAst with*)
 (*  | { package = p ; type_list = cl } -> *)
   compilationData
