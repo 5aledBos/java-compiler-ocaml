@@ -23,9 +23,8 @@ exception Method_exist of string * Type.t * argument list
 exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string
-exception Unknown_attribute of string
-exception Class_name_exist of string
 exception Unknown_class of string list
+exception Class_name_exist of string
 exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
 exception Return_expression_no_type
@@ -59,7 +58,7 @@ let print_wrong_type_pre op x =
   print_endline (" et il recoit " ^ (Type.stringOfOpt x))
 
 let print_type_mismatch expression x y =
-  print_string ("Les deux expressions d'une "^ expression ^" doivent etre du meme type");
+  print_string ("Les deux expressions d'une " ^ expression ^ " doivent etre du meme type");
   print_string (" et elle recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
 
@@ -67,13 +66,10 @@ let print_name_exist str name =
   print_endline ("Le nom de " ^ str ^ " \"" ^ name ^ "\" existe deja")
 
 let print_unknown_variable name =
-  print_endline ("Pas de variable \"" ^ name ^ "\" dans le scope courant")
+  print_endline ("Pas de variable \"" ^ name ^ "\"")
 
 let print_unknown_method name =
   print_endline ("Pas de method \"" ^ name ^ "\" dans le scope global")
-
-let print_unknown_attribute name =
-  print_endline ("Pas d'attribut \"" ^ name ^ "\" dans le scope global")
 
 let print_unknown_class name =
   print_endline ("Pas de classe \"" ^ name ^ "\" visible")
@@ -84,7 +80,7 @@ let print_wrong_type_list x y =
   print_endline (" et " ^ (Type.stringOfOpt y))
 
 let print_wrong_return_type x y =
-  print_endline ("The expected return type is " ^ (Type.stringOf x) ^ " but instead got " ^ (Type.stringOf y))
+  print_endline ("Le type de retour attendu est " ^ (Type.stringOf x) ^ " mais il recoit " ^ (Type.stringOf y))
 
 let print_method_exist name typ args =
   print_endline ("The method " ^ Type.stringOf typ ^ " " ^ name ^ "(" ^ (String.concat "," (List.map AST.stringOf_arg args)) ^ ") already exist")

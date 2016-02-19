@@ -22,7 +22,6 @@ let execute lexbuf verbose =
     | CheckAST.Attribute_name_exist(name) -> CheckAST.print_name_exist "attribut" name
     | CheckAST.Unknown_variable(name) -> CheckAST.print_unknown_variable name
     | CheckAST.Unknown_method(name) -> CheckAST.print_unknown_method name
-    | CheckAST.Unknown_attribute(name) -> CheckAST.print_unknown_attribute name
     | CheckAST.Class_name_exist(name) -> CheckAST.print_name_exist "classe" name
     | CheckAST.Unknown_class(l) -> CheckAST.print_unknown_class (String.concat "." l)
     | CheckAST.Wrong_type_list(x, y) -> CheckAST.print_wrong_type_list x y

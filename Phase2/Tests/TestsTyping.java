@@ -35,6 +35,11 @@ public class A {
 
     public void params(String toto, int tutu) {
         tutu++;
+
+        for (int i = 0; i < tutu; i++) {
+            String astr = "Compilo";
+            i += 5;
+        }
     }
 
     int test() {

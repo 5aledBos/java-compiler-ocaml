@@ -31,7 +31,6 @@ let type_val v =
 
 exception Diff_arg
 exception Not_typed_arg
-exception Test
 
 let compare_call_args a b =
   match a.etype with
@@ -50,13 +49,16 @@ let compare_args_method_args name args1 methinfo = if (List.length args1) <> (Li
 
 let rec type_expression globalScope scope e =
   match e.edesc with
-  | New(None, l, []) ->   (*of string option * string list * expression list*)
+  | New(None, l, []) ->
     let (last, lst) = ListII.extract_last l in
       if (Hashtbl.mem globalScope.classes last) <> false
       then e.etype <- Some(Type.Ref({ tpath = lst ; tid = last }))
       else raise(CheckAST.Unknown_class(l))
   (* Check if the void contructor exist or there is no contructor *)
   (* When having parmeters, check if there is a constructor with the right parameter types *)
+  (* | New(Some(str), l, []) ->
+  | New(None, l, exps) ->
+  | New(Some(str), l, exps) -> *)
   | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
   | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
   | Call(None, str, l) -> List.iter (type_expression globalScope scope) l;
@@ -79,7 +81,7 @@ let rec type_expression globalScope scope e =
   | Name(name) -> e.etype <- if (Hashtbl.mem scope.vars name) <> true
     then
       (if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes name) <> true
-      then raise(CheckAST.Unknown_attribute(name))
+      then raise(CheckAST.Unknown_variable(name))
       else Some(Hashtbl.find (Hashtbl.find globalScope.classes globalScope.current).attributes name))
     else Some(Hashtbl.find scope.vars name)
   | ArrayInit(exp) -> List.iter (type_expression globalScope scope) exp;
@@ -108,7 +110,7 @@ let rec type_expression globalScope scope e =
   | CondOp(e1, e2, e3) -> type_expression globalScope scope e1; type_expression globalScope scope e2; type_expression globalScope scope e3;
     CheckAST.check_tern_type e1.etype e2.etype e3.etype;
     if e2.etype <> None then e.etype <- e2.etype else e.etype <- e3.etype
-  | Cast(t,ex) -> type_expression globalScope scope ex; e.etype <- Some(t)
+  | Cast(t, exp) -> type_expression globalScope scope exp; e.etype <- Some(t)
   | Type t -> e.etype <- Some(t)
   | ClassOf t -> e.etype <- Some(t)
   | Instanceof(e, t) -> type_expression globalScope scope e
@@ -122,12 +124,25 @@ let type_vardecl globalScope scope decl =
   | (t, name, Some e) -> type_expression globalScope scope e;
     if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
 
+let type_for_vardecl globalScope scope decl =
+  match decl with
+  | (Some(t), name, None) -> add_variable scope name t
+  | (Some(t), name, Some e) -> type_expression globalScope scope e;
+    if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
+
 let rec type_statement globalScope scope statement =
   match statement with
   | VarDecl(l) -> List.iter (type_vardecl globalScope scope) l
   | Block b -> let newscope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in List.iter (type_statement globalScope newscope) b
   | Nop -> ()
   | While(e, s) -> type_expression globalScope scope e; type_statement globalScope scope s
+  | For(l, None, exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+    List.iter (type_for_vardecl globalScope forScope) l;
+    List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
+  (* TODO: check if Some(exp) is boolean *)
+  | For(l, Some(exp), exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+    List.iter (type_for_vardecl globalScope forScope) l;
+    type_expression globalScope forScope exp; List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
   | If(e, s, None) -> type_expression globalScope scope e; type_statement globalScope scope s;
     CheckAST.check_if_test_type e.etype
   | If(e, s1, Some(s2)) -> type_expression globalScope scope e; type_statement globalScope scope s1; type_statement globalScope scope s2;
@@ -135,6 +150,7 @@ let rec type_statement globalScope scope statement =
   | Return None -> if scope.returntype <> Type.Void then raise(CheckAST.Wrong_return_type(scope.returntype, Type.Void))
   | Return Some(e) -> type_expression globalScope scope e; CheckAST.check_return_type scope.returntype e.etype
   | Throw e -> type_expression globalScope scope e
+  (* | Try(s1, l, s2) -> *)
   | Expr e -> type_expression globalScope scope e
 
 let add_method_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
