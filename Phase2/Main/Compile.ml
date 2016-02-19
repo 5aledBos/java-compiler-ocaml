@@ -13,6 +13,7 @@ let execute lexbuf verbose =
     | CheckAST.Wrong_types_op(x, op, y) -> CheckAST.print_wrong_types_op x op y
     | CheckAST.Wrong_type_tern(test) -> CheckAST.print_not_bool_exception "ternaire" test
     | CheckAST.Wrong_type_if(test) -> CheckAST.print_not_bool_exception "if" test
+    | CheckAST.Wrong_type_for(test) -> CheckAST.print_not_bool_exception "for" test
     | CheckAST.Type_mismatch_tern(x, y) -> CheckAST.print_type_mismatch "expression ternaire" x y
     | CheckAST.Wrong_type_post(x) -> CheckAST.print_wrong_type_post x
     | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x

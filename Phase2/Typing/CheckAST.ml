@@ -14,6 +14,7 @@ exception Wrong_types_aop of Type.t option * assign_op * Type.t option
 exception Wrong_types_op of Type.t option * infix_op * Type.t option
 exception Wrong_type_tern of Type.t option
 exception Wrong_type_if of Type.t option
+exception Wrong_type_for of Type.t option
 exception Type_mismatch_tern of Type.t option * Type.t option
 exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
@@ -129,3 +130,6 @@ let rec check_array_list_type exp =
     | [] -> ()
     | h2::t2 -> if h.etype <> h2.etype then raise(Wrong_type_list(h.etype, h2.etype)));
     check_array_list_type t
+
+let check_for_expr test =
+  if test <> Some(Type.Primitive(Type.Boolean)) then raise(Wrong_type_for(test))

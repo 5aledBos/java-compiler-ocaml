@@ -40,6 +40,18 @@ public class A {
             String astr = "Compilo";
             i += 5;
         }
+
+        try {
+            method();
+        } catch (RuntimeException r) {
+            r;
+            String c1 = "catch 1";
+        } catch (B b) {
+            String c2 = "catch 2";
+        } finally {
+            float t = .1;
+            t *= 5.;
+        }
     }
 
     int test() {

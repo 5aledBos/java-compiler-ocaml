@@ -130,6 +130,10 @@ let type_for_vardecl globalScope scope decl =
   | (Some(t), name, Some e) -> type_expression globalScope scope e;
     if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
 
+let add_catch_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
+  then Hashtbl.add scope.vars a.pident a.ptype
+  else raise(CheckAST.Variable_name_exist(a.pident))
+
 let rec type_statement globalScope scope statement =
   match statement with
   | VarDecl(l) -> List.iter (type_vardecl globalScope scope) l
@@ -139,10 +143,10 @@ let rec type_statement globalScope scope statement =
   | For(l, None, exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
     List.iter (type_for_vardecl globalScope forScope) l;
     List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
-  (* TODO: check if Some(exp) is boolean *)
   | For(l, Some(exp), exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
     List.iter (type_for_vardecl globalScope forScope) l;
-    type_expression globalScope forScope exp; List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
+    type_expression globalScope forScope exp; CheckAST.check_for_expr exp.etype;
+    List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
   | If(e, s, None) -> type_expression globalScope scope e; type_statement globalScope scope s;
     CheckAST.check_if_test_type e.etype
   | If(e, s1, Some(s2)) -> type_expression globalScope scope e; type_statement globalScope scope s1; type_statement globalScope scope s2;
@@ -150,8 +154,13 @@ let rec type_statement globalScope scope statement =
   | Return None -> if scope.returntype <> Type.Void then raise(CheckAST.Wrong_return_type(scope.returntype, Type.Void))
   | Return Some(e) -> type_expression globalScope scope e; CheckAST.check_return_type scope.returntype e.etype
   | Throw e -> type_expression globalScope scope e
-  (* | Try(s1, l, s2) -> *)
+  | Try(s1, l, s2) -> List.iter (type_statement globalScope scope) s1; List.iter (type_statement globalScope scope) s2;
+    List.iter (type_catches globalScope scope) l
   | Expr e -> type_expression globalScope scope e
+
+and type_catches globalScope scope catch = let catchScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+  match catch with
+  | (arg, l) -> add_catch_args catchScope arg; List.iter (type_statement globalScope catchScope) l
 
 let add_method_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
   then Hashtbl.add scope.vars a.pident a.ptype
@@ -167,8 +176,6 @@ let type_type globalScope t =
   match t.info with
   | Class c -> globalScope.current <- t.id; type_class globalScope c
   | Inter -> ()
-
-(* First add all the attibutes and methods from the classes so they can be then used in the methods body *)
 
 let compare_arg a b = if a.ptype <> b.ptype then raise(Diff_arg)
 
