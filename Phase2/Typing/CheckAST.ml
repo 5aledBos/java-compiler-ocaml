@@ -24,7 +24,7 @@ exception Method_exist of string * Type.t * argument list
 exception Constructor_exist of string * Type.t * argument list
 exception Attribute_name_exist of string
 exception Unknown_variable of string
-exception Unknown_method of string
+exception Unknown_method of string * AST.expression list * string option
 exception Unknown_class of string list
 exception Unknown_constructor of string list * AST.expression list
 exception Class_name_exist of string
@@ -71,14 +71,19 @@ let print_name_exist str name =
 let print_unknown_variable name =
   print_endline ("Pas de variable \"" ^ name ^ "\"")
 
-let print_unknown_method name =
-  print_endline ("Pas de method \"" ^ name ^ "\" dans le scope global")
+let print_unknown_method name args cname =
+  print_string ("Pas de method \"" ^ name ^ "\" avec les arguments (");
+  print_string (String.concat ", " (List.map AST.stringOfExpType args));
+  match cname with
+  | None -> print_endline (") dans le scope global")
+  | Some(str) -> print_endline (") dans la classe " ^ str)
 
 let print_unknown_class name =
   print_endline ("Pas de classe \"" ^ name ^ "\" visible")
 
 let print_unknown_constructor name args =
-  print_endline ("Pas de constructeur \"" ^ name ^ "\" avec les arguments " ^ args)
+  print_string ("Pas de constructeur \"" ^ name ^ "\" avec les arguments (");
+  print_endline ((String.concat ", " (List.map AST.stringOfExpType args) ^ ")"))
 
 let print_wrong_type_list x y =
   print_string ("Toutes les entrees d'un tableau doivent etre de meme type");

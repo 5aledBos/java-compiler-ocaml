@@ -57,7 +57,7 @@ public class A {
             r;
             String c1 = "catch 1";
         } catch (B b) {
-            String c2 = "catch 2";
+            String c2 = b.method(20);
         } finally {
             float t = .1;
             t *= 5.;

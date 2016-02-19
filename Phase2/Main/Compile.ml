@@ -22,10 +22,10 @@ let execute lexbuf verbose =
     | CheckAST.Method_exist(name, typ, argstype) -> CheckAST.print_method_exist name typ argstype
     | CheckAST.Attribute_name_exist(name) -> CheckAST.print_name_exist "attribut" name
     | CheckAST.Unknown_variable(name) -> CheckAST.print_unknown_variable name
-    | CheckAST.Unknown_method(name) -> CheckAST.print_unknown_method name
+    | CheckAST.Unknown_method(name, exps, str) -> CheckAST.print_unknown_method name exps str
     | CheckAST.Class_name_exist(name) -> CheckAST.print_name_exist "classe" name
     | CheckAST.Unknown_class(l) -> CheckAST.print_unknown_class (String.concat "." l)
-    | CheckAST.Unknown_constructor(l, exps) -> CheckAST.print_unknown_constructor (String.concat "." l) (String.concat ", " (List.map AST.string_of_expression exps))
+    | CheckAST.Unknown_constructor(l, exps) -> CheckAST.print_unknown_constructor (String.concat "." l) exps
     | CheckAST.Wrong_type_list(x, y) -> CheckAST.print_wrong_type_list x y
     | CheckAST.Wrong_return_type(x, y) -> CheckAST.print_wrong_return_type x y
     | CheckAST.Return_expression_no_type -> print_endline "Syntax error on return type"

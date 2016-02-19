@@ -46,8 +46,7 @@ let compare_args_constructor_args name args constinfo = if (List.length args) <>
       | Diff_arg -> ()
 
 let compare_args_method_args name args methinfo = if (List.length args) <> (List.length methinfo.fargs) then ()
-  else
-    try
+  else try
       List.iter2 compare_call_args args methinfo.fargs;
       (* If no exception in the iter2 signifying that there are args that are diff
          It means that the arguments are the same, raise the exception *)
@@ -57,12 +56,7 @@ let compare_args_method_args name args methinfo = if (List.length args) <> (List
 
 let rec type_expression globalScope scope e =
   match e.edesc with
-  | New(None, l, []) -> let (last, lst) = ListII.extract_last l in
-    if (Hashtbl.mem globalScope.classes last) <> false
-    then e.etype <- Some(Type.Ref({ tpath = lst; tid = last }))
-    else raise(CheckAST.Unknown_class(l))
-  (* Check if the void contructor exist or there is no contructor *)
-  (* When having parameters, check if there is a constructor with the right parameter types *)
+  (* TODO: if no args and no constructor -> should work *)
   | New(None, l, exps) -> List.iter (type_expression globalScope scope) exps;
     let (last, lst) = ListII.extract_last l in
     if (Hashtbl.mem globalScope.classes last) <> true
@@ -75,30 +69,37 @@ let rec type_expression globalScope scope e =
       with
         | Not_typed_arg -> raise(CheckAST.Not_typed_arg(last))
         | CheckAST.Constructor_exist(_, t, _) -> Some(t))
-  (* | New(Some(str), l, []) ->
-  | New(Some(str), l, exps) -> *)
+  (* | New(Some(str), l, exps) -> *)
   | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
   | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
   | Call(None, str, l) -> List.iter (type_expression globalScope scope) l;
     e.etype <- let meths = (Hashtbl.find globalScope.classes globalScope.current).methods in
     if (Hashtbl.mem meths str) <> true
-    then raise(CheckAST.Unknown_method(str))
-    else
-      (try
+    then raise(CheckAST.Unknown_method(str, l, None))
+    else (try
         List.iter (compare_args_method_args str l) (Hashtbl.find_all meths str);
-        raise(CheckAST.Unknown_method(str))
+        raise(CheckAST.Unknown_method(str, l, None))
       with
         | Not_typed_arg -> raise(CheckAST.Not_typed_arg(str))
         | CheckAST.Method_exist(_, t, _) -> Some(t))
-  (*| Call(Some(exp), str, l) ->
+  | Call(Some(exp), str, l) -> List.iter (type_expression globalScope scope) l; type_expression globalScope scope exp;
     (match exp with
-     | Name(id) -> (* Get type of id, then get methods from this class and check if call with argument exist, just like befor *))*)
-  (* | Attr(exp, str) -> type_expression exp globalScope scope exp;*)
+     | { edesc = Name(id) } -> let cname = Type.stringOfOpt exp.etype in
+     e.etype <- let meths = (Hashtbl.find globalScope.classes cname).methods in
+     if (Hashtbl.mem meths str) <> true
+     then raise(CheckAST.Unknown_method(str, l, Some(cname)))
+     else (try
+         List.iter (compare_args_method_args str l) (Hashtbl.find_all meths str);
+         raise(CheckAST.Unknown_method(str, l, Some(cname)))
+       with
+         | Not_typed_arg -> raise(CheckAST.Not_typed_arg(str))
+         | CheckAST.Method_exist(_, t, _) -> Some(t)))
+     (* Get type of id, then get methods from this class and check if call with argument exist, just like befor *)
+  (* | Attr(exp, str) -> type_expression globalScope scope exp *)
   | If(e1, e2, e3) -> type_expression globalScope scope e1; type_expression globalScope scope e2; type_expression globalScope scope e3
   | Val v -> e.etype <- type_val v
   | Name(name) -> e.etype <- if (Hashtbl.mem scope.vars name) <> true
-    then
-      (if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes name) <> true
+    then (if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes name) <> true
       then raise(CheckAST.Unknown_variable(name))
       else Some(Hashtbl.find (Hashtbl.find globalScope.classes globalScope.current).attributes name))
     else Some(Hashtbl.find scope.vars name)
