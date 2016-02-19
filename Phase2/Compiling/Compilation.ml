@@ -45,9 +45,6 @@ let printClassDescriptor cd = match cd with
   | StringClass -> ()
   | IntegerClass -> ()
   | BooleanClass -> ()
-
-(*let print classDescriptorMethods cdmethods = match cdmethods with*)
-(*  | head::liste -> print_endline(head.)*)
   
 
 let printClassDescriptorTable cdtable =
@@ -58,10 +55,6 @@ let printMethodTable mtable =
   print_endline("list of the methods of all classes");
   Hashtbl.iter (fun key value -> print_endline(key)) mtable
 
-(*compile/fonction read AST
-add method, addattribute
-
-*)
 
 let addMethodsToClassDesciptor cd methodTable m =
   let methodName = cd.cdname ^ "_" ^ m.mname in
@@ -71,6 +64,7 @@ let addMethodsToClassDesciptor cd methodTable m =
 let addMethodsFromParent cdmethods parentcd = match parentcd with
   | ClassDescriptor(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
   | ObjectClass(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
+  
 
 let addMethodsAndAttributesToDescriptors classDescriptorTable methodTable c cname =
  print_endline("------------compilation of the class " ^ cname ^ " -----------------");
