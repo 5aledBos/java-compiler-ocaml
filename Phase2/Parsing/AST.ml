@@ -291,6 +291,8 @@ and string_of_expression e =
       | None -> s
       | Some t -> "("^s^" : "^(Type.stringOf t)^")"
 
+let stringOfExpType e = Type.stringOfOpt e.etype
+
 let print_attribute tab a =
   print_string tab;
   print_string ((Type.stringOf a.atype)^" "^a.aname);
