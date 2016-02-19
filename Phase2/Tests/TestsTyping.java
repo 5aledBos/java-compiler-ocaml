@@ -2,6 +2,15 @@ package tutu.titi.toto;
 
 public class B {
 
+    private int age;
+
+    B() {
+        age = 5;
+    }
+    public B(int bint) {
+        age = bint;
+    }
+
     public String b = "coucou";
 
     public String method() {
@@ -30,6 +39,7 @@ public class A {
 
     private String method() {
         B b = new B();
+        B bage = new B(20);
         return "b.b";
     }
 

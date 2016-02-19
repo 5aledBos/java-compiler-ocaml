@@ -7,6 +7,7 @@ type funcinfo = {
 
 type classscope = {
   methods : (string, funcinfo) Hashtbl.t;
+  constructors : (string, funcinfo) Hashtbl.t;
   attributes : (string, Type.t) Hashtbl.t;
 }
 
@@ -22,7 +23,7 @@ type scope = {
 
 let type_val v =
   match v with
-  | String s -> Some(Type.Ref({tpath=[]; tid="String"}))
+  | String s -> Some(Type.Ref({ tpath = []; tid = "String" }))
   | Int i -> Some(Type.Primitive(Type.Int))
   | Float f -> Some(Type.Primitive(Type.Float))
   | Char c -> Some(Type.Primitive(Type.Char))
@@ -37,10 +38,17 @@ let compare_call_args a b =
   | None -> raise(Not_typed_arg)
   | Some(t) -> if t <> b.ptype then raise(Diff_arg)
 
-let compare_args_method_args name args1 methinfo = if (List.length args1) <> (List.length methinfo.fargs) then ()
+let compare_args_constructor_args name args constinfo = if (List.length args) <> (List.length constinfo.fargs) then ()
+  else try
+      List.iter2 compare_call_args args constinfo.fargs;
+      raise(CheckAST.Constructor_exist(name, constinfo.ftype, constinfo.fargs))
+    with
+      | Diff_arg -> ()
+
+let compare_args_method_args name args methinfo = if (List.length args) <> (List.length methinfo.fargs) then ()
   else
     try
-      List.iter2 compare_call_args args1 methinfo.fargs;
+      List.iter2 compare_call_args args methinfo.fargs;
       (* If no exception in the iter2 signifying that there are args that are diff
          It means that the arguments are the same, raise the exception *)
       raise(CheckAST.Method_exist(name, methinfo.ftype, methinfo.fargs))
@@ -49,15 +57,25 @@ let compare_args_method_args name args1 methinfo = if (List.length args1) <> (Li
 
 let rec type_expression globalScope scope e =
   match e.edesc with
-  | New(None, l, []) ->
-    let (last, lst) = ListII.extract_last l in
-      if (Hashtbl.mem globalScope.classes last) <> false
-      then e.etype <- Some(Type.Ref({ tpath = lst ; tid = last }))
-      else raise(CheckAST.Unknown_class(l))
+  | New(None, l, []) -> let (last, lst) = ListII.extract_last l in
+    if (Hashtbl.mem globalScope.classes last) <> false
+    then e.etype <- Some(Type.Ref({ tpath = lst; tid = last }))
+    else raise(CheckAST.Unknown_class(l))
   (* Check if the void contructor exist or there is no contructor *)
-  (* When having parmeters, check if there is a constructor with the right parameter types *)
+  (* When having parameters, check if there is a constructor with the right parameter types *)
+  | New(None, l, exps) -> List.iter (type_expression globalScope scope) exps;
+    let (last, lst) = ListII.extract_last l in
+    if (Hashtbl.mem globalScope.classes last) <> true
+    then raise(CheckAST.Unknown_class(l))
+    else
+      (e.etype <- let constructors = (Hashtbl.find globalScope.classes last).constructors in
+      try
+        List.iter (compare_args_constructor_args last exps) (Hashtbl.find_all constructors last);
+        raise(CheckAST.Unknown_constructor(l, exps))
+      with
+        | Not_typed_arg -> raise(CheckAST.Not_typed_arg(last))
+        | CheckAST.Constructor_exist(_, t, _) -> Some(t))
   (* | New(Some(str), l, []) ->
-  | New(None, l, exps) ->
   | New(Some(str), l, exps) -> *)
   | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
   | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
@@ -137,13 +155,14 @@ let add_catch_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
 let rec type_statement globalScope scope statement =
   match statement with
   | VarDecl(l) -> List.iter (type_vardecl globalScope scope) l
-  | Block b -> let newscope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in List.iter (type_statement globalScope newscope) b
+  | Block b -> let newscope = { returntype = scope.returntype; vars = Hashtbl.copy scope.vars } in
+    List.iter (type_statement globalScope newscope) b
   | Nop -> ()
   | While(e, s) -> type_expression globalScope scope e; type_statement globalScope scope s
-  | For(l, None, exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+  | For(l, None, exps, s) -> let forScope = { returntype = scope.returntype; vars = Hashtbl.copy scope.vars } in
     List.iter (type_for_vardecl globalScope forScope) l;
     List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
-  | For(l, Some(exp), exps, s) -> let forScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+  | For(l, Some(exp), exps, s) -> let forScope = { returntype = scope.returntype; vars = Hashtbl.copy scope.vars } in
     List.iter (type_for_vardecl globalScope forScope) l;
     type_expression globalScope forScope exp; CheckAST.check_for_expr exp.etype;
     List.iter (type_expression globalScope forScope) exps; type_statement globalScope forScope s
@@ -158,7 +177,7 @@ let rec type_statement globalScope scope statement =
     List.iter (type_catches globalScope scope) l
   | Expr e -> type_expression globalScope scope e
 
-and type_catches globalScope scope catch = let catchScope = {returntype = scope.returntype; vars = Hashtbl.copy scope.vars} in
+and type_catches globalScope scope catch = let catchScope = { returntype = scope.returntype; vars = Hashtbl.copy scope.vars } in
   match catch with
   | (arg, l) -> add_catch_args catchScope arg; List.iter (type_statement globalScope catchScope) l
 
@@ -166,11 +185,19 @@ let add_method_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
   then Hashtbl.add scope.vars a.pident a.ptype
   else raise(CheckAST.Variable_name_exist(a.pident))
 
-let type_method globalScope m = let scope = {returntype = m.mreturntype; vars = Hashtbl.create 20} in
+let type_method globalScope m = let scope = { returntype = m.mreturntype; vars = Hashtbl.create 20 } in
   List.iter (add_method_args scope) m.margstype;
   List.iter (type_statement globalScope scope) m.mbody
 
-let type_class globalScope c = List.iter (type_method globalScope) c.cmethods
+let add_constructor_args scope a = if (Hashtbl.mem scope.vars a.pident) <> true
+  then Hashtbl.add scope.vars a.pident a.ptype
+  else raise(CheckAST.Variable_name_exist(a.pident))
+
+let type_constructor globalScope c = let constScope = { returntype = Type.Ref({ tpath = []; tid = c.cname }); vars = Hashtbl.create 20 } in
+  List.iter (add_constructor_args constScope) c.cargstype;
+  List.iter (type_statement globalScope constScope) c.cbody
+
+let type_class globalScope c = List.iter (type_method globalScope) c.cmethods; List.iter (type_constructor globalScope) c.cconsts
 
 let type_type globalScope t =
   match t.info with
@@ -179,35 +206,51 @@ let type_type globalScope t =
 
 let compare_arg a b = if a.ptype <> b.ptype then raise(Diff_arg)
 
-let compare_method_args name args1 methinfo = if (List.length args1) <> (List.length methinfo.fargs) then ()
-  else
-    try
-      List.iter2 compare_arg args1 methinfo.fargs;
-      (* If no exception in the iter2 signifying that there are args that are diff
-         It means that the arguments are the same, raise the exception *)
-      raise(CheckAST.Method_exist(name, methinfo.ftype, args1))
+let compare_constructor_args name args constinfo = if (List.length args) <> (List.length constinfo.fargs) then ()
+  else try
+      List.iter2 compare_arg args constinfo.fargs;
+      raise(CheckAST.Method_exist(name, constinfo.ftype, args))
     with
       | Diff_arg -> ()
 
+let compare_method_args name args methinfo = if (List.length args) <> (List.length methinfo.fargs) then ()
+  else
+    try
+      List.iter2 compare_arg args methinfo.fargs;
+      (* If no exception in the iter2 signifying that there are args that are diff
+         It means that the arguments are the same, raise the exception *)
+      raise(CheckAST.Method_exist(name, methinfo.ftype, args))
+    with
+      | Diff_arg -> ()
+
+let add_constructor globalScope c = let constructors = (Hashtbl.find globalScope.classes globalScope.current).constructors in
+  (if (Hashtbl.mem constructors c.cname) <> true
+  then Hashtbl.add constructors c.cname { ftype = Type.Ref({ tpath = []; tid = c.cname }); fargs = c.cargstype }
+  else
+    (List.iter (compare_constructor_args c.cname c.cargstype) (Hashtbl.find_all constructors c.cname);
+    Hashtbl.add constructors c.cname { ftype = Type.Ref({ tpath = []; tid = c.cname }); fargs = c.cargstype }))
+
 let add_method globalScope m = let meths = (Hashtbl.find globalScope.classes globalScope.current).methods in
   (if (Hashtbl.mem meths m.mname) <> true
-  then Hashtbl.add meths m.mname {ftype = m.mreturntype; fargs = m.margstype}
+  then Hashtbl.add meths m.mname { ftype = m.mreturntype; fargs = m.margstype }
   else
     (List.iter (compare_method_args m.mname m.margstype) (Hashtbl.find_all meths m.mname);
     (* If no exception has been raise, we add the method into the hash table *)
-    Hashtbl.add meths m.mname {ftype = m.mreturntype; fargs = m.margstype}))
+    Hashtbl.add meths m.mname { ftype = m.mreturntype; fargs = m.margstype }))
 
 let add_attribute globalScope a = if (Hashtbl.mem (Hashtbl.find globalScope.classes globalScope.current).attributes a.aname) <> true
   then Hashtbl.add (Hashtbl.find globalScope.classes globalScope.current).attributes a.aname a.atype
   else raise(CheckAST.Attribute_name_exist(a.aname))
 
 let add_class globalScope c = List.iter (add_method globalScope) c.cmethods;
-  List.iter (add_attribute globalScope) c.cattributes
+  List.iter (add_attribute globalScope) c.cattributes;
+  List.iter (add_constructor globalScope) c.cconsts
 
 let add_type globalScope t =
   match t.info with
   | Class c -> if (Hashtbl.mem globalScope.classes t.id) <> true
-    then (globalScope.current <- t.id; Hashtbl.add globalScope.classes globalScope.current {attributes = (Hashtbl.create 20); methods = (Hashtbl.create 20)})
+    then (globalScope.current <- t.id; Hashtbl.add globalScope.classes globalScope.current
+      { attributes = (Hashtbl.create 20); methods = (Hashtbl.create 20); constructors = (Hashtbl.create 20) })
     else raise(CheckAST.Class_name_exist(t.id)); add_class globalScope c
   | Inter -> ()
 

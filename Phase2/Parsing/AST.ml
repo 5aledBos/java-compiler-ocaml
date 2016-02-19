@@ -287,7 +287,6 @@ let rec string_of_expression_desc = function
 
 and string_of_expression e =
   let s = string_of_expression_desc e.edesc in
-  (*s*)
     match e.etype with
       | None -> s
       | Some t -> "("^s^" : "^(Type.stringOf t)^")"

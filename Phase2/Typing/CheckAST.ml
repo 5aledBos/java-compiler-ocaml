@@ -21,10 +21,12 @@ exception Wrong_type_unop of prefix_op * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
 exception Variable_name_exist of string
 exception Method_exist of string * Type.t * argument list
+exception Constructor_exist of string * Type.t * argument list
 exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string
 exception Unknown_class of string list
+exception Unknown_constructor of string list * AST.expression list
 exception Class_name_exist of string
 exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
@@ -75,6 +77,9 @@ let print_unknown_method name =
 let print_unknown_class name =
   print_endline ("Pas de classe \"" ^ name ^ "\" visible")
 
+let print_unknown_constructor name args =
+  print_endline ("Pas de constructeur \"" ^ name ^ "\" avec les arguments " ^ args)
+
 let print_wrong_type_list x y =
   print_string ("Toutes les entrees d'un tableau doivent etre de meme type");
   print_string (" et il recoit " ^ (Type.stringOfOpt x));
@@ -84,10 +89,10 @@ let print_wrong_return_type x y =
   print_endline ("Le type de retour attendu est " ^ (Type.stringOf x) ^ " mais il recoit " ^ (Type.stringOf y))
 
 let print_method_exist name typ args =
-  print_endline ("The method " ^ Type.stringOf typ ^ " " ^ name ^ "(" ^ (String.concat "," (List.map AST.stringOf_arg args)) ^ ") already exist")
+  print_endline ("La methode " ^ Type.stringOf typ ^ " " ^ name ^ "(" ^ (String.concat "," (List.map AST.stringOf_arg args)) ^ ") existe deja")
 
 let print_arg_not_typed name =
-  print_endline ("The method " ^ name ^ " contains a parameter that is not typed")
+  print_endline ("La methode " ^ name ^ " contient des parametres non types")
 
 (* CHECKS *)
 let check_aop_type x op y =
