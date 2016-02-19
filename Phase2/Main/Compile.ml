@@ -18,7 +18,7 @@ let execute lexbuf verbose =
     | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x
     | CheckAST.Type_mismatch_decl(x, y) -> CheckAST.print_type_mismatch "declaration" x y
     | CheckAST.Variable_name_exist(name) -> CheckAST.print_name_exist "variable" name
-    | CheckAST.Method_name_exist(name) -> CheckAST.print_name_exist "methode" name
+    | CheckAST.Method_exist(name, typ, argstype) -> CheckAST.print_method_exist name typ argstype
     | CheckAST.Attribute_name_exist(name) -> CheckAST.print_name_exist "attribut" name
     | CheckAST.Unknown_variable(name) -> CheckAST.print_unknown_variable name
     | CheckAST.Unknown_method(name) -> CheckAST.print_unknown_method name

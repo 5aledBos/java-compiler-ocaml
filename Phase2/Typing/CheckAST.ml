@@ -19,7 +19,7 @@ exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
 exception Variable_name_exist of string
-exception Method_name_exist of string
+exception Method_exist of string * Type.t * argument list
 exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string
@@ -29,6 +29,7 @@ exception Unknown_class of string list
 exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
 exception Return_expression_no_type
+exception Not_typed_arg of string
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -84,6 +85,12 @@ let print_wrong_type_list x y =
 
 let print_wrong_return_type x y =
   print_endline ("The expected return type is " ^ (Type.stringOf x) ^ " but instead got " ^ (Type.stringOf y))
+
+let print_method_exist name typ args =
+  print_endline ("The method " ^ Type.stringOf typ ^ " " ^ name ^ "(" ^ (String.concat "," (List.map AST.stringOf_arg args)) ^ ") already exist")
+
+let print_arg_not_typed name =
+  print_endline ("The method " ^ name ^ " contains a parameter that is not typed")
 
 (* CHECKS *)
 let check_aop_type x op y =

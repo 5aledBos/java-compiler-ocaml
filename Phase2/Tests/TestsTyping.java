@@ -1,12 +1,23 @@
 package tutu.titi.toto;
 
-
 public class B {
 
     public String b = "coucou";
 
     public String method() {
         return "result";
+    }
+
+    public String method(int a) {
+      return "coucou";
+    }
+
+    public String test() {
+      return method();
+    }
+
+    public String test2() {
+      return method(2);
     }
 }
 
@@ -68,4 +79,5 @@ public class A {
 
         return 34;
     }
+
 }
