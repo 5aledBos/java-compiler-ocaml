@@ -30,8 +30,9 @@ public class B {
     }
 
 	public static void main(String [] args) {
-		int a;
+		int a = 2;
 		Int b;
+		int c = 5;
 	}
 }
 

@@ -2,18 +2,18 @@ open AST
 open Hashtbl
 
 
-type attributeValue =
-  | Int of int
-  | Bool of bool
-  | String of string
-  | Ref of int
-  | Null 
+type execValue =
+  | VInt of int
+  | VBool of bool
+  | VString of string
+  | VRef of int
+  | VNull 
 
 type objectDescriptor =
 {
     otype : string;
 	oname : string;
-	oattributes : (string, attributeValue) Hashtbl.t;
+	oattributes : (string, execValue) Hashtbl.t;
 }
 
 type globalObjectDescriptor =

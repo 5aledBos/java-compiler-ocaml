@@ -57,12 +57,23 @@ let addObject typ oname globalScope = match typ with
 (*    | ClassDescriptor(classe) -> List.iter (addAttributeToObject objectdescr.oattributes) classe.cdattributes*)
 (*    | IntegerClass ->  addObjectToHeap *)
   
-  
+
+let addObjectWithValue typ oname globalScope value =  match typ with
+  | Primitive(Int) -> match value with VInt(i) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(i)); globalScope.free_adress <- globalScope.free_adress+1
+(*  | Ref(ref_type) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in*)
+(*						let object_created = createObjectFromDescriptor cd oname in*)
+(*							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1*)
+(*  *)
+
+let rec evaluate_expression expr = match expr.edesc with
+(*  | New(None, l, exps)*)
+  | Val v -> match v with
+				| Int(i) -> VInt (int_of_string i)
 
 let exec_vardecl globalScope decl =
   match decl with
   | (typ, name, None) -> addObject typ name globalScope
-(*  | (t, name, Some e) -> type_expression globalScope scope e;*)
+  | (typ, name, Some e) -> let value = evaluate_expression e in addObjectWithValue typ name globalScope value
 (*    if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t*)
 
 let evaluate_statement globalScope stmt = match stmt with
@@ -82,7 +93,4 @@ let execute_program ast compilationData =
   
 
 
-
-(*let rec evaluate_expression expr = match expr with*)
-(*  | New(None, l, exps)*)
   
