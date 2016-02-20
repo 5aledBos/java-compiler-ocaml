@@ -71,14 +71,14 @@ let rec type_expression globalScope scope e =
     else
       (e.etype <- let constructors = (Hashtbl.find globalScope.classes last).constructors in
       (* Check if there are constructors. If not and the call is without arguments, no error. Otherwise, error *)
-      (* if (List.length constructors == 0 && List.length exps == 0) *)
-      (* Check if there is a constructor with the right arguments list *)
-      try
-        List.iter (compare_args_function_args last exps) (Hashtbl.find_all constructors last);
-        raise(CheckAST.Unknown_constructor(l, exps))
-      with
-        | Not_typed_arg -> raise(CheckAST.Not_typed_arg(last))
-        | CheckAST.Function_exist(_, t, _) -> Some(t))
+      if (Hashtbl.length constructors == 0 && List.length exps == 0) then Some(Type.Ref({ tpath = []; tid = last }))
+      else (* Check if there is a constructor with the right arguments list *)
+        try
+          List.iter (compare_args_function_args last exps) (Hashtbl.find_all constructors last);
+          raise(CheckAST.Unknown_constructor(l, exps))
+        with
+          | Not_typed_arg -> raise(CheckAST.Not_typed_arg(last))
+          | CheckAST.Function_exist(_, t, _) -> Some(t))
   (* | New(Some(str), l, exps) -> *)
   | NewArray(t, l, None) -> e.etype <- Some(Type.Array(t, List.length l))
   | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))
@@ -88,7 +88,13 @@ let rec type_expression globalScope scope e =
     (match exp with
      | { edesc = Name(id) } -> let cname = Type.stringOfOpt exp.etype in
      e.etype <- type_call_expr str l globalScope cname)
-  (* | Attr(exp, str) -> type_expression globalScope scope exp *)
+  | Attr(exp, str) -> type_expression globalScope scope exp;
+    (match exp with
+     | { edesc = Name(id) } -> let cname = Type.stringOfOpt exp.etype in
+     let attrs = (Hashtbl.find globalScope.classes cname).attributes in
+     e.etype <- (if Hashtbl.mem attrs str <> false
+       then Some(Hashtbl.find attrs str)
+       else raise(CheckAST.Unknown_attribute(str, cname))))
   | If(e1, e2, e3) -> type_expression globalScope scope e1; type_expression globalScope scope e2; type_expression globalScope scope e3
   | Val v -> e.etype <- type_val v
   | Name(name) -> e.etype <- if (Hashtbl.mem scope.vars name) <> true

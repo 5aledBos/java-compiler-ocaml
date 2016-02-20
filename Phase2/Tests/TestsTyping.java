@@ -1,5 +1,9 @@
 package tutu.titi.toto;
 
+public class Compile {
+    public int nombre = 0;
+}
+
 public class B {
 
     private int age;
@@ -22,6 +26,8 @@ public class B {
     }
 
     public String test() {
+      Compile c = new Compile();
+      int nb = c.nombre + 2;
       return method();
     }
 

@@ -26,6 +26,7 @@ exception Unknown_variable of string
 exception Unknown_method of string * AST.expression list * string option
 exception Unknown_class of string list
 exception Unknown_constructor of string list * AST.expression list
+exception Unknown_attribute of string * string
 exception Class_name_exist of string
 exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
@@ -83,6 +84,9 @@ let print_unknown_class name =
 let print_unknown_constructor name args =
   print_string ("Pas de constructeur \"" ^ name ^ "\" avec les arguments (");
   print_endline ((String.concat ", " (List.map AST.stringOfExpType args) ^ ")"))
+
+let print_unknown_attribute name c =
+  print_endline ("Pas d'attribut " ^ name ^ " dans la classe " ^ c)
 
 let print_wrong_type_list x y =
   print_string ("Toutes les entrees d'un tableau doivent etre de meme type");
