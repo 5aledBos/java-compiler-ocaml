@@ -12,22 +12,23 @@ let string_of_prefix_type = function
 
 exception Wrong_types_aop of Type.t option * assign_op * Type.t option
 exception Wrong_types_op of Type.t option * infix_op * Type.t option
+exception Wrong_types_bool_op of Type.t option * infix_op
 exception Wrong_type_tern of Type.t option
 exception Wrong_type_if of Type.t option
 exception Wrong_type_for of Type.t option
-exception Type_mismatch_tern of Type.t option * Type.t option
 exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
+exception Type_mismatch_tern of Type.t option * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
-exception Variable_name_exist of string
 exception Function_exist of string * Type.t * argument list
+exception Variable_name_exist of string
 exception Attribute_name_exist of string
+exception Class_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string * AST.expression list * string option
 exception Unknown_class of string list
 exception Unknown_constructor of string list * AST.expression list
 exception Unknown_attribute of string * string
-exception Class_name_exist of string
 exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
 exception Return_expression_no_type
@@ -40,12 +41,16 @@ let print_wrong_types_aop x op y =
   print_string (" et il recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
 
-(* TODO: Some of the ops only take bools *)
 let print_wrong_types_op x op y =
     print_string ("L'operateur " ^ (AST.string_of_infix_op op));
     print_string (" attend deux arguments de meme type");
     print_string (" et il recoit " ^ (Type.stringOfOpt x));
     print_endline (" et " ^ (Type.stringOfOpt y))
+
+let print_wrong_types_bool_op x op =
+    print_string ("L'operateur " ^ (AST.string_of_infix_op op));
+    print_string (" attend deux arguments type bool");
+    print_endline (" et il recoit des " ^ (Type.stringOfOpt x))
 
 let print_not_bool_exception expression test =
   print_string ("La condition d'une expression " ^ expression ^ " doit etre un booleen");
@@ -106,9 +111,12 @@ let print_arg_not_typed name =
 let check_aop_type x op y =
   if x <> y then raise(Wrong_types_aop(x, op, y))
 
-(* TODO: Some of the ops only take bools *)
 let check_op_type x op y =
-    if x <> y then raise(Wrong_types_op(x, op, y))
+  if x <> y then raise(Wrong_types_op(x, op, y));
+  match op with
+  | Op_cor | Op_cand -> if (x <> Some(Type.Primitive(Type.Boolean)) || y <> Some(Type.Primitive(Type.Boolean)))
+    then raise(Wrong_types_bool_op(x, op))
+  | _ -> ()
 
 let check_return_type x y =
   match x, y with

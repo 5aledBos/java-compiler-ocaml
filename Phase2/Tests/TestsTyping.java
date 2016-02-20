@@ -85,17 +85,11 @@ public class A {
         --27.;
 
         int c = (3 + 3);
-        if (true) {
+        if (c >= 10) {
           (true? c: 2);
         }
 
         String call = method();
-
-        // "void.class" = void.class;
-        // "int.class" = int.class;
-        // "intarray.class" = int[].class;
-        // "Instanceof" = 23 instanceof Double;
-
         throw 45=3;
 
         if (43==3) {

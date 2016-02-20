@@ -107,7 +107,7 @@ let rec type_expression globalScope scope e =
     e.etype <- (match (List.hd exp).etype with
       | Some(t) -> Some(Type.Array(t, 1)))
   (* | Array(exp, []) ->
-  | Array(exp, Some(l)) -> *)
+  | Array(exp, l) -> *)
   | AssignExp(e1, op, e2) -> type_expression globalScope scope e1; type_expression globalScope scope e2;
     CheckAST.check_aop_type e1.etype op e2.etype;
     e.etype <- e1.etype
