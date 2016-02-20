@@ -1,6 +1,9 @@
 package tutu.titi.toto;
 
-class I {}
+class I {
+
+	public static void main(String [] args) {}
+}
 
 public class A {
     Int a1 = 1;
@@ -12,22 +15,22 @@ public class A {
 	}
 }
 abstract class B extends C {
-    B() { super(); }
+//    B() { super(); }
     private A mthis () throws tuty.A, tre.tr.b {
 	int a, b;
 	{
 	    int c = 18;
 	    { ; }
-	    new A();
-	    A.m();
-	    a[2].m();
-	    a[2][6].m();
-	    B.A.m();
-	    this.m();
-	    super();
-	    this();
-	    super.m();
-	    m();
+//	    new A();
+//	    A.m();
+//	    a[2].m();
+//	    a[2][6].m();
+//	    B.A.m();
+//	    this.m();
+//	    super();
+//	    this();
+//	    super.m();
+//	    m();
 	    for (int c; c > 6 ; c++) { }
 	}
 	tutu.tyty.a = 1;

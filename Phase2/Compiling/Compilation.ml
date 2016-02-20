@@ -1,11 +1,27 @@
 open AST
 open Hashtbl
 
+
+type attributeValue =
+  | Int of int
+  | Bool of bool
+  | String of string
+  | Ref of int
+  | Null 
+
 type objectDescriptor =
 {
+    otype : string;
 	oname : string;
-	oattributes : astattribute list
+	oattributes : (string, attributeValue) Hashtbl.t;
 }
+
+type globalObjectDescriptor =
+  | ObjectDescriptor of objectDescriptor
+  | IntegerDescriptor of int
+
+let printObjectDescriptor od = match od with
+  |IntegerDescriptor(i) -> Printf.printf "Integer object descriptor: %i" i
 
 type classDescriptor =
 {

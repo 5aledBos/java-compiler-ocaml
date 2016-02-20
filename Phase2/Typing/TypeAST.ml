@@ -12,7 +12,7 @@ type classscope = {
 }
 
 type gscope = {
-  classes : (string, classscope) Hashtbl.t ;
+	  classes : (string, classscope) Hashtbl.t ;
   mutable current : string
 }
 
