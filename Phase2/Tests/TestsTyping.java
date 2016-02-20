@@ -1,5 +1,9 @@
 package tutu.titi.toto;
 
+public class Compile {
+    public int nombre = 0;
+}
+
 public class B {
 
     private int age;
@@ -22,6 +26,8 @@ public class B {
     }
 
     public String test() {
+      Compile c = new Compile();
+      int nb = c.nombre + 2;
       return method();
     }
 
@@ -79,17 +85,11 @@ public class A {
         --27.;
 
         int c = (3 + 3);
-        if (true) {
+        if (c >= 10) {
           (true? c: 2);
         }
 
         String call = method();
-
-        // "void.class" = void.class;
-        // "int.class" = int.class;
-        // "intarray.class" = int[].class;
-        // "Instanceof" = 23 instanceof Double;
-
         throw 45=3;
 
         if (43==3) {
