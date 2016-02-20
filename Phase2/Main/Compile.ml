@@ -4,9 +4,9 @@ let execute lexbuf verbose =
   try
     let ast = compilationUnit Lexer.token lexbuf in
     print_endline "successfull parsing";
-(*    TypeAST.type_program ast;*)
-      let data = Compilation.compile ast in
-      Compilation.printCompilationData(data);
+    TypeAST.type_program ast;
+    (* let data = Compilation.compile ast in
+    Compilation.printCompilationData(data); *)
     if verbose then AST.print_program ast
   with
     | CheckAST.Wrong_types_aop(x, op, y) -> CheckAST.print_wrong_types_aop x op y
@@ -19,7 +19,7 @@ let execute lexbuf verbose =
     | CheckAST.Wrong_type_unop(op, x) -> CheckAST.print_wrong_type_pre op x
     | CheckAST.Type_mismatch_decl(x, y) -> CheckAST.print_type_mismatch "declaration" x y
     | CheckAST.Variable_name_exist(name) -> CheckAST.print_name_exist "variable" name
-    | CheckAST.Method_exist(name, typ, argstype) -> CheckAST.print_method_exist name typ argstype
+    | CheckAST.Function_exist(name, typ, argstype) -> CheckAST.print_method_exist name typ argstype
     | CheckAST.Attribute_name_exist(name) -> CheckAST.print_name_exist "attribut" name
     | CheckAST.Unknown_variable(name) -> CheckAST.print_unknown_variable name
     | CheckAST.Unknown_method(name, exps, str) -> CheckAST.print_unknown_method name exps str

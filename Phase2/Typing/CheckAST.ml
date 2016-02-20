@@ -20,8 +20,7 @@ exception Wrong_type_post of Type.t option
 exception Wrong_type_unop of prefix_op * Type.t option
 exception Type_mismatch_decl of Type.t option * Type.t option
 exception Variable_name_exist of string
-exception Method_exist of string * Type.t * argument list
-exception Constructor_exist of string * Type.t * argument list
+exception Function_exist of string * Type.t * argument list
 exception Attribute_name_exist of string
 exception Unknown_variable of string
 exception Unknown_method of string * AST.expression list * string option
