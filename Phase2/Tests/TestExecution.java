@@ -36,6 +36,7 @@ public class B {
 //		Int b;
         B bobject = new B();
 		C cobject;
+
 	}
 }
 
