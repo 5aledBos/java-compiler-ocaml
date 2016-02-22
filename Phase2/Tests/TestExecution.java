@@ -34,9 +34,14 @@ public class B {
 //	//	Int b = (Int) 5;cd
 //		int c = 5;
 //		Int b;
-        B bobject = new B();
-		C cobject;
-
+        B bobject = new B(5);
+		bobject.test();
+//		C cobject;
+//		cobject = new C();
+		int chiffre = 3;
+//		C cobject;
+		chiffre += 5;
+		chiffre = 8;
 	}
 }
 
