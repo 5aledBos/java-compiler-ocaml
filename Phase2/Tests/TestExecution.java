@@ -3,7 +3,7 @@ package tutu.titi.toto;
 public class B {
 
     private int age;
-
+	private A a = new A();
     B() {
         age = 5;
     }
@@ -11,7 +11,7 @@ public class B {
         age = bint;
     }
 
-    public String b = "coucou";
+//    public String b = "coucou";
 
     public String method() {
         return "result";
@@ -34,16 +34,17 @@ public class B {
 //	//	Int b = (Int) 5;cd
 //		int c = 5;
 //		Int b;
-        B bobject = new B(2);
+        B bobject = new B();
+		C cobject;
 	}
 }
 
 public class A {
 
     int a1 = 1;
-    int[] a = { 3,4,5 };
-    Bool a2 = false;
-    String a6 = "jsdjkndjk\njdsdjkf";
+//    int[] a = { 3,4,5 };
+//    Bool a2 = false;
+//    String a6 = "jsdjkndjk\njdsdjkf";
 
     private String method() {
         B b = new B();

@@ -13,7 +13,7 @@ type objectDescriptor =
 {
     otype : string;
 	oname : string;
-	oattributes : (string, execValue) Hashtbl.t;
+	oattributes : (string, int) Hashtbl.t;
 }
 
 type globalObjectDescriptor =
@@ -21,8 +21,9 @@ type globalObjectDescriptor =
   | IntegerDescriptor of int
 
 let printObjectDescriptor od = match od with
-  |IntegerDescriptor(i) -> Printf.printf "Integer object descriptor: %i" i
-
+  | IntegerDescriptor(i) -> Printf.printf "Integer object descriptor: %i" i; print_endline("")
+  | ObjectDescriptor(od) -> print_endline("object: " ^ od.oname ^ " from type " ^ od.otype); Hashtbl.iter (fun key value -> print_string(key);Printf.printf "\t:    attribute adress in heap:  %i " value; print_endline("")) od.oattributes
+	
 type classDescriptor =
 {
 	cdname : string;

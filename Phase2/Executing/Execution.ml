@@ -20,69 +20,52 @@ type exec_scope =
 }
 
 
-(*let addAttributesToObject objectattributes classattribute = match classattribute.atype with*)
-(*(*  | {amodifiers : modifiers; aname = attrname; atype = attrtype; adefault = defaultvalue;(*      aloc : Location.t;*)} ->  *)*)
-(*  | Primitive(primitive) -> match primitive with*)
-(*  								| Boolean -> match classattribute.adefault with*)
-(*									| None -> Hashtbl.add objectattributes classattribute.aname Bool(true)*)
-(*									| Some(Bool(b)) -> Hashtbl.add objectattributes classattribute.aname Bool(b)*)
-(*								| Int -> match classattribute.adefault with*)
-(*									| None -> Hashtbl.add objectattributes classattribute.aname Int(0)*)
-(*  									| Some(Int(i)) -> Hashtbl.add objectattributes classattribute.aname Int(i)*)
-
-
-
-let createObjectFromDescriptor cd oname = match cd with
-(*  | ClassDescriptor(classDescriptor) -> let objectattributes = addAttributeToObject classDescriptor.cdattributes in*)
-  | ClassDescriptor(classDescriptor) -> IntegerDescriptor(30)
-(*  | ObjectClass of classDescriptor*)
-(*  | StringClass*)
-  | IntegerClass -> IntegerDescriptor(0)
-(*  | BooleanClass*)
-  
-
-(*let addObjectToHeap heap adress globalClassDescriptor =*)
-(*  Hashtbl.add heap adress globalClassDescriptor;*)
-(*  adress = adress + 1;*)
-(*  Printf/printf " "*)
-(*  print_endline("test")*)
-
-let addObject typ oname globalScope = match typ with
-  | Primitive(Int) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(0)); globalScope.free_adress <- globalScope.free_adress+1;
-  | Ref(ref_type) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
-						let object_created = createObjectFromDescriptor cd oname in
-							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
-(*  | Primitive(Boolean) ->*)
-(*  | *)
-(*  let cd = Hashtbl.find globalScope.data.classDescriptorTable cname in*)
-(*  let objectdescr =  { otype = cname; oname = oname; oattributes : Hashtbl.create 20 } in*)
-(*  match cd with*)
-(*    | ClassDescriptor(classe) -> List.iter (addAttributeToObject objectdescr.oattributes) classe.cdattributes*)
-(*    | IntegerClass ->  addObjectToHeap *)
-  
-
-let addObjectWithValue typ oname globalScope value =  match typ, value with
-  | Primitive(Int), VInt(i) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(i)); globalScope.free_adress <- globalScope.free_adress+1
-  | Ref(ref_type), VInt(i) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
-						let object_created = createObjectFromDescriptor cd oname in
-							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
 (*  *)
 
 let rec evaluate_expression expr = match expr.edesc with
   | New(None, l, exps) -> print_endline("ici"); VInt (int_of_string "5")
+(*  | New(Some(str), l, exps) -> print_endline("ici"); VInt (int_of_string "55")*)
   | Val v -> match v with
 				| Int(i) -> VInt (int_of_string i)
 
+
+let rec addObject typ oname globalScope evalue =
+  let addAttributeToObject objectattributes globalScope classattribute = addObject classattribute.atype classattribute.aname globalScope classattribute.adefault; Hashtbl.add objectattributes classattribute.aname (globalScope.free_adress-1)
+  in
+
+	let createObjectFromDescriptor cd oname = match cd with
+		| ClassDescriptor(classDescriptor) -> let objectcreated = { otype  = classDescriptor.cdname; oname = oname; oattributes = Hashtbl.create 20 } in List.iter (addAttributeToObject objectcreated.oattributes globalScope) classDescriptor.cdattributes; ObjectDescriptor(objectcreated)
+(*  	| ClassDescriptor(classDescriptor) -> IntegerDescriptor(30)*)
+
+	in (match typ, evalue with
+  		| Primitive(Int), Some(e) -> let i = evaluate_expression e in (match i with VInt(value_of_int) -> Hashtbl.add globalScope.heap 	globalScope.free_adress (IntegerDescriptor(value_of_int)); globalScope.free_adress <- globalScope.free_adress+1)
+  		| Ref(ref_type), Some(e) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
+						let object_created = createObjectFromDescriptor cd oname in
+							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
+ 		| Primitive(Int), None -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(0)); globalScope.free_adress <- globalScope.free_adress+1;
+  		| Ref(ref_type), None -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
+						let object_created = createObjectFromDescriptor cd oname in
+							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1)
+
+
+(*and addAttributesToObject objectattributes classattributes globalScope = match classattribute.atype with*)
+(*	| Primitive prim -> (match prim with *)
+(*   							| Int -> addObject classattribute.atype classattribute.aname globalScope classattribute.adefault)*)
+
+
 let exec_vardecl globalScope decl =
   match decl with
-  | (typ, name, None) -> addObject typ name globalScope
-  | (typ, name, Some e) -> let value = evaluate_expression e in addObjectWithValue typ name globalScope value
+  | (typ, name, None) -> addObject typ name globalScope None
+  | (typ, name, Some e) -> addObject typ name globalScope (Some(e))
 (*    if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t*)
 
 let evaluate_statement globalScope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope) l
 
 (*  print_endline("evaluate statement...")*)
+
+
+
 
 let execute_program ast compilationData =
   let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in
