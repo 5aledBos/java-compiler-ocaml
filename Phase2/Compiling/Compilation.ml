@@ -52,7 +52,7 @@ let addPredifinedClassesToDescriptorTable descriptorTable =
   Hashtbl.add descriptorTable "Boolean" BooleanClass
 
 let printClassDescriptor cd = match cd with
-  | ClassDescriptor(cd) -> print_endline("*****Method of the class*****");  Hashtbl.iter (fun key value -> print_endline(key)) cd.cdmethods; print_endline("*****End of Method of the class*****");
+  | ClassDescriptor(cd) -> print_endline("*****Method of the class*****");  Hashtbl.iter (fun key value -> print_endline(key ^":   " ^ value)) cd.cdmethods; print_endline("*****End of Method of the class*****");
 							print_endline("*****attributes of the class*****"); List.iter (print_attribute ("  ")) cd.cdattributes;print_endline("*****end of attributes of the class*****") 
   | ObjectClass(cd) -> ()
   | StringClass -> ()
@@ -75,7 +75,7 @@ let addMethodsToClassDesciptor cname methods methodTable m =
   Hashtbl.add methodTable methodName m
 
 let addMethodsFromParent cdmethods parentcd = match parentcd with
-  | ClassDescriptor(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
+  | ClassDescriptor(cd) -> Hashtbl.iter (fun key value -> if(Hashtbl.mem cdmethods key) <> true then Hashtbl.add cdmethods key value) cd.cdmethods
   | ObjectClass(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
   
 
@@ -92,8 +92,8 @@ let addMethodsAndAttributesToDescriptors classDescriptorTable methodTable c cnam
 	  let methods = Hashtbl.create 20 in
 (*	  print_endline(c.cparent.tid);*)
       let parentClassDescriptor = Hashtbl.find classDescriptorTable c.cparent.tid in
-      addMethodsFromParent methods (parentClassDescriptor);
       List.iter (addMethodsToClassDesciptor cname methods methodTable) c.cmethods;
+	  addMethodsFromParent methods (parentClassDescriptor);
 	  let attributes = addAtributesFromParent c.cattributes parentClassDescriptor in
 	  Hashtbl.add classDescriptorTable cname (ClassDescriptor({ cdname = cname; cdmethods = methods; cdattributes = attributes }))
 

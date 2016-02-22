@@ -30,8 +30,11 @@ type exec_scope =
 (*									| None -> Hashtbl.add objectattributes classattribute.aname Int(0)*)
 (*  									| Some(Int(i)) -> Hashtbl.add objectattributes classattribute.aname Int(i)*)
 
+
+
 let createObjectFromDescriptor cd oname = match cd with
-(*  | ClassDescriptor(classDescriptor)*)
+(*  | ClassDescriptor(classDescriptor) -> let objectattributes = addAttributeToObject classDescriptor.cdattributes in*)
+  | ClassDescriptor(classDescriptor) -> IntegerDescriptor(30)
 (*  | ObjectClass of classDescriptor*)
 (*  | StringClass*)
   | IntegerClass -> IntegerDescriptor(0)
@@ -58,15 +61,15 @@ let addObject typ oname globalScope = match typ with
 (*    | IntegerClass ->  addObjectToHeap *)
   
 
-let addObjectWithValue typ oname globalScope value =  match typ with
-  | Primitive(Int) -> match value with VInt(i) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(i)); globalScope.free_adress <- globalScope.free_adress+1
-(*  | Ref(ref_type) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in*)
-(*						let object_created = createObjectFromDescriptor cd oname in*)
-(*							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1*)
+let addObjectWithValue typ oname globalScope value =  match typ, value with
+  | Primitive(Int), VInt(i) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(i)); globalScope.free_adress <- globalScope.free_adress+1
+  | Ref(ref_type), VInt(i) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
+						let object_created = createObjectFromDescriptor cd oname in
+							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
 (*  *)
 
 let rec evaluate_expression expr = match expr.edesc with
-(*  | New(None, l, exps)*)
+  | New(None, l, exps) -> print_endline("ici"); VInt (int_of_string "5")
   | Val v -> match v with
 				| Int(i) -> VInt (int_of_string i)
 

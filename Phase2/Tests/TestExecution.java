@@ -17,7 +17,7 @@ public class B {
         return "result";
     }
 
-    public String method(int a) {
+    public String method2(int a) {
       return "coucou";
     }
 
@@ -26,13 +26,15 @@ public class B {
     }
 
     public String test2() {
-      return method(2);
+      return method2(2);
     }
 
 	public static void main(String [] args) {
-		int a = 2;
-		Int b;
-		int c = 5;
+//		int a = 2;
+//	//	Int b = (Int) 5;cd
+//		int c = 5;
+//		Int b;
+        B bobject = new B(2);
 	}
 }
 
@@ -63,7 +65,7 @@ public class A {
             r;
             String c1 = "catch 1";
         } catch (B b) {
-            String c2 = b.method(20);
+            String c2 = b.method();
         } finally {
             float t = .1;
             t *= 5.;
@@ -113,4 +115,10 @@ public class A {
         return 34;
     }
 
+}
+
+public class C extends B {
+	public String method() {
+   		return "result";
+    }
 }
