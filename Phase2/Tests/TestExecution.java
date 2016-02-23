@@ -13,6 +13,10 @@ public class B {
 
 //    public String b = "coucou";
 
+	public int getAge(int age) {
+		int truc = 66;
+	    return age;
+	}
     public String method() {
         return "result";
     }
@@ -35,14 +39,17 @@ public class B {
 //		int c = 5;
 //		Int b;
         B bobject = new B(5);
-		bobject.test();
+		B cbobject = new B(6);
+//		bobject.test();
 //		C cobject;
 //		cobject = new C();
 		int chiffre = 3;
 //		C cobject;
-		chiffre += 5;
-		chiffre = 8;
+//		chiffre = 5;
+		bobject.getAge(6666);
 		String s  ="test";
+		s = "testmodifie";
+		cbobject = bobject;
 	}
 }
 

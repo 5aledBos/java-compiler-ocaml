@@ -42,20 +42,32 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | Val v -> (match v with
 				| Int(i) -> VInt (int_of_string i)
 				| String s -> VString s )
-  | AssignExp(e1, op, e2) -> evaluate_expression  globalScope scope e1; VInt 2
-  | Name(name) -> VInt 3
+  | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_op op ref1 ref2 globalScope scope
+  | Name(name) -> let ref_nb = Hashtbl.find scope.scopedObjects name in print_endline("found ref: " ^ string_of_int ref_nb); VRef(name, ref_nb)
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = Hashtbl.find globalScope.heap (Hashtbl.find scope.scopedObjects (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in execute_method m globalScope scope l ; (*List.iter (evaluate_expression globalScope) l)*); VNull ))
 
+and eval_op op v1 v2 globalScope scope = match op with
+  | Assign -> (match v1, v2 with
+					| VRef(name1, ref1), VRef(name2, ref2) -> Hashtbl.remove scope.scopedObjects name1; Hashtbl.remove globalScope.heap ref1; Hashtbl.add scope.scopedObjects name1 ref2; VRef(name1, ref2) 
+					| VRef(name1, ref1), VString(s) -> Hashtbl.remove globalScope.heap ref1; Hashtbl.add globalScope.heap ref1 (StringDescriptor(s)); VRef(name1, ref1)  )
+  | Ass_add -> VNull
+
 and execute_method m globalScope scope params =
+	  print_endline("*********executing method**************");
+	 List.iter2 (addParameterToScope globalScope scope) params m.margstype;
 	 List.iter (evaluate_statement globalScope scope) m.mbody
+
+and addParameterToScope globalScope scope param marg = match param.edesc with 
+  | Name(id) -> Hashtbl.add scope.scopedObjects marg.pident (Hashtbl.find scope.scopedObjects id); print_endline(marg.pident ^ id)
+  | Val v -> (match v with | Int(i) -> Hashtbl.add scope.scopedObjects marg.pident globalScope.free_adress; Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(int_of_string(i)))); globalScope.free_adress <- globalScope.free_adress + 1
 
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
   | Expr e -> evaluate_expression globalScope scope e; ()
   | Return Some(e) -> ()
+  | Return None -> ()
 
-and exec_vardecl globalScope scope decl = print_endline("exec var declaration");
-  match decl with
+and exec_vardecl globalScope scope decl = match decl with
   | (typ, name, None) -> addObject typ name globalScope scope None
   | (typ, name, Some e) -> addObject typ name globalScope scope (Some(e))
 

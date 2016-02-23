@@ -2,11 +2,11 @@ open AST
 open Hashtbl
 
 
-type execValue =
+type exec_Value =
   | VInt of int
   | VBool of bool
   | VString of string
-  | VRef of int
+  | VRef of string * int
   | VNull 
 
 type objectDescriptor =
