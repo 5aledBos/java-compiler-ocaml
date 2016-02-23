@@ -144,7 +144,10 @@ let type_vardecl globalScope scope decl =
   match decl with
   | (t, name, None) -> add_variable scope name t
   | (t, name, Some e) -> type_expression globalScope scope e;
-    if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
+    if Some(t) <> e.etype then
+      (match t with
+       | Type.Ref(_) -> if e.etype <> None then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
+       | _ -> raise(CheckAST.Type_mismatch_decl(Some(t), e.etype))) else add_variable scope name t
 
 (* Type the variable declaration of a for statement and add the variables to the current scope *)
 let type_for_vardecl globalScope scope decl =

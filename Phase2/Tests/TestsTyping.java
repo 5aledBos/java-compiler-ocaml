@@ -28,6 +28,8 @@ public class B {
     public String test() {
       Compile c = new Compile();
       int nb = c.nombre + 2;
+      String a = null;
+      c = null;
       return method();
     }
 

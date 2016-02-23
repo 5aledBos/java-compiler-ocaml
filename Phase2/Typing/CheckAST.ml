@@ -109,10 +109,13 @@ let print_arg_not_typed name =
 
 (* CHECKS *)
 let check_aop_type x op y =
-  if x <> y then raise(Wrong_types_aop(x, op, y))
+  if x <> y then
+    (match x with
+     | Some(Type.Ref(_)) -> if y <> None then raise(Wrong_types_aop(x, op, y))
+     | _ -> raise(Wrong_types_aop(x, op, y)))
 
 let check_op_type x op y =
-  if x <> y then raise(Wrong_types_op(x, op, y));
+  (if x <> y then raise(Wrong_types_op(x, op, y)));
   match op with
   | Op_cor | Op_cand -> if (x <> Some(Type.Primitive(Type.Boolean)) || y <> Some(Type.Primitive(Type.Boolean)))
     then raise(Wrong_types_bool_op(x, op))
