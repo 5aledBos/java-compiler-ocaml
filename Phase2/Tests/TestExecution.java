@@ -42,6 +42,7 @@ public class B {
 //		C cobject;
 		chiffre += 5;
 		chiffre = 8;
+		String s  ="test";
 	}
 }
 

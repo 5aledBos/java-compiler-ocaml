@@ -40,7 +40,8 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | New(None, l, exps) -> (*let (last, lst) = ListII.extract_last l =  in globalScope.currentClassScoped <- last; let cd = Hashtbl.find globalScope.classDescriptorTable l in let constr = findConstructor cd exps;*)  VNull
 (*  | New(Some(str), l, exps) -> print_endline("ici"); VInt (int_of_string "55")*)
   | Val v -> (match v with
-				| Int(i) -> VInt (int_of_string i) )
+				| Int(i) -> VInt (int_of_string i)
+				| String s -> VString s )
   | AssignExp(e1, op, e2) -> evaluate_expression  globalScope scope e1; VInt 2
   | Name(name) -> VInt 3
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = Hashtbl.find globalScope.heap (Hashtbl.find scope.scopedObjects (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in execute_method m globalScope scope l ; (*List.iter (evaluate_expression globalScope) l)*); VNull ))
@@ -64,7 +65,7 @@ and addObject typ oname globalScope scope evalue =
 
 	let createObjectFromDescriptor cd oname = match cd with
 		| ClassDescriptor(classDescriptor) -> let objectcreated = { otype  = classDescriptor.cdname; oname = oname; oattributes = Hashtbl.create 20 } in List.iter (addAttributeToObject objectcreated.oattributes globalScope scope) classDescriptor.cdattributes; ObjectDescriptor(objectcreated)
-		| StringClass -> StringDescriptor("")
+		| StringClass -> (match evalue with Some(value) -> let stringvalue = evaluate_expression globalScope scope value in (match stringvalue with VString(s) -> StringDescriptor(s)))
 
 	in (match typ, evalue with
   		| Primitive(Int), Some(e) -> let i = evaluate_expression globalScope scope e in (match i with VInt(value_of_int) -> Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(value_of_int)); Hashtbl.add scope.scopedObjects oname globalScope.free_adress; globalScope.free_adress <- globalScope.free_adress+1)
