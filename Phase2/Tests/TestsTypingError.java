@@ -1,11 +1,18 @@
 package tutu.titi.toto;
 
+public class B {}
+
+public class C extends D {}
+
+public class D {}
+
 public class A {
     private String method() {
         return "result";
     }
 
     int test() {
+        B a = new C();
         int a = method();
 
         // int[] a = { 1, "a" };

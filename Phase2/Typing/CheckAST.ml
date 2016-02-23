@@ -33,6 +33,7 @@ exception Wrong_type_list of Type.t option * Type.t option
 exception Wrong_return_type of Type.t * Type.t
 exception Return_expression_no_type
 exception Not_typed_arg of string
+exception Wrong_ref_type of Type.ref_type * Type.ref_type
 
 (* String of errors *)
 let print_wrong_types_aop x op y =
@@ -69,6 +70,11 @@ let print_type_mismatch expression x y =
   print_string ("Les deux expressions d'une " ^ expression ^ " doivent etre du meme type");
   print_string (" et elle recoit " ^ (Type.stringOfOpt x));
   print_endline (" et " ^ (Type.stringOfOpt y))
+
+let print_type_ref_mismatch x y =
+  print_string ("Les deux expressions doivent etre du meme type");
+  print_string (" mais ont " ^ (Type.stringOf_ref x));
+  print_endline (" et " ^ (Type.stringOf_ref y))
 
 let print_name_exist str name =
   print_endline ("Le nom de " ^ str ^ " \"" ^ name ^ "\" existe deja")
@@ -108,12 +114,6 @@ let print_arg_not_typed name =
   print_endline ("La methode " ^ name ^ " contient des parametres non types")
 
 (* CHECKS *)
-let check_aop_type x op y =
-  if x <> y then
-    (match x with
-     | Some(Type.Ref(_)) -> if y <> None then raise(Wrong_types_aop(x, op, y))
-     | _ -> raise(Wrong_types_aop(x, op, y)))
-
 let check_op_type x op y =
   (if x <> y then raise(Wrong_types_op(x, op, y)));
   match op with

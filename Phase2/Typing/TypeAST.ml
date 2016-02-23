@@ -9,10 +9,11 @@ type classscope = {
   methods : (string, funcinfo) Hashtbl.t;
   constructors : (string, funcinfo) Hashtbl.t;
   attributes : (string, Type.t) Hashtbl.t;
+  parent : Type.ref_type;
 }
 
 type gscope = {
-	  classes : (string, classscope) Hashtbl.t ;
+  classes : (string, classscope) Hashtbl.t ;
   mutable current : string
 }
 
@@ -59,6 +60,21 @@ let type_call_expr methodName args globalScope className = let meths = (Hashtbl.
     with
       | Not_typed_arg -> raise(CheckAST.Not_typed_arg(methodName))
       | CheckAST.Function_exist(_, t, _) -> Some(t))
+
+let rec check_ref_type (globalScope : gscope) (apparent_typ : Type.ref_type) (real_typ : Type.ref_type) =
+  if apparent_typ.tid <> real_typ.tid then
+    if apparent_typ.tid = "Object" then () else
+      let parent = (Hashtbl.find globalScope.classes real_typ.tid).parent in
+        if parent.tid = "Object" then raise(CheckAST.Wrong_ref_type(apparent_typ, real_typ)) else if apparent_typ <> parent then check_ref_type globalScope apparent_typ parent
+
+let check_aop_type globalScope x op y =
+  if x <> y then
+    (match x with
+     | Some(Type.Ref(apparent_typ)) -> if y <> None then
+       (match y with
+        | Some(Type.Ref(real_typ)) -> check_ref_type globalScope apparent_typ real_typ
+        | _ -> raise(raise(CheckAST.Wrong_types_aop(x, op, y))))
+     | _ -> raise(CheckAST.Wrong_types_aop(x, op, y)))
 
 (* Type the expressions given the global and the current scopes *)
 let rec type_expression globalScope scope e =
@@ -109,7 +125,7 @@ let rec type_expression globalScope scope e =
   (* | Array(exp, []) ->
   | Array(exp, l) -> *)
   | AssignExp(e1, op, e2) -> type_expression globalScope scope e1; type_expression globalScope scope e2;
-    CheckAST.check_aop_type e1.etype op e2.etype;
+    check_aop_type globalScope e1.etype op e2.etype;
     e.etype <- e1.etype
   | Post(exp, op) -> type_expression globalScope scope exp;
     CheckAST.check_post_type exp.etype;
@@ -146,8 +162,14 @@ let type_vardecl globalScope scope decl =
   | (t, name, Some e) -> type_expression globalScope scope e;
     if Some(t) <> e.etype then
       (match t with
-       | Type.Ref(_) -> if e.etype <> None then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
-       | _ -> raise(CheckAST.Type_mismatch_decl(Some(t), e.etype))) else add_variable scope name t
+       | Type.Ref(apparent_typ) ->
+        if e.etype <> None then
+          (match e.etype with
+           | Some(Type.Ref(real_typ)) -> check_ref_type globalScope apparent_typ real_typ;add_variable scope name t
+           | _ -> raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)))
+        else add_variable scope name t
+       | _ -> raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)))
+    else add_variable scope name t
 
 (* Type the variable declaration of a for statement and add the variables to the current scope *)
 let type_for_vardecl globalScope scope decl =
@@ -238,6 +260,7 @@ let add_constructor globalScope c = let constructors = (Hashtbl.find globalScope
     (List.iter (compare_function_args c.cname c.cargstype) (Hashtbl.find_all constructors c.cname);
     Hashtbl.add constructors c.cname { ftype = Type.Ref({ tpath = []; tid = c.cname }); fargs = c.cargstype }))
 
+
 (* Add the methods, attributes and constructors of a given class to the global scope *)
 let add_class globalScope c = List.iter (add_method globalScope) c.cmethods;
   List.iter (add_attribute globalScope) c.cattributes;
@@ -248,7 +271,7 @@ let add_type globalScope t =
   match t.info with
   | Class c -> if (Hashtbl.mem globalScope.classes t.id) <> true
     then (globalScope.current <- t.id; Hashtbl.add globalScope.classes globalScope.current
-      { attributes = (Hashtbl.create 20); methods = (Hashtbl.create 20); constructors = (Hashtbl.create 20) })
+      { attributes = (Hashtbl.create 20); methods = (Hashtbl.create 20); constructors = (Hashtbl.create 20); parent = c.cparent })
     else raise(CheckAST.Class_name_exist(t.id)); add_class globalScope c
   | Inter -> ()
 

@@ -4,6 +4,10 @@ public class Compile {
     public int nombre = 0;
 }
 
+public class C {}
+
+public class D extends C {}
+
 public class B {
 
     private int age;
@@ -13,6 +17,14 @@ public class B {
     }
     public B(int bint) {
         age = bint;
+    }
+
+    public void testHeritage() {
+      D d = new D();
+      C c = new D();
+      C cc = null;
+      cc = new D();
+      c = d;
     }
 
     public String b = "coucou";
