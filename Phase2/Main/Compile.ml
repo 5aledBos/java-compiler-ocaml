@@ -5,7 +5,7 @@ let execute lexbuf verbose =
     let ast = compilationUnit Lexer.token lexbuf in
     print_endline "successfull parsing";
     TypeAST.type_program ast;
-      let data = Compilation.compile ast in
+    let data = Compilation.compile ast in
       Compilation.printCompilationData(data);
 	  Execution.execute_program ast data;
     if verbose then AST.print_program ast
@@ -32,6 +32,7 @@ let execute lexbuf verbose =
     | CheckAST.Wrong_type_list(x, y) -> CheckAST.print_wrong_type_list x y
     | CheckAST.Wrong_return_type(x, y) -> CheckAST.print_wrong_return_type x y
     | CheckAST.Return_expression_no_type -> print_endline "Syntax error on return type"
+    | CheckAST.Wrong_ref_type(x, y) -> CheckAST.print_type_ref_mismatch x y
     | Error ->
       print_string "Syntax error: ";
       Location.print (Location.curr lexbuf)
