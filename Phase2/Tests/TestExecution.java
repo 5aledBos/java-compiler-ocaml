@@ -15,6 +15,7 @@ public class B {
 
 	public int getAge(int age) {
 		int truc = 66;
+	    test2();
 	    return age;
 	}
     public String method() {
@@ -22,6 +23,7 @@ public class B {
     }
 
     public String method2(int a) {
+	  
       return "coucou";
     }
 
@@ -50,10 +52,12 @@ public class B {
 		String s;
 		s = "testmodifie";
 		cbobject = bobject;
-		C c = new C();
-		c.test();
+//		C c = new C();
+//		c.test();
+	    B b = new C();
 //		if(cbobject != null) {
 //		}
+		
 	}
 }
 

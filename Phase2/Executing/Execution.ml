@@ -45,6 +45,7 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_op op ref1 ref2 globalScope scope
   | Name(name) -> let ref_nb = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: " ^ string_of_int ref_nb); VRef(name, ref_nb)
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = Hashtbl.find globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in execute_method m globalScope scope l ; (*List.iter (evaluate_expression globalScope) l)*); VNull ))
+  | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
 
 and eval_op op v1 v2 globalScope scope = match op with
   | Assign -> (match v1, v2 with
@@ -70,6 +71,8 @@ and evaluate_statement globalScope scope stmt = match stmt with
 and exec_vardecl globalScope scope decl = match decl with
   | (typ, name, None) -> addObject typ name globalScope scope None
   | (typ, name, Some e) -> addObject typ name globalScope scope (Some(e))
+
+
 
 and addObject typ oname globalScope scope evalue =
   let addAttributeToObject objectattributes globalScope scope classattribute = addObject classattribute.atype classattribute.aname globalScope scope classattribute.adefault; Hashtbl.add objectattributes classattribute.aname (globalScope.free_adress-1)
