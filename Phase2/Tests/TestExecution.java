@@ -2,8 +2,8 @@ package tutu.titi.toto;
 
 public class B {
 
-    private int age;
-	private A a = new A();
+    private int age =5;
+	private A a;
     B() {
         age = 5;
     }
@@ -36,27 +36,14 @@ public class B {
     }
 
 	public static void main(String [] args) {
-//		int a = 2;
-//	//	Int b = (Int) 5;cd
-//		int c = 5;
-//		Int b;
-        B bobject = new B(5);
-		B cbobject = new B(6);
-//		bobject.test();
-//		C cobject;
-//		cobject = new C();
-		int chiffre = 3;
-//		C cobject;
-//		chiffre = 5;
-		bobject.getAge(6666);
-		String s;
-		s = "testmodifie";
+        B bobject = new B();
+		B cbobject = new B();
+		C cobject;
+//		bobject.getAge(6666);
+//		String s;
+//		s = "testmodifie";
 		cbobject = bobject;
-//		C c = new C();
-//		c.test();
-	    B b = new C();
-//		if(cbobject != null) {
-//		}
+
 		
 	}
 }

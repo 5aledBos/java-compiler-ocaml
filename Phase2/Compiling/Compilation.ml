@@ -6,14 +6,22 @@ type exec_Value =
   | VInt of int
   | VBool of bool
   | VString of string
-  | VRef of string * int
+  | VRef of int
   | VNull 
+
+let string_execvalue value = match value with
+  | VInt(i) -> "int: " ^ string_of_int i
+  | VBool(b) -> "bool: " ^ string_of_bool b
+  | VString(s) -> "string: " ^ s
+  | VRef(i) -> "object reference, adresse in heap: " ^ string_of_int i
+  | VNull -> "null reference"
+  
 
 type objectDescriptor =
 {
     otype : string;
 	oname : string;
-	oattributes : (string, int) Hashtbl.t;
+	oattributes : (string, exec_Value) Hashtbl.t;
 }
 
 type globalObjectDescriptor =
@@ -26,7 +34,7 @@ type globalObjectDescriptor =
 let printObjectDescriptor od = match od with
   | IntegerDescriptor(i) -> Printf.printf "Integer object descriptor: %i" i; print_endline("")
   | StringDescriptor(str) -> print_endline("String object descriptor: " ^ str)
-  | ObjectDescriptor(od) -> print_endline("object: " ^ od.oname ^ " from type " ^ od.otype); Hashtbl.iter (fun key value -> print_string(key);Printf.printf "\t:    attribute adress in heap:  %i " value; print_endline("")) od.oattributes
+  | ObjectDescriptor(od) -> print_endline("object: " ^ od.oname ^ " from type " ^ od.otype); Hashtbl.iter (fun key value -> print_string(key);print_endline("\t:    attribute: " ^string_execvalue(value)); print_endline("")) od.oattributes
   | NullObject -> print_endline("Null object")
 	
 type classDescriptor =
