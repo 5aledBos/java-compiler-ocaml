@@ -11,6 +11,7 @@ public class D extends C {}
 public class B {
 
     private int age;
+    private C petitd = new D();
 
     B() {
         age = 5;
@@ -21,6 +22,7 @@ public class B {
 
     public void testHeritage() {
       D d = new D();
+      petitd = d;
       C c = new D();
       C cc = null;
       cc = new D();
@@ -54,7 +56,7 @@ public class A {
 
     int a1 = 1;
     int[] a = { 3,4,5 };
-    Bool a2 = false;
+    boolean a2 = false;
     String a6 = "jsdjkndjk\njdsdjkf";
 
     private String method() {
