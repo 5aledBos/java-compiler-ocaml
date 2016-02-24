@@ -18,6 +18,7 @@ let printHeap heap =
 type exec_scope =
 {
   mutable currentscope : int;
+  mutable currentobject : globalObjectDescriptor;
   mutable scopelist : (string, exec_Value) Hashtbl.t list
 }
 
@@ -46,7 +47,7 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_op op ref1 ref2 globalScope scope
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
 
-  | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue ))
+  | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue ))
 
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
 
@@ -58,6 +59,7 @@ and eval_op op v1 v2 globalScope scope = match op with
 						| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); VRef(i)
 						| VNull -> Hashtbl.add globalScope.heap globalScope.free_adress (StringDescriptor(s)); Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(globalScope.free_adress)); globalScope.free_adress <- globalScope.free_adress + 1; VNull )
 					| VName(name1), VNull -> VNull
+					| VName(name1), VInt(i) -> replace_execvalue_in_scope scope name1 (VInt(i)); VInt(i)
 )
   | Ass_add -> VNull
 
@@ -103,12 +105,30 @@ and add_variable_to_scope scope name execvalue =
 and find_object_in_heap heap execvalue = match execvalue with
   | VRef(i) -> print_endline(string_execvalue(execvalue)); Hashtbl.find heap i
 
+and find_execvalue_in_scope scope name =
+  if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) name <> true
+then match scope.currentobject with
+					| ObjectDescriptor(od) -> Hashtbl.find od.oattributes name
+(*  					| IntegerDescriptor(i) ->*)
+(*					| StringDescriptor(s) ->*)
+(*  					| NullObject ->*)
+else Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name
+
+and replace_execvalue_in_scope scope name execvalue =
+  if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) name <> true
+then match scope.currentobject with
+					| ObjectDescriptor(od) -> Hashtbl.remove od.oattributes name; Hashtbl.add od.oattributes name execvalue
+(*  					| IntegerDescriptor(i) ->*)
+(*					| StringDescriptor(s) ->*)
+(*  					| NullObject ->*)
+else Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name execvalue
+
 let execute_program ast compilationData =
   let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in
   print_method "" mainMethod;
   let globalScope = { data = compilationData; currentClassScoped = "B"; heap = Hashtbl.create 20; free_adress = 1 } in
   Hashtbl.add globalScope.heap 0 NullObject;
-  let scope = { currentscope = 0; scopelist = [Hashtbl.create 20] } in
+  let scope = { currentscope = 0; currentobject=NullObject; scopelist = [Hashtbl.create 20] } in
   List.iter (evaluate_statement globalScope scope) mainMethod.mbody;
   printHeap globalScope.heap;
   printScope scope
