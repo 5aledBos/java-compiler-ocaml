@@ -37,7 +37,7 @@ let printScope scope =
 
 
 let rec evaluate_expression globalScope scope expr = match expr.edesc with
-  | New(None, l, exps) -> (match expr.etype with Some(ref_type) -> let ref_nb = globalScope.free_adress in addObject ref_type globalScope scope; VRef(ref_nb) )
+  | New(None, l, exps) -> (match expr.etype with Some(ref_type) -> addObject ref_type globalScope scope; VRef(globalScope.free_adress -1) )
 (*  | New(Some(str), l, exps) -> print_endline("ici"); VInt (int_of_string "55")*)
   | Val v -> (match v with
 				| Int(i) -> VInt (int_of_string i)
@@ -45,26 +45,29 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
 				| Null -> VNull )
   | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_op op ref1 ref2 globalScope scope
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
-(*  | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = Hashtbl.find globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in execute_method m globalScope scope l ; (*List.iter (evaluate_expression globalScope) l)*); VNull ))*)
+
+  | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue ))
+
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
 
 and eval_op op v1 v2 globalScope scope = match op with
   | Assign -> (match v1, v2 with
-					| VName(name1), VName(name2) -> Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; let ref_nb2 = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name2 in (match ref_nb2 with VRef(i) -> (*Hashtbl.remove globalScope.heap ref1;*) Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(i)); VRef(i) )
+					| VName(name1), VName(name2) -> Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; let ref_nb2 = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name2 in (match ref_nb2 with 
+						| VRef(i) -> (*Hashtbl.remove globalScope.heap ref1;*) Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(i)); VRef(i) )
 					| VName(name1), VString(s) -> let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name1 in (match execvalue with
-				| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); VRef(i)
-				| VNull -> Hashtbl.add globalScope.heap globalScope.free_adress (StringDescriptor(s)); Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(globalScope.free_adress)); globalScope.free_adress <- globalScope.free_adress + 1; VNull )
+						| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); VRef(i)
+						| VNull -> Hashtbl.add globalScope.heap globalScope.free_adress (StringDescriptor(s)); Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(globalScope.free_adress)); globalScope.free_adress <- globalScope.free_adress + 1; VNull )
 )
   | Ass_add -> VNull
 
 and execute_method m globalScope scope params =
 	  print_endline("*********executing method**************");
-(*	 List.iter2 (addParameterToScope globalScope scope) params m.margstype;*)
-	 List.iter (evaluate_statement globalScope scope) m.mbody
+	 List.iter2 (addParameterToScope globalScope scope) m.margstype params;
+	 List.iter (evaluate_statement globalScope scope) m.mbody;
+	 VNull
 
-(*and addParameterToScope globalScope scope param marg = match param.edesc with *)
-(*  | Name(id) -> Hashtbl.add (List.nth scope.scopelist  scope.currentscope) marg.pident (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) id); print_endline(marg.pident ^ id)*)
-(*  | Val v -> (match v with | Int(i) -> Hashtbl.add (List.nth scope.scopelist  scope.currentscope) marg.pident globalScope.free_adress; Hashtbl.add globalScope.heap globalScope.free_adress (IntegerDescriptor(int_of_string(i)))); globalScope.free_adress <- globalScope.free_adress + 1*)
+and addParameterToScope globalScope scope marg param  =
+  add_variable_to_scope scope marg.pident (evaluate_expression globalScope scope param)
 
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
@@ -79,8 +82,8 @@ and exec_vardecl globalScope scope decl = match decl with
 
 and addObject typ globalScope scope =
   let addAttributeToObject objectattributes globalScope scope classattribute = match classattribute.adefault with
-   			| Some(expr) -> Hashtbl.add objectattributes classattribute.aname (evaluate_expression globalScope scope expr); globalScope.free_adress <- globalScope.free_adress+1
-			| None -> Hashtbl.add objectattributes classattribute.aname (VNull); globalScope.free_adress <- globalScope.free_adress+1
+   			| Some(expr) -> Hashtbl.add objectattributes classattribute.aname (evaluate_expression globalScope scope expr)
+			| None -> Hashtbl.add objectattributes classattribute.aname (VNull)
   in
 
 	let createObjectFromDescriptor cd = match cd with
@@ -93,13 +96,16 @@ and addObject typ globalScope scope =
 							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
 
 and add_variable_to_scope scope name execvalue = 
+	print_endline(string_of_int scope.currentscope);
 	Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name execvalue
 
+and find_object_in_heap heap execvalue = match execvalue with
+  | VRef(i) -> print_endline(string_execvalue(execvalue)); Hashtbl.find heap i
 
 let execute_program ast compilationData =
   let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in
   print_method "" mainMethod;
-  let globalScope = { data = compilationData; currentClassScoped = "B"; heap = Hashtbl.create 20; free_adress = 2 } in
+  let globalScope = { data = compilationData; currentClassScoped = "B"; heap = Hashtbl.create 20; free_adress = 1 } in
   Hashtbl.add globalScope.heap 0 NullObject;
   let scope = { currentscope = 0; scopelist = [Hashtbl.create 20] } in
   List.iter (evaluate_statement globalScope scope) mainMethod.mbody;

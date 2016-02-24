@@ -36,13 +36,14 @@ public class B {
     }
 
 	public static void main(String [] args) {
-        B bobject = new B();
-		B cbobject = new B();
-		C cobject;
+//        B bobject = new B();
+//		B cbobject = new B();
+		C cobject = new C();
+//	    cobject = new C();
+		cobject.cmethod();
 //		bobject.getAge(6666);
 		String s;
 		s = "testmodifie";
-		cbobject = bobject;
 
 		
 	}
@@ -131,4 +132,7 @@ public class C extends B {
 	public String method() {
    		return "result";
     }
+    public void cmethod() {
+		B test = new B();
+	}
 }
