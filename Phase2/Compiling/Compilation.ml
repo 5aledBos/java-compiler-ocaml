@@ -132,4 +132,6 @@ let compile ast =
 let printCompilationData data = match data with
   | {methodTable = mtable; classDescriptorTable = cdtable } -> printMethodTable(mtable); printClassDescriptorTable(cdtable)
 
-  
+  let rec remove_at n = function
+    | [] -> []
+    | h :: t -> if n = 0 then t else h :: remove_at (n-1) t;;

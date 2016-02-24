@@ -47,9 +47,13 @@ public class B {
 //		C cobject;
 //		chiffre = 5;
 		bobject.getAge(6666);
-		String s  ="test";
+		String s;
 		s = "testmodifie";
 		cbobject = bobject;
+		C c = new C();
+		c.test();
+//		if(cbobject != null) {
+//		}
 	}
 }
 
