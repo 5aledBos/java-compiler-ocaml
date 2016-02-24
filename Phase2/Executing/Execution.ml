@@ -11,6 +11,8 @@ type globalScope =
 (*  scope : exec_scope list*)
 }
 
+exception NullPointerException
+
 let printHeap heap =
    Hashtbl.iter (fun key value -> (Printf.printf "%i " key; printObjectDescriptor(value); print_endline(""))) heap
 
@@ -56,32 +58,40 @@ and eval_op op v1 v2 globalScope scope = match op with
 					| VName(name1), VName(name2) -> Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; let ref_nb2 = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name2 in (match ref_nb2 with 
 						| VRef(i) -> (*Hashtbl.remove globalScope.heap ref1;*) Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(i)); VRef(i) )
 					| VName(name1), VString(s) -> let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name1 in (match execvalue with
-						| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); VRef(i)
+						| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i)
 						| VNull -> Hashtbl.add globalScope.heap globalScope.free_adress (StringDescriptor(s)); Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(globalScope.free_adress)); globalScope.free_adress <- globalScope.free_adress + 1; VNull )
-					| VName(name1), VNull -> VNull
+					| VName(name1), VNull -> replace_execvalue_in_scope scope name1 VNull; VNull
 					| VName(name1), VInt(i) -> replace_execvalue_in_scope scope name1 (VInt(i)); VInt(i)
-)
-  | Ass_add -> VNull
+					| VName(name1), VRef(i) -> replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i)
+  )
+  | Ass_add -> (match v1, v2 with
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1+i)); VInt(i1+i))
+					| VName(name1), VString(s) -> let execvalue = find_execvalue_in_scope scope name1 in (match execvalue with
+						| VRef(i) ->  let s1 = Hashtbl.find globalScope.heap i in (match s1 with StringDescriptor(str1) -> Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(str1 ^ s)); replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i) )
+						| VNull -> raise(NullPointerException)
+						| _ -> VNull )
+  )
 
 and execute_method m globalScope scope params =
 	  print_endline("*********executing method**************");
 	 List.iter2 (addParameterToScope globalScope scope) m.margstype params;
 	 List.iter (evaluate_statement globalScope scope) m.mbody;
+	 print_endline("*********End of method**************");
 	if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) "return" <> true then VNull else
-	 Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return"
+	 let a = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return" in print_endline("return fonction: " ^ string_execvalue a); a
 
 and addParameterToScope globalScope scope marg param  =
-  add_variable_to_scope scope marg.pident (evaluate_expression globalScope scope param)
+  add_variable_to_scope globalScope scope marg.pident (evaluate_expression globalScope scope param)
 
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
   | Expr e -> evaluate_expression globalScope scope e; ()
-  | Return Some(e) -> add_variable_to_scope scope "return" (evaluate_expression globalScope scope e)
-  | Return None -> add_variable_to_scope scope "return" VNull
+  | Return Some(e) -> add_variable_to_scope globalScope scope "return" (evaluate_expression globalScope scope e)
+(*  | Return None -> add_variable_to_scope globalScope scope "return" VNull*)
 
 and exec_vardecl globalScope scope decl = match decl with
-  | (typ, name, None) -> add_variable_to_scope scope name VNull
-  | (typ, name, Some e) -> add_variable_to_scope scope name (evaluate_expression globalScope scope e)
+  | (typ, name, None) -> add_variable_to_scope globalScope scope name VNull
+  | (typ, name, Some e) -> add_variable_to_scope globalScope scope name (evaluate_expression globalScope scope e)
 
 and addObject typ globalScope scope =
   let addAttributeToObject objectattributes globalScope scope classattribute = match classattribute.adefault with
@@ -98,9 +108,13 @@ and addObject typ globalScope scope =
 						let object_created = createObjectFromDescriptor cd in
 							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
 
-and add_variable_to_scope scope name execvalue = 
-	print_endline(string_of_int scope.currentscope);
-	Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name execvalue
+and add_variable_to_scope globalScope scope name execvalue = match execvalue with
+  | VName(name1) -> Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name (find_execvalue_in_scope scope name1)
+  | VString(s) -> add_object_to_heap globalScope (StringDescriptor(s)); Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name (VRef(globalScope.free_adress-1))
+  | _ -> Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name execvalue
+	
+and add_object_to_heap globalScope globalObjectDescriptor =
+  Hashtbl.add globalScope.heap globalScope.free_adress globalObjectDescriptor; globalScope.free_adress <- globalScope.free_adress +1
 
 and find_object_in_heap heap execvalue = match execvalue with
   | VRef(i) -> print_endline(string_execvalue(execvalue)); Hashtbl.find heap i

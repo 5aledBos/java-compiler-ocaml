@@ -14,8 +14,8 @@ public class B {
 //    public String b = "coucou";
 
 	public int getAge(int age1) {
-	    age = 4;
-		return 8;
+	    age = 8;
+		return age;
 	}
     public String method() {
         return "result";
@@ -35,14 +35,18 @@ public class B {
     }
 
 	public static void main(String [] args) {
-        B bobject = new B();
+//        B bobject = new B();
 //		C cobject = new C();
 //		cobject.cmethod();
-//		String s;
-//		s = "testmodifie";
-//		s = bobject.method();
-		int age5 = 10;
-		age5 = bobject.getAge(5);
+		String s;
+		s = "testmodifie";
+//		int age5 = 10;
+//		age5 = bobject.getAge(5);
+//		int chiffre = bobject.getAge(2);
+		String result = "test";
+		result += "test";
+//  		s += "test";
+//		age5 += 30;
 
 		
 	}
