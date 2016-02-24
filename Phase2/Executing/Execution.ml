@@ -57,6 +57,7 @@ and eval_op op v1 v2 globalScope scope = match op with
 					| VName(name1), VString(s) -> let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name1 in (match execvalue with
 						| VRef(i) ->  Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(s)); VRef(i)
 						| VNull -> Hashtbl.add globalScope.heap globalScope.free_adress (StringDescriptor(s)); Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(globalScope.free_adress)); globalScope.free_adress <- globalScope.free_adress + 1; VNull )
+					| VName(name1), VNull -> VNull
 )
   | Ass_add -> VNull
 
@@ -64,7 +65,8 @@ and execute_method m globalScope scope params =
 	  print_endline("*********executing method**************");
 	 List.iter2 (addParameterToScope globalScope scope) m.margstype params;
 	 List.iter (evaluate_statement globalScope scope) m.mbody;
-	 VNull
+	if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) "return" <> true then VNull else
+	 Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return"
 
 and addParameterToScope globalScope scope marg param  =
   add_variable_to_scope scope marg.pident (evaluate_expression globalScope scope param)
@@ -72,13 +74,12 @@ and addParameterToScope globalScope scope marg param  =
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
   | Expr e -> evaluate_expression globalScope scope e; ()
-  | Return Some(e) -> ()
-  | Return None -> ()
+  | Return Some(e) -> add_variable_to_scope scope "return" (evaluate_expression globalScope scope e)
+  | Return None -> add_variable_to_scope scope "return" VNull
 
 and exec_vardecl globalScope scope decl = match decl with
   | (typ, name, None) -> add_variable_to_scope scope name VNull
   | (typ, name, Some e) -> add_variable_to_scope scope name (evaluate_expression globalScope scope e)
-
 
 and addObject typ globalScope scope =
   let addAttributeToObject objectattributes globalScope scope classattribute = match classattribute.adefault with
