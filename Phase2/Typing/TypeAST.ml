@@ -224,8 +224,12 @@ let type_constructor globalScope c = let constScope = { returntype = Type.Ref({ 
   List.iter (add_function_args constScope) c.cargstype;
   List.iter (type_statement globalScope constScope) c.cbody
 
+let type_attribute globalScope a = match a.adefault with
+  | Some(exp) -> type_expression globalScope {returntype = Type.Void; vars = Hashtbl.create 1} exp; let typ = Some(a.atype) in check_aop_type globalScope typ AST.Assign exp.etype
+  | None -> ()
+
 (* Type a given class: add all its methods and constructors to the global scope *)
-let type_class globalScope c = List.iter (type_method globalScope) c.cmethods; List.iter (type_constructor globalScope) c.cconsts
+let type_class globalScope c = List.iter (type_method globalScope) c.cmethods; List.iter (type_constructor globalScope) c.cconsts; List.iter (type_attribute globalScope) c.cattributes
 
 (* Compare the type of 2 given arguments and raise an exception if they are different *)
 let compare_arg a b = if a.ptype <> b.ptype then raise(Diff_arg)
