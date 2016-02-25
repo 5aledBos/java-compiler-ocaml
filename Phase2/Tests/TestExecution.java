@@ -35,18 +35,24 @@ public class B {
     }
 
 	public static void main(String [] args) {
-//        B bobject = new B();
-//		C cobject = new C();
-//		cobject.cmethod();
+        B bobject = new B();
+		C cobject = new C();
+		cobject.cmethod();
 		String s;
 		s = "testmodifie";
-//		int age5 = 10;
-//		age5 = bobject.getAge(5);
-//		int chiffre = bobject.getAge(2);
+		int age5 = 10;
+		age5 = bobject.getAge(5);
+		int chiffre = bobject.getAge(2);
 		String result = "test";
 		result += "test";
-//  		s += "test";
-//		age5 += 30;
+  		s += "test";
+		age5 -= 30;
+		age5*= 10;
+		age5 = 5+10;
+		5 == 6;
+//        result -= "test";
+		B newobject = bobject;
+		newobject = new B();
 
 		
 	}

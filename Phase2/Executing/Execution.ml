@@ -12,6 +12,8 @@ type globalScope =
 }
 
 exception NullPointerException
+exception InvalideOperationException
+exception ArithmeticException
 
 let printHeap heap =
    Hashtbl.iter (fun key value -> (Printf.printf "%i " key; printObjectDescriptor(value); print_endline(""))) heap
@@ -46,14 +48,79 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
 				| Int(i) -> VInt (int_of_string i)
 				| String s -> VString(s)
 				| Null -> VNull )
-  | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_op op ref1 ref2 globalScope scope
+  | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_assign_op op ref1 ref2 globalScope scope
+  | Op(e1, op, e2) -> eval_normal_op op (evaluate_expression globalScope scope e1) (evaluate_expression globalScope scope e2) globalScope scope
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
 
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue ))
 
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
 
-and eval_op op v1 v2 globalScope scope = match op with
+
+and eval_normal_op op v1 v2 globalScope scope = match op, v1, v2 with
+  | Op_cand, VBool(b1), VBool(b2) -> VBool(b1 && b2)
+  | Op_or, VBool(b1), VBool(b2) -> VBool(b1 || b2)
+  | Op_and, VBool(b1), VBool(b2) -> VBool(b1 & b2)	
+  | Op_xor, VBool(b1), VBool(b2) -> VBool((b1&&(not b2))||((not b1)&&b2) )
+
+  | Op_eq, VInt(i1), VInt(i2) -> if i1 == i2 then VBool(true) else VBool(false)
+  | Op_ne, VInt(i1), VInt(i2) -> if i1 != i2 then VBool(true) else VBool(false)
+  | Op_gt, VInt(i1), VInt(i2) -> if i1 > i2 then VBool(true) else VBool(false)
+  | Op_lt, VInt(i1), VInt(i2) -> if i1 < i2 then VBool(true) else VBool(false)
+  | Op_ge, VInt(i1), VInt(i2) -> if i1 >= i2 then VBool(true) else VBool(false)
+  | Op_le, VInt(i1), VInt(i2) -> if i1 <= i2 then VBool(true) else VBool(false)
+  | Op_add, VInt(i1), VInt(i2) -> VInt(i1+i2)
+  | Op_sub, VInt(i1), VInt(i2) -> VInt(i1-i2)
+  | Op_mul, VInt(i1), VInt(i2) -> VInt(i1*i2)
+  | Op_div, VInt(i1), VInt(i2) -> if i2 == 0 then raise(ArithmeticException) else VInt(i1/i2)
+  | Op_mod, VInt(i1), VInt(i2) -> VInt(i1 mod i2)
+
+  | Op_cand, VName(name1), VBool(b2) ->let vbool1 = find_execvalue_in_scope scope name1 in (match vbool1 with VBool(b1) -> VBool(b1 && b2))
+  | Op_or, VName(name1), VBool(b2) ->let vbool1 = find_execvalue_in_scope scope name1 in (match vbool1 with VBool(b1) -> VBool(b1 || b2) )
+  | Op_and, VName(name1), VBool(b2) ->let vbool1 = find_execvalue_in_scope scope name1 in (match vbool1 with VBool(b1) -> VBool(b1 & b2) )
+  | Op_xor, VName(name1), VBool(b2) ->let vbool1 = find_execvalue_in_scope scope name1 in (match vbool1 with VBool(b1) -> VBool((b1&&(not b2))||((not b1)&&b2)) )
+
+  | Op_eq, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 == i2 then VBool(true) else VBool(false))
+  | Op_ne, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 != i2 then VBool(true) else VBool(false))
+  | Op_gt, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 > i2 then VBool(true) else VBool(false))
+  | Op_lt, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 < i2 then VBool(true) else VBool(false))
+  | Op_ge, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 >= i2 then VBool(true) else VBool(false))
+  | Op_le, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i1 <= i2 then VBool(true) else VBool(false))
+  | Op_add, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> VInt(i1+i2) )
+  | Op_sub, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> VInt(i1-i2) )
+  | Op_mul, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> VInt(i1*i2) )
+  | Op_div, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> if i2 == 0 then raise(ArithmeticException) else VInt(i1/i2) )
+  | Op_mod, VName(name1), VInt(i2) -> let vint1 = find_execvalue_in_scope scope name1 in (match vint1 with VInt(i1) -> VInt(i1 mod i2) )
+
+  | Op_cor, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1+i2) )
+
+  | Op_cand, VName(name1), VName(name2) ->let vbool1 = find_execvalue_in_scope scope name1 and vbool2 = find_execvalue_in_scope scope name2 in (match vbool1, vbool2 with VBool(b1), VBool(b2) -> VBool(b1 && b2))
+  | Op_or, VName(name1), VName(name2) ->let vbool1 = find_execvalue_in_scope scope name1 and vbool2 = find_execvalue_in_scope scope name2 in (match vbool1, vbool2 with VBool(b1), VBool(b2) -> VBool(b1 || b2))
+  | Op_and, VName(name1), VName(name2) ->let vbool1 = find_execvalue_in_scope scope name1 and vbool2 = find_execvalue_in_scope scope name2 in (match vbool1, vbool2 with VBool(b1), VBool(b2) -> VBool(b1 & b2))
+  | Op_xor, VName(name1), VName(name2) ->let vbool1 = find_execvalue_in_scope scope name1 and vbool2 = find_execvalue_in_scope scope name2 in (match vbool1, vbool2 with VBool(b1), VBool(b2) -> VBool((b1&&(not b2))||((not b1)&&b2)))
+
+  | Op_eq, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 == i2 then VBool(true) else VBool(false)
+						| VRef(i1), VRef(i2) -> if i1 == i2 then VBool(true) else VBool(false)  )
+  | Op_ne, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 != i2 then VBool(true) else VBool(false)
+						| VRef(i1), VRef(i2) -> if i1 != i2 then VBool(true) else VBool(false)  )
+  | Op_gt, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 > i2 then VBool(true) else VBool(false) )
+  | Op_lt, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 < i2 then VBool(true) else VBool(false) )
+  | Op_ge, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 >= i2 then VBool(true) else VBool(false) )
+  | Op_le, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with
+						| VInt(i1), VInt(i2) -> if i1 <= i2 then VBool(true) else VBool(false) )
+  | Op_add, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 + i2) )
+  | Op_sub, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 - i2) )
+  | Op_mul, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 * i2) )
+  | Op_div, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> if i2 == 0 then raise(InvalideOperationException) else VInt(i1+i2) )
+  | Op_mod, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 mod i2) )
+
+
+and eval_assign_op op v1 v2 globalScope scope = match op with
   | Assign -> (match v1, v2 with
 					| VName(name1), VName(name2) -> Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name1; let ref_nb2 = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name2 in (match ref_nb2 with 
 						| VRef(i) -> (*Hashtbl.remove globalScope.heap ref1;*) Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name1 (VRef(i)); VRef(i) )
@@ -65,12 +132,35 @@ and eval_op op v1 v2 globalScope scope = match op with
 					| VName(name1), VRef(i) -> replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i)
   )
   | Ass_add -> (match v1, v2 with
-					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1+i)); VInt(i1+i))
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1+i)); VInt(i1+i) )
 					| VName(name1), VString(s) -> let execvalue = find_execvalue_in_scope scope name1 in (match execvalue with
-						| VRef(i) ->  let s1 = Hashtbl.find globalScope.heap i in (match s1 with StringDescriptor(str1) -> Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(str1 ^ s)); replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i) )
+						| VRef(i) ->  let s1 = Hashtbl.find globalScope.heap i in (match s1 with StringDescriptor(str1) -> Hashtbl.remove globalScope.heap i; Hashtbl.add globalScope.heap i (StringDescriptor(str1 ^ s));replace_execvalue_in_scope scope name1 (VRef(i)); VRef(i) )
 						| VNull -> raise(NullPointerException)
 						| _ -> VNull )
+   )
+  | Ass_sub -> (match v1, v2 with
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1-i)); VInt(i1-i)) 
+					| _, _ -> raise(InvalideOperationException)
   )
+  | Ass_mul -> (match v1, v2 with
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1*i)); VInt(i1*i)) 
+					| _, _ -> raise(InvalideOperationException)
+  )
+  | Ass_div -> (match v1, v2 with
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1*i)); VInt(i1*i)) 
+					| _, _ -> raise(InvalideOperationException)
+  )
+  | Ass_mod -> (match v1, v2 with
+					| VName(name1), VInt(i) -> let value1 = find_execvalue_in_scope scope name1 in ( match value1 with VInt(i1) -> replace_execvalue_in_scope scope name1 (VInt(i1 mod i)); VInt(i1 mod i)) 
+					| _, _ -> raise(InvalideOperationException)
+  )
+(*  | Ass_shl*)
+(*  | Ass_shr*)
+(*  | Ass_shrr*)
+(*  | Ass_and*)
+(*  | Ass_xor*)
+(*  | Ass_or*)
+
 
 and execute_method m globalScope scope params =
 	  print_endline("*********executing method**************");
