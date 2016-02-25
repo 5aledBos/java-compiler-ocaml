@@ -51,6 +51,8 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
 				| Null -> VNull )
   | AssignExp(e1, op, e2) -> let ref1 = evaluate_expression  globalScope scope e1 and ref2 = evaluate_expression globalScope scope e2 in  eval_assign_op op ref1 ref2 globalScope scope
   | Op(e1, op, e2) -> eval_normal_op op (evaluate_expression globalScope scope e1) (evaluate_expression globalScope scope e2) globalScope scope
+  | Post(exp, op) -> eval_post_op op (evaluate_expression globalScope scope exp) globalScope scope
+  | Pre(op, exp) -> eval_pre_op op (evaluate_expression globalScope scope exp) globalScope scope
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
 
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let m = Hashtbl.find globalScope.data.methodTable (od.otype ^ "_" ^ str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue ))
@@ -164,8 +166,20 @@ and eval_assign_op op v1 v2 globalScope scope = match op with
 (*  | Ass_or*)
 
 
+and eval_post_op op v1 globalScope scope = match op, v1 with
+  | Incr, VName(name) -> let execvalue = find_execvalue_in_scope scope name in (match execvalue with VInt(i) -> replace_execvalue_in_scope scope name (VInt(i+1)); VInt(i+1))
+  | Decr, VName(name) -> let execvalue = find_execvalue_in_scope scope name in (match execvalue with VInt(i) -> replace_execvalue_in_scope scope name (VInt(i-1)); VInt(i-1))
+
+and eval_pre_op op v1 globalScope scope = match op, v1 with
+  | Op_not, VName(name) ->  let execvalue = find_execvalue_in_scope scope name in (match execvalue with VBool(b) -> VBool(not b))
+(*  | Op_neg*)
+  | Op_incr, VName(name) -> let execvalue = find_execvalue_in_scope scope name in (match execvalue with VInt(i) -> replace_execvalue_in_scope scope name (VInt(i+1)); VInt(i)) 
+  | Op_decr, VName(name) -> let execvalue = find_execvalue_in_scope scope name in (match execvalue with VInt(i) -> replace_execvalue_in_scope scope name (VInt(i-1)); VInt(i))
+(*  | Op_bnot -> VNull*)
+(*  | Op_plus*)
+
 and execute_method m globalScope scope params =
-	  print_endline("*********executing method**************");
+	  print_endline("*********executing method" ^ m.mname ^"**************");
 	 List.iter2 (addParameterToScope globalScope scope) m.margstype params;
 	 List.iter (evaluate_statement globalScope scope) m.mbody;
 	 print_endline("*********End of method**************");
@@ -192,14 +206,33 @@ and evaluate_statement globalScope scope stmt = match stmt with
 			| VBool(b) -> if b then evaluate_statement globalScope scope s1 else evaluate_statement globalScope scope s2 ))
   | Block b -> List.iter (evaluate_statement globalScope scope) b
   | While(e, s) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue with
-		| VBool(b) -> if b then evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s))
+		| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s)) end
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
-			| VBool(b) -> if b then evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s)) ))
+			| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s)) end ))
+(*  | For(l, None, exps, s) ->  List.iter (evaluate_for_expression globalScope scope) exps;List.iter (exec_for_vardecl globalScope scope) l;  evaluate_statement globalScope scope s*)
+  | For(l, None, exps, s) -> List.iter (exec_for_vardecl globalScope scope) l;  evaluate_statement globalScope scope s;evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], None, exps, s))
+  | For(l, Some(exp), exps, s) -> List.iter (exec_for_vardecl globalScope scope) l; let execvalue = evaluate_expression globalScope scope exp in (match execvalue with
+		| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end
+		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
+			| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end ))
 
 
 and exec_vardecl globalScope scope decl = match decl with
   | (typ, name, None) -> add_variable_to_scope globalScope scope name VNull
   | (typ, name, Some e) -> add_variable_to_scope globalScope scope name (evaluate_expression globalScope scope e)
+
+
+and exec_for_vardecl globalScope scope decl =
+  match decl with
+  | (Some(t), name, None) -> ()
+  | (Some(t), name, Some e) -> ()
+  | (None, name, None) -> ()
+  | (None, name, Some e) -> ()
+
+and evaluate_expressions globalScope scope exps = match exps with
+  | [] -> ()
+  | (head::liste) -> evaluate_expression globalScope scope head; evaluate_expressions globalScope scope liste;
+
 
 
 and addObject typ globalScope scope =

@@ -58,12 +58,25 @@ public class B {
 			int essa = 5;
 		}
 		else {
-//			int essa = 4;
+			int essa = 4;
+			essa--;
 		}
-		while(true) {
-		}
+		int i = 0;
+		for(i = 0; i<20; i++) {
+			B oeoeoe = new B();
+		}	
+//		for(i;;i +=1) {
+//			i = 10;	
+//			i++;
+//			newobject.test();
+//		}
 
-		
+		while(i < 50) {
+			i++;
+			int j = 5;
+		}
+		int j = 8;
+		int k = j;
 	}
 }
 

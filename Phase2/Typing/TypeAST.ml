@@ -177,6 +177,9 @@ let type_for_vardecl globalScope scope decl =
   | (Some(t), name, None) -> add_variable scope name t
   | (Some(t), name, Some e) -> type_expression globalScope scope e;
     if Some(t) <> e.etype then raise(CheckAST.Type_mismatch_decl(Some(t), e.etype)) else add_variable scope name t
+  | (None, name, None) -> ()
+  | (None, name, Some e) -> ()
+
 
 (* Type the statements given the global and the current scopes *)
 let rec type_statement globalScope scope statement =
