@@ -13,6 +13,7 @@ type exec_Value =
 let string_execvalue value = match value with
   | VInt(i) -> "int: " ^ string_of_int i
   | VBool(b) -> "bool: " ^ string_of_bool b
+  | VName(name) -> "name: " ^ name
   | VString(s) -> "string: " ^ s
   | VRef(i) -> "object reference, adresse in heap: " ^ string_of_int i
   | VNull -> "null reference"

@@ -53,6 +53,13 @@ public class B {
 //        result -= "test";
 		B newobject = bobject;
 		newobject = new B();
+		boolean b = true;
+		if(false) {
+			int essa = 5;
+		}
+		else {
+//			int essa = 4;
+		}
 
 		
 	}
