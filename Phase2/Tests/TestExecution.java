@@ -34,49 +34,67 @@ public class B {
       return method2(2);
     }
 
-	public static void main(String [] args) {
-        B bobject = new B();
-		C cobject = new C();
-		cobject.cmethod();
-		String s;
-		s = "testmodifie";
-		int age5 = 10;
-		age5 = bobject.getAge(5);
-		int chiffre = bobject.getAge(2);
-		String result = "test";
-		result += "test";
-  		s += "test";
-		age5 -= 30;
-		age5*= 10;
-		age5 = 5+10;
-		5 == 6;
-//        result -= "test";
-		B newobject = bobject;
-		newobject = new B();
-		boolean b = true;
-		if(false) {
-			int essa = 5;
-		}
-		else {
-			int essa = 4;
-			essa--;
-		}
-		int i = 0;
-		for(i = 0; i<20; i++) {
-			B oeoeoe = new B();
-		}	
-//		for(i;;i +=1) {
-//			i = 10;	
-//			i++;
-//			newobject.test();
-//		}
+	public void printf(String s) {
+	}
 
-		while(i < 50) {
-			i++;
-			int j = 5;
+	public static void main(String [] args) {
+//        B bobject = new B();
+//		C cobject = new C();
+//		cobject.cmethod();
+//		String s;
+//		s = "testmodifie";
+//		int age5 = 10;
+//		age5 = bobject.getAge(5);
+//		int chiffre = bobject.getAge(2);
+//		String result = "test";
+//		result += "test";
+//  		s += "test";
+//		age5 -= 30;
+//		age5*= 10;
+//		age5 = 5+10;
+//		5 == 6;
+////        result -= "test";
+//		B newobject = bobject;
+//		newobject = new B();
+//		boolean b = true;
+//		if(false) {
+//			int essa = 5;
+//		}
+//		else {
+//			int essa = 4;
+//			essa--;
+//		}
+//		int i = 0;
+//		for(i = 0; i<20; i++) {
+//			B oeoeoe = new B();
+//		}	
+////		for(i;;i +=1) {
+////			i = 10;	
+////			i++;
+////			newobject.test();
+////		}
+
+//		while(i < 50) {
+//			i++;
+//			int j = 5;
+//		}
+//		int j = 8;
+//		int k = j;
+		int j = 5;
+		int i = 0;
+//int k = j/0;
+		try {
+			int l = j/0;
 		}
-		int j = 8;
-		int k = j;
+		catch(NullPointerException npe) {
+			printf("");
+		}
+		catch(ArithmeticException e) {
+			int variabmearithemetic = 60;
+		}
+		finally {
+			int finalllll = 8;
+		}
 	}
 }
 

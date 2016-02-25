@@ -23,7 +23,8 @@ type exec_scope =
 {
   mutable currentscope : int;
   mutable currentobject : globalObjectDescriptor;
-  mutable scopelist : (string, exec_Value) Hashtbl.t list
+  mutable scopelist : (string, exec_Value) Hashtbl.t list;
+  mutable catchException : (string, statement list) Hashtbl.t
 }
 
 let printScope scope =
@@ -120,7 +121,7 @@ and eval_normal_op op v1 v2 globalScope scope = match op, v1, v2 with
   | Op_add, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 + i2) )
   | Op_sub, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 - i2) )
   | Op_mul, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 * i2) )
-  | Op_div, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> if i2 == 0 then raise(InvalideOperationException) else VInt(i1+i2) )
+  | Op_div, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> if i2 == 0 then raise(ArithmeticException) else VInt(i1+i2) )
   | Op_mod, VName(name1), VName(name2) -> let vint1 = find_execvalue_in_scope scope name1 and vint2 = find_execvalue_in_scope scope name2 in (match vint1, vint2 with VInt(i1), VInt(i2) -> VInt(i1 mod i2) )
 
 
@@ -215,6 +216,13 @@ and evaluate_statement globalScope scope stmt = match stmt with
 		| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
 			| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end ))
+  | Try(s1, l, s2) -> List.iter (eval_catches scope) l; try List.iter (evaluate_statement globalScope scope) s1
+						with
+							| NullPointerException -> if Hashtbl.mem scope.catchException "NullPointerException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "NullPointerException")
+							| InvalideOperationException -> if Hashtbl.mem scope.catchException "InvalideOperationException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "InvalideOperationException")
+							| ArithmeticException -> if Hashtbl.mem scope.catchException "ArithmeticException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "ArithmeticException");
+					Hashtbl.reset scope.catchException;
+					List.iter (evaluate_statement globalScope scope) s2
 
 
 and exec_vardecl globalScope scope decl = match decl with
@@ -228,6 +236,11 @@ and exec_for_vardecl globalScope scope decl =
   | (Some(t), name, Some e) -> ()
   | (None, name, None) -> ()
   | (None, name, Some e) -> ()
+
+
+and eval_catches scope catch = match catch with
+  | (arg, l) -> match arg.ptype with  Ref(ref_type) -> Hashtbl.add scope.catchException ref_type.tid l
+
 
 and evaluate_expressions globalScope scope exps = match exps with
   | [] -> ()
@@ -288,7 +301,7 @@ let execute_program ast compilationData =
   print_method "" mainMethod;
   let globalScope = { data = compilationData; currentClassScoped = "B"; heap = Hashtbl.create 20; free_adress = 1 } in
   Hashtbl.add globalScope.heap 0 NullObject;
-  let scope = { currentscope = 0; currentobject=NullObject; scopelist = [Hashtbl.create 20] } in
+  let scope = { currentscope = 0; currentobject=NullObject; scopelist = [Hashtbl.create 20]; catchException = Hashtbl.create 5 } in
   List.iter (evaluate_statement globalScope scope) mainMethod.mbody;
   printHeap globalScope.heap;
   printScope scope
