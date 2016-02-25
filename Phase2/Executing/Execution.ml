@@ -186,11 +186,15 @@ and evaluate_statement globalScope scope stmt = match stmt with
 		| VBool(b) -> if b then evaluate_statement globalScope scope s
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
 			| VBool(b) -> if b then evaluate_statement globalScope scope s ))
-  | If(e, s1, Some(s2)) -> let execvalue = evaluate_expression globalScope scope e in print_endline(string_execvalue(execvalue));(match execvalue with
+  | If(e, s1, Some(s2)) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue with
 		| VBool(b) -> if b then evaluate_statement globalScope scope s1 else evaluate_statement globalScope scope s2
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
 			| VBool(b) -> if b then evaluate_statement globalScope scope s1 else evaluate_statement globalScope scope s2 ))
   | Block b -> List.iter (evaluate_statement globalScope scope) b
+  | While(e, s) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue with
+		| VBool(b) -> if b then evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s))
+		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
+			| VBool(b) -> if b then evaluate_statement globalScope scope s; evaluate_statement globalScope scope (While(e, s)) ))
 
 
 and exec_vardecl globalScope scope decl = match decl with

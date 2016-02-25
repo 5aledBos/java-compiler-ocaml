@@ -60,6 +60,8 @@ public class B {
 		else {
 //			int essa = 4;
 		}
+		while(true) {
+		}
 
 		
 	}
