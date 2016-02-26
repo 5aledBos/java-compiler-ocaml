@@ -2,7 +2,7 @@ package tutu.titi.toto;
 
 public class C extends B {
 	public String method() {
-   		return "result";
+   		return "result method c";
     }
     public void cmethod() {
 		B test = new B();
@@ -28,7 +28,7 @@ public class B {
 		return age;
 	}
     public String method() {
-        return "result";
+        return "result method b";
     }
 
     public String method2(int a) {
@@ -88,7 +88,6 @@ public class B {
 //			i++;
 //			int j = 5;
 //		}
-//		int j = 8;
 //		int k = j;
 		int j = 5;
 		int i = 0;
@@ -112,6 +111,12 @@ public class B {
 			int catchee = 30;
 			catchee = e.testException();
 		}
+
+		B b = new C();
+		String s = b.method();
+		String s2 = b.method2(3);
+		
+		
 		
 	}
 }
@@ -151,7 +156,7 @@ public class A {
     }
 
     int test() {
-
+ 
         4 = 3;
         43.0 = (float)43;
 
