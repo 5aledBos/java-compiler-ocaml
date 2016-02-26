@@ -14,17 +14,21 @@ type globalScope =
 exception NullPointerException
 exception InvalideOperationException
 exception ArithmeticException
+exception Exception of string * exec_Value
 
 let printHeap heap =
    Hashtbl.iter (fun key value -> (Printf.printf "%i " key; printObjectDescriptor(value); print_endline(""))) heap
 
+
+type type_for_catch =
+{ pident : string; statements : statement list }
 
 type exec_scope =
 {
   mutable currentscope : int;
   mutable currentobject : globalObjectDescriptor;
   mutable scopelist : (string, exec_Value) Hashtbl.t list;
-  mutable catchException : (string, statement list) Hashtbl.t
+  mutable catchException : (string, type_for_catch) Hashtbl.t
 }
 
 let printScope scope =
@@ -216,11 +220,13 @@ and evaluate_statement globalScope scope stmt = match stmt with
 		| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
 			| VBool(b) -> if b then begin evaluate_statement globalScope scope s; evaluate_expressions globalScope scope exps; evaluate_statement globalScope scope (For([], Some(exp), exps, s)) end ))
-  | Try(s1, l, s2) -> List.iter (eval_catches scope) l; try List.iter (evaluate_statement globalScope scope) s1
+  | Throw e -> let execvalue = evaluate_expression globalScope scope e in( match e.etype with Some(Ref(ref_type)) -> raise(Exception(ref_type.tid, execvalue)) )
+  | Try(s1, l, s2) -> List.iter (eval_catches globalScope scope) l; try List.iter (evaluate_statement globalScope scope) s1
 						with
-							| NullPointerException -> if Hashtbl.mem scope.catchException "NullPointerException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "NullPointerException")
-							| InvalideOperationException -> if Hashtbl.mem scope.catchException "InvalideOperationException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "InvalideOperationException")
-							| ArithmeticException -> if Hashtbl.mem scope.catchException "ArithmeticException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "ArithmeticException");
+							| NullPointerException -> if Hashtbl.mem scope.catchException "NullPointerException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "NullPointerException").statements
+							| InvalideOperationException -> if Hashtbl.mem scope.catchException "InvalideOperationException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "InvalideOperationException").statements
+							| ArithmeticException -> if Hashtbl.mem scope.catchException "ArithmeticException" then List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException "ArithmeticException").statements
+							| Exception(name, VRef(i)) -> if Hashtbl.mem scope.catchException name then begin add_variable_to_scope globalScope scope  (Hashtbl.find scope.catchException name).pident (VRef(i)); List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException name).statements end;
 					Hashtbl.reset scope.catchException;
 					List.iter (evaluate_statement globalScope scope) s2
 
@@ -238,8 +244,8 @@ and exec_for_vardecl globalScope scope decl =
   | (None, name, Some e) -> ()
 
 
-and eval_catches scope catch = match catch with
-  | (arg, l) -> match arg.ptype with  Ref(ref_type) -> Hashtbl.add scope.catchException ref_type.tid l
+and eval_catches globalScope scope catch = match catch with
+  | (arg, l) -> match arg.ptype with Ref(ref_type) -> Hashtbl.add scope.catchException ref_type.tid { pident= arg.pident; statements =l }; addObject (Ref(ref_type)) globalScope scope; add_variable_to_scope globalScope scope arg.pident (VRef(globalScope.free_adress-1))
 
 
 and evaluate_expressions globalScope scope exps = match exps with
@@ -259,9 +265,10 @@ and addObject typ globalScope scope =
 		| StringClass -> StringDescriptor("")
 
 	in match typ with
-  		| Ref(ref_type) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
+  		| Ref(ref_type) -> print_endline(ref_type.tid);let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
 						let object_created = createObjectFromDescriptor cd in
 							Hashtbl.add globalScope.heap globalScope.free_adress object_created; globalScope.free_adress <- globalScope.free_adress+1
+
 
 and add_variable_to_scope globalScope scope name execvalue = match execvalue with
   | VName(name1) -> Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name (find_execvalue_in_scope scope name1)

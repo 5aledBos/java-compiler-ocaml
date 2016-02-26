@@ -1,5 +1,15 @@
 package tutu.titi.toto;
 
+public class C extends B {
+	public String method() {
+   		return "result";
+    }
+    public void cmethod() {
+		B test = new B();
+		test.getAge(3);
+	}
+}
+
 public class B {
 
     private int age;
@@ -87,7 +97,7 @@ public class B {
 			int l = j/0;
 		}
 		catch(NullPointerException npe) {
-			printf("");
+//			printf("");
 		}
 		catch(ArithmeticException e) {
 			int variabmearithemetic = 60;
@@ -95,6 +105,14 @@ public class B {
 		finally {
 			int finalllll = 8;
 		}
+		try {
+			throw new MyException();
+		}
+		catch(MyException e) {
+			int catchee = 30;
+			catchee = e.testException();
+		}
+		
 	}
 }
 
@@ -177,12 +195,14 @@ public class A {
 
 }
 
-public class C extends B {
-	public String method() {
-   		return "result";
-    }
-    public void cmethod() {
-		B test = new B();
-		test.getAge(3);
+
+
+
+public class MyException {
+	int i;
+	MyException () {
+	}
+	int testException() {
+		return 8;
 	}
 }

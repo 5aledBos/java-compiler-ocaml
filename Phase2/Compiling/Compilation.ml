@@ -64,6 +64,12 @@ type globalData =
 let addPredifinedClassesToDescriptorTable descriptorTable =
   let cd = { cdname = "Object"; cdmethods = Hashtbl.create 20; cdconstructors = []; cdattributes = [] } in
   Hashtbl.add descriptorTable "Object" (ObjectClass(cd));
+  let cdexception = { cdname = "Exception"; cdmethods = Hashtbl.create 20; cdconstructors = []; cdattributes = [] } in 
+  Hashtbl.add descriptorTable "NullPointerException" (ClassDescriptor(cdexception));
+  Hashtbl.add descriptorTable "RuntimeException" (ClassDescriptor(cdexception));
+  Hashtbl.add descriptorTable "InvalideOperationException" (ClassDescriptor(cdexception));
+  Hashtbl.add descriptorTable "ArithmeticException" (ClassDescriptor(cdexception));
+  Hashtbl.add descriptorTable "Exception" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable"String" StringClass;
   Hashtbl.add descriptorTable "Int" IntegerClass;
   Hashtbl.add descriptorTable "Boolean" BooleanClass
