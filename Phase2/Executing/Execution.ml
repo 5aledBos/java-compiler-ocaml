@@ -62,9 +62,15 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | Pre(op, exp) -> eval_pre_op op (evaluate_expression globalScope scope exp) globalScope scope
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
 
+(*  | ArrayInit(exp) -> VNull*)
+  | NewArray(t, l, None) -> create_empty_tab globalScope scope t l
+(*  | NewArray(t, l, Some(exp)) -> e.etype <- Some(Type.Array(t, List.length l))*)
+(*  | Attr(exp, str) -> VNull*)
+
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable od.otype in (match cd with ClassDescriptor(cdescr) -> let m = Hashtbl.find globalScope.data.methodTable (Hashtbl.find cdescr.cdmethods str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue )))
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
-
+  | VoidClass -> VNull
+  | ClassOf t -> VNull
   | Instanceof(e, t) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue, t with
 							| VName(name), Ref(ref_type) -> let value = find_execvalue_in_scope scope name in let o = find_object_in_heap globalScope.heap value in if String.compare ref_type.tid (type_from_object o) == 0 then VBool(true) else VBool(false) )
   | Cast(t, exp) -> let execvalue = evaluate_expression globalScope scope exp in
@@ -213,6 +219,7 @@ and addParameterToScope globalScope scope marg param  =
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
   | Expr e -> evaluate_expression globalScope scope e; ()
+  | Nop -> ()
   | Return Some(e) -> add_variable_to_scope globalScope scope "return" (evaluate_expression globalScope scope e)
   | Return None -> add_variable_to_scope globalScope scope "return" VNull
   | If(e, s, None) -> let execvalue = evaluate_expression globalScope scope e in print_endline(string_execvalue(execvalue));(match execvalue with
@@ -243,6 +250,7 @@ and evaluate_statement globalScope scope stmt = match stmt with
 							| Exception(name, VRef(i)) -> if Hashtbl.mem scope.catchException name then begin add_variable_to_scope globalScope scope  (Hashtbl.find scope.catchException name).pident (VRef(i)); List.iter (evaluate_statement globalScope scope) (Hashtbl.find scope.catchException name).statements end;
 					Hashtbl.reset scope.catchException;
 					List.iter (evaluate_statement globalScope scope) s2
+
 
 
 and exec_vardecl globalScope scope decl = match decl with
@@ -277,6 +285,7 @@ and addObject typ globalScope scope =
 	let createObjectFromDescriptor cd = match cd with
 		| ClassDescriptor(classDescriptor) -> let objectcreated = { otype  = classDescriptor.cdname; oattributes = Hashtbl.create 20 } in List.iter (addAttributeToObject objectcreated.oattributes globalScope scope) classDescriptor.cdattributes; ObjectDescriptor(objectcreated)
 		| StringClass -> StringDescriptor("")
+		| IntegerClass -> IntegerDescriptor(0)
 
 	in match typ with
   		| Ref(ref_type) -> print_endline(ref_type.tid);let cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid in
@@ -320,6 +329,18 @@ else Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name; Hashtbl
 
 and find_string_value_of_object globalScope execvalue =
 	let o = find_object_in_heap globalScope.heap execvalue in (match o with StringDescriptor(str) -> str )
+
+
+and create_empty_tab globalScope scope typ l = match typ with
+(*  | Ref(ref_type) -> *)
+  | Primitive(Int) -> let vint =  get_nb_ligne_tab globalScope scope l 1 in for i = 1 to vint do addObject (Ref({tpath = [] ; tid = "Int"})) globalScope scope done; VRef(globalScope.free_adress - vint)
+(*  | Primitive(Boolean) ->   *)
+
+and get_nb_ligne_tab globalScope scope l nbligne = match l with
+  | [] -> nbligne
+  | (Some(e)::liste) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue with
+						| VInt(i) -> get_nb_ligne_tab globalScope scope liste	 (nbligne*i)
+						| VName(name) -> let vint = find_execvalue_in_scope scope name in (match vint with VInt(i) -> get_nb_ligne_tab globalScope scope liste (nbligne+i)) )
 
 let execute_program ast compilationData =
   let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in

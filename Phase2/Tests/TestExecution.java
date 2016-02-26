@@ -48,7 +48,7 @@ public class B {
 	}
 
 	public static void main(String [] args) {
-        B bobject = new B();
+//        B bobject = new B();
 //		C cobject = new C();
 //		cobject.cmethod();
 //		String s;
@@ -112,13 +112,14 @@ public class B {
 //			catchee = e.testException();
 //		}
 
-		B b = new B();
-		int ksks = 3;
-//		C newc = (C) ksks;
-		String f = (String) ksks;
-		if(f instanceof String) {
-			int fstring = 5;
-		}
+//		B b = new B();
+//		int ksks = 3;
+////		C newc = (C) ksks;
+//		String f = (String) ksks;
+//		if(f instanceof String) {
+//			int fstring = 5;
+//		}
+//boolean a2 = false;
 //		String s = b.method();
 //		String s2 = b.method2(3);
 //		int test = (int)  5;
@@ -126,7 +127,9 @@ public class B {
 //		int k = (int) j;
 //		int castint = (int) bobject;
 
-		
+		int [][] tab = new int [5][5];
+//		tab[2];
+//		tab = new int [5];
 		
 		
 	}
