@@ -147,7 +147,7 @@ let rec type_expression globalScope scope e =
   | Cast(t, exp) -> type_expression globalScope scope exp; e.etype <- Some(t)
   | Type t -> e.etype <- Some(t)
   | ClassOf t -> e.etype <- Some(t)
-  | Instanceof(e, t) -> type_expression globalScope scope e
+  | Instanceof(e1, t) -> type_expression globalScope scope e1; e.etype <- Some(Type.Primitive(Type.Boolean))
   | VoidClass -> ()
 
 (* Add a variable, given its name and type, to the current scope *)

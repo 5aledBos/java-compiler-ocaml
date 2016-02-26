@@ -65,6 +65,8 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable od.otype in (match cd with ClassDescriptor(cdescr) -> let m = Hashtbl.find globalScope.data.methodTable (Hashtbl.find cdescr.cdmethods str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue )))
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
 
+  | Instanceof(e, t) -> let execvalue = evaluate_expression globalScope scope e in (match execvalue, t with
+							| VName(name), Ref(ref_type) -> let value = find_execvalue_in_scope scope name in let o = find_object_in_heap globalScope.heap value in if String.compare ref_type.tid (type_from_object o) == 0 then VBool(true) else VBool(false) )
   | Cast(t, exp) -> let execvalue = evaluate_expression globalScope scope exp in
 			try
 				match t, execvalue with

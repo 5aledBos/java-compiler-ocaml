@@ -116,6 +116,9 @@ public class B {
 		int ksks = 3;
 //		C newc = (C) ksks;
 		String f = (String) ksks;
+		if(f instanceof String) {
+			int fstring = 5;
+		}
 //		String s = b.method();
 //		String s2 = b.method2(3);
 //		int test = (int)  5;

@@ -82,6 +82,13 @@ let printClassDescriptor cd = match cd with
   | StringClass -> ()
   | IntegerClass -> ()
   | BooleanClass -> ()
+
+let type_from_object o = match o with 
+  | ObjectDescriptor(objectDescriptor) -> objectDescriptor.otype
+  | IntegerDescriptor(i) -> "Int"
+  | StringDescriptor(s) -> "String"
+  | NullObject -> "Null"
+  | ThisObject -> "This"
   
 
 let printClassDescriptorTable cdtable =
