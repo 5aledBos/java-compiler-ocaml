@@ -69,6 +69,7 @@ let addPredifinedClassesToDescriptorTable descriptorTable =
   Hashtbl.add descriptorTable "RuntimeException" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable "InvalideOperationException" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable "ArithmeticException" (ClassDescriptor(cdexception));
+  Hashtbl.add descriptorTable "ClassCastException" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable "Exception" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable"String" StringClass;
   Hashtbl.add descriptorTable "Int" IntegerClass;

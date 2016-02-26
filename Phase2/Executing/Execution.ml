@@ -14,6 +14,8 @@ type globalScope =
 exception NullPointerException
 exception InvalideOperationException
 exception ArithmeticException
+exception RuntimeException
+exception ClassCastException
 exception Exception of string * exec_Value
 
 let printHeap heap =
@@ -61,8 +63,18 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
 
   | Call(Some(exp), str, l) -> (match exp.edesc with Name(id) -> let o = find_object_in_heap globalScope.heap (Hashtbl.find (List.nth scope.scopelist  scope.currentscope) (id)) in (match o with ObjectDescriptor(od) -> let cd = Hashtbl.find globalScope.data.classDescriptorTable od.otype in (match cd with ClassDescriptor(cdescr) -> let m = Hashtbl.find globalScope.data.methodTable (Hashtbl.find cdescr.cdmethods str) in  globalScope.currentClassScoped <- od.otype; scope.currentscope <- scope.currentscope +1;scope.scopelist <- scope.scopelist @ [Hashtbl.create 20]; scope.currentobject <- o;let returnvalue = execute_method m globalScope scope l in  globalScope.currentClassScoped <- od.otype; scope.scopelist <- remove_at scope.currentscope scope.scopelist; scope.currentscope <- scope.currentscope-1;  returnvalue )))
-
   | Call(None, str, l) -> let m = Hashtbl.find globalScope.data.methodTable (globalScope.currentClassScoped ^ "_" ^ str) in execute_method m globalScope scope; VNull
+
+  | Cast(t, exp) -> let execvalue = evaluate_expression globalScope scope exp in
+			try
+				match t, execvalue with
+					| Primitive(Int), VName(name) -> let execvalue = find_execvalue_in_scope scope name in (match execvalue with
+							| VInt(i) -> VInt(i)
+							| VRef(ref_nb) -> let str = find_string_value_of_object globalScope (VRef(ref_nb)) in VInt(int_of_string(str)))
+					| Ref(ref_type), VName(name) -> let value = find_execvalue_in_scope scope name in (match value with 
+														| VRef(i) -> VRef(i)
+														| VInt(i) -> if String.compare ref_type.tid "String" == 0 then VString(string_of_int i) else raise(ClassCastException)  )
+			with _ -> raise(ClassCastException)
 (*  | If(e1, e2, e3) -> let vbool = evaluate_expression globalScope scope e1 in (match vbool with VBool(b) -> if b then VNull else VNull)*)
 
 
@@ -302,6 +314,10 @@ then match scope.currentobject with
 (*					| StringDescriptor(s) ->*)
 (*  					| NullObject ->*)
 else Hashtbl.remove (List.nth scope.scopelist  scope.currentscope) name; Hashtbl.add (List.nth scope.scopelist  scope.currentscope) name execvalue
+
+
+and find_string_value_of_object globalScope execvalue =
+	let o = find_object_in_heap globalScope.heap execvalue in (match o with StringDescriptor(str) -> str )
 
 let execute_program ast compilationData =
   let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in

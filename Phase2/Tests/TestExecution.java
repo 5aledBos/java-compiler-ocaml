@@ -48,7 +48,7 @@ public class B {
 	}
 
 	public static void main(String [] args) {
-//        B bobject = new B();
+        B bobject = new B();
 //		C cobject = new C();
 //		cobject.cmethod();
 //		String s;
@@ -89,32 +89,40 @@ public class B {
 //			int j = 5;
 //		}
 //		int k = j;
-		int j = 5;
-		int i = 0;
-//int k = j/0;
-		try {
-			int l = j/0;
-		}
-		catch(NullPointerException npe) {
-//			printf("");
-		}
-		catch(ArithmeticException e) {
-			int variabmearithemetic = 60;
-		}
-		finally {
-			int finalllll = 8;
-		}
-		try {
-			throw new MyException();
-		}
-		catch(MyException e) {
-			int catchee = 30;
-			catchee = e.testException();
-		}
+//		int j = 5;
+//		int i = 0;
+////int k = j/0;
+//		try {
+//			int l = j/0;
+//		}
+//		catch(NullPointerException npe) {
+////			printf("");
+//		}
+//		catch(ArithmeticException e) {
+//			int variabmearithemetic = 60;
+//		}
+//		finally {
+//			int finalllll = 8;
+//		}
+//		try {
+//			throw new MyException();
+//		}
+//		catch(MyException e) {
+//			int catchee = 30;
+//			catchee = e.testException();
+//		}
 
-		B b = new C();
-		String s = b.method();
-		String s2 = b.method2(3);
+		B b = new B();
+		int ksks = 3;
+//		C newc = (C) ksks;
+		String f = (String) ksks;
+//		String s = b.method();
+//		String s2 = b.method2(3);
+//		int test = (int)  5;
+//		String j = "5m";
+//		int k = (int) j;
+//		int castint = (int) bobject;
+
 		
 		
 		
