@@ -61,15 +61,15 @@ public class B {
 		int chiffre = bobject.getAge(2);
 		String result = "test";
 		result += "test";
-//  		s += "test";
-//		age5 -= 30;
-//		age5*= 10;
-//		age5 = 5+10;
-//		5 == 6;
+  		s += "test";
+		age5 -= 30;
+		age5*= 10;
+		age5 = 5+10;
+		5 == 6;
 //        result -= "test";
-//		B newobject = bobject;
-//		newobject = new B();
-//		boolean b = true;
+		B newobject = bobject;
+		newobject = new B(bobject.age);
+		boolean b = true;
 //		if(false) {
 //			int essa = 5;
 //		}
@@ -77,66 +77,62 @@ public class B {
 //			int essa = 4;
 //			essa--;
 //		}
-//		int i = 0;
-//		for(i = 0; i<20; i++) {
-//			B oeoeoe = new B();
-//		}	
+		int i = 0;
+		for(i = 0; i<20; i++) {
+			B oeoeoe = new B();
+		}	
 //		for(i;;i +=1) {
 //			i = 10;	
 //			i++;
 //			newobject.test();
 //		}
-//		5++;
-//		while(i < 50) {
-//			i++;
-////			int j = 5;
-//		}
-//		int j = 2;
-//		try {
-//			int l = j/0;
-//		}
-//		catch(NullPointerException npe) {
-////			printf("");
-//		}
-//		catch(ArithmeticException e) {
-//			int variabmearithemetic = 60;
-//		}
-//		finally {
-//			int finalllll = 8;
-//		}
-//		try {
-//			throw new MyException();
-//		}
-//		catch(MyException e) {
-//			int catchee = 30;
-//			catchee = e.testException();
-//		}
-//		int c = 688;
-//		B b = new B();
-//		b.age = 35;
-//		A a = new A();
-//		a.age;
-//		a.age =3333;
+		5++;
+		while(i < 50) {
+			i++;
+//			int j = 5;
+		}
+		int j = 2;
+		try {
+			int l = j/0;
+		}
+		catch(NullPointerException npe) {
+//			printf("");
+		}
+		catch(ArithmeticException e) {
+			int variabmearithemetic = 60;
+		}
+		finally {
+			int finalllll = 8;
+		}
+		try {
+			throw new MyException();
+		}
+		catch(MyException e) {
+			int catchee = 30;
+			catchee = e.testException();
+		}
+		int c = 688;
+		A a = new A();
+		a.age;
+		a.age =3333;
 //		a.age =b.age;
-//		b.age = 688;
-//		B tstb = new B(4);
-//		int c = tstb.getAge(4);
-//		int ksks = 3;
-//		String f = (String) ksks;
-//		if(f instanceof String) {
-//			int fstring = 5;
-//		}
-//		boolean a2 = false;
-////		int test = (int)  5;
-////		String j = "5m";
-//		int k = (int) j;
-////		int castint = (int) bobject;
+		B tstb = new B(4);
+		int ksks = 3;
+		String f = (String) ksks;
+		if(f instanceof String) {
+			int fstring = 5;
+		}
+		boolean a2 = false;
+//		int test = (int)  5;
+//		String j = "5m";
+		int k = (int) j;
+//		int castint = (int) bobject;
 
-//		int [][] tab = new int [5][5];
-////		tab[2];
-////		tab = new int [5];
-//		int[] myInt = new int[]{1,2,3};
-//		
+		int [][] tab = new int [5][5];
+//		tab[2];
+//		tab = new int [5];
+		int[] myInt = new int[]{1,2,3};
+		
 //		Int untestInt = new Int(5);
 //		untestInt.getInt(5);
 	}

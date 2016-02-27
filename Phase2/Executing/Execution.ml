@@ -198,6 +198,7 @@ and evaluate_parameters_fonction globalScope scope params params_evaluated = mat
   | [] -> params_evaluated
   | (param::liste) -> let execvalue = (evaluate_expression globalScope scope param) in (match execvalue with 
 			| VName(name) -> find_execvalue_in_scope scope name
+			| VAttr(oname, aname) -> find_attribute_value globalScope scope oname aname
 			| _ -> execvalue) :: evaluate_parameters_fonction globalScope scope liste params_evaluated
 
 and evaluate_statement globalScope scope stmt = match stmt with
