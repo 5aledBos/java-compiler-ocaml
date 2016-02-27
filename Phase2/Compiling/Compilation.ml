@@ -9,6 +9,7 @@ type exec_Value =
   | VString of string
   | VRef of int
   | VNull 
+  | VAttr of string * string
 
 let string_execvalue value = match value with
   | VInt(i) -> "int: " ^ string_of_int i
@@ -17,6 +18,7 @@ let string_execvalue value = match value with
   | VString(s) -> "string: " ^ s
   | VRef(i) -> "object reference, adresse in heap: " ^ string_of_int i
   | VNull -> "null reference"
+  | VAttr(str1, str2) -> "Atrtribute " ^ str2 ^ "from the object " ^ str1
   
 
 type objectDescriptor =
