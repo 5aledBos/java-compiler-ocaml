@@ -43,7 +43,7 @@ type classDescriptor =
 {
 	cdname : string;
 	cdmethods : (string, string) Hashtbl.t;
-	cdconstructors : astconst list;
+	cdconstructors : (string, astconst) Hashtbl.t;
     cdattributes : astattribute list
 }
 
@@ -62,9 +62,9 @@ type globalData =
 
 
 let addPredifinedClassesToDescriptorTable descriptorTable =
-  let cd = { cdname = "Object"; cdmethods = Hashtbl.create 20; cdconstructors = []; cdattributes = [] } in
+  let cd = { cdname = "Object"; cdmethods = Hashtbl.create 20; cdconstructors = Hashtbl.create 10; cdattributes = [] } in
   Hashtbl.add descriptorTable "Object" (ObjectClass(cd));
-  let cdexception = { cdname = "Exception"; cdmethods = Hashtbl.create 20; cdconstructors = []; cdattributes = [] } in 
+  let cdexception = { cdname = "Exception"; cdmethods = Hashtbl.create 20; cdconstructors = Hashtbl.create 10; cdattributes = [] } in 
   Hashtbl.add descriptorTable "NullPointerException" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable "RuntimeException" (ClassDescriptor(cdexception));
   Hashtbl.add descriptorTable "InvalideOperationException" (ClassDescriptor(cdexception));
@@ -75,8 +75,10 @@ let addPredifinedClassesToDescriptorTable descriptorTable =
   Hashtbl.add descriptorTable "Int" IntegerClass;
   Hashtbl.add descriptorTable "Boolean" BooleanClass
 
+
+
 let printClassDescriptor cd = match cd with
-  | ClassDescriptor(cd) -> print_endline("*****Constructor of the class*****");List.iter (print_const (" ")) cd.cdconstructors;print_endline("*****End of Constructors of the class*****"); print_endline("*****Method of the class*****");  Hashtbl.iter (fun key value -> print_endline(key ^":   " ^ value)) cd.cdmethods; print_endline("*****End of Method of the class*****");
+  | ClassDescriptor(cd) -> print_endline("*****Constructor of the class*****");Hashtbl.iter (fun key value -> print_endline(key)) cd.cdconstructors; (*print_const (" ") value)) cd.cdconstructors;*)print_endline("*****End of Constructors of the class*****"); print_endline("*****Method of the class*****");  Hashtbl.iter (fun key value -> print_endline(key ^":   " ^ value)) cd.cdmethods; print_endline("*****End of Method of the class*****");
 							print_endline("*****attributes of the class*****"); List.iter (print_attribute ("  ")) cd.cdattributes;print_endline("*****end of attributes of the class*****") 
   | ObjectClass(cd) -> ()
   | StringClass -> ()
@@ -110,6 +112,29 @@ let addMethodsFromParent cdmethods parentcd = match parentcd with
   | ObjectClass(cd) -> Hashtbl.iter (fun key value -> Hashtbl.add cdmethods key value) cd.cdmethods
   
 
+let rec get_list_of_arg args str = match args with
+  | [] -> str
+  | (arg::liste) -> match arg.ptype with
+(*						| Array of t * int*)
+  						| Primitive(Int) -> get_list_of_arg liste (str ^ "int")
+						| Primitive(Boolean) -> get_list_of_arg liste (str ^ "boolean")
+  						| Ref(ref_type) -> get_list_of_arg liste (str ^ ref_type.tid)
+
+let rec get_list_arg_from_type exps str = match exps with
+  | [] -> str 
+  | (e::liste) -> match e.etype with
+(*						| Array of t * int*)
+  						| Some(Primitive(Int)) -> get_list_arg_from_type liste (str ^ "int")
+						| Some(Primitive(Boolean)) -> get_list_arg_from_type liste (str ^ "boolean")
+  						| Some(Ref(ref_type)) -> get_list_arg_from_type liste (str ^ ref_type.tid)
+
+let add_constructors_to_class constructors const = 
+	let listarg = get_list_of_arg const.cargstype "" in
+	Hashtbl.add constructors (const.cname ^ "_" ^ listarg) const
+
+
+  
+
 let addAtributesFromParent cattributes parentcd = match parentcd with
   | ClassDescriptor(cd) -> cd.cdattributes @ cattributes
   | ObjectClass(cd) -> cd.cdattributes @ cattributes
@@ -125,8 +150,11 @@ let addMethodsAndAttributesToDescriptors classDescriptorTable methodTable c cnam
       let parentClassDescriptor = Hashtbl.find classDescriptorTable c.cparent.tid in
       List.iter (addMethodsToClassDesciptor cname methods methodTable) c.cmethods;
 	  addMethodsFromParent methods (parentClassDescriptor);
+	  let cconsts = Hashtbl.create 10 in
+		List.iter (add_constructors_to_class cconsts) c.cconsts; 
+		if Hashtbl.mem cconsts (cname ^ "_") <> true then Hashtbl.add cconsts (cname ^ "_") ( {cmodifiers =[Public]; cname = cname; cargstype = []; cthrows =[]; cbody =[Nop] });
 	  let attributes = addAtributesFromParent c.cattributes parentClassDescriptor in
-	  Hashtbl.add classDescriptorTable cname (ClassDescriptor({ cdname = cname; cdmethods = methods; cdconstructors = c.cconsts; cdattributes = attributes }))
+	  Hashtbl.add classDescriptorTable cname (ClassDescriptor({ cdname = cname; cdmethods = methods; cdconstructors = cconsts; cdattributes = attributes }))
 
 let isCompiled cname classDescriptorTable = match cname with
   | "Object" -> true
@@ -134,6 +162,7 @@ let isCompiled cname classDescriptorTable = match cname with
 
 let rec findParentClass cname typelist = match typelist with
   | head::liste -> if head.id = cname then head else findParentClass cname liste
+
 
 let rec compileClass classDescriptorTable methodTable ast ttype = match ttype.info with
  | Class c -> if (isCompiled ttype.id classDescriptorTable) = false then begin
@@ -153,8 +182,10 @@ let compile ast =
   List.iter (compileClass compilationData.classDescriptorTable compilationData.methodTable ast) ast.type_list;
   compilationData
 
+
 let printCompilationData data = match data with
   | {methodTable = mtable; classDescriptorTable = cdtable } -> printMethodTable(mtable); printClassDescriptorTable(cdtable)
+
 
 let rec remove_at n liste = match liste with
   | [] -> []

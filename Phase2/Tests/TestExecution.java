@@ -13,12 +13,14 @@ public class C extends B {
 public class B {
 
     private int age;
-	private A a = new A();
+	private A a;
     B() {
         age = 5;
     }
     public B(int bint) {
         age = bint;
+//		C c = new C();
+		a = new A(age, 100, "hello world", "bateau mouche", true);
     }
 
 //    public String b = "coucou";
@@ -48,100 +50,117 @@ public class B {
 	}
 
 	public static void main(String [] args) {
-//        B bobject = new B();
-//		C cobject = new C();
-//		cobject.cmethod();
-//		String s;
-//		s = "testmodifie";
-//		int age5 = 10;
-//		age5 = bobject.getAge(5);
-//		int chiffre = bobject.getAge(2);
-//		String result = "test";
-//		result += "test";
-//  		s += "test";
-//		age5 -= 30;
-//		age5*= 10;
-//		age5 = 5+10;
-//		5 == 6;
-////        result -= "test";
-//		B newobject = bobject;
-//		newobject = new B();
-//		boolean b = true;
-//		if(false) {
-//			int essa = 5;
-//		}
-//		else {
-//			int essa = 4;
-//			essa--;
-//		}
-//		int i = 0;
-//		for(i = 0; i<20; i++) {
-//			B oeoeoe = new B();
-//		}	
-////		for(i;;i +=1) {
-////			i = 10;	
-////			i++;
-////			newobject.test();
-////		}
-
-//		while(i < 50) {
+        B bobject = new B();
+		C cobject = new C();
+		cobject.cmethod();
+		String s;
+		s = "testmodifie";
+		int age5 = 10;
+		age5 = bobject.getAge(5);
+		int chiffre = bobject.getAge(2);
+		String result = "test";
+		result += "test";
+  		s += "test";
+		age5 -= 30;
+		age5*= 10;
+		age5 = 5+10;
+		5 == 6;
+//        result -= "test";
+		B newobject = bobject;
+		newobject = new B();
+		boolean b = true;
+		if(false) {
+			int essa = 5;
+		}
+		else {
+			int essa = 4;
+			essa--;
+		}
+		int i = 0;
+		for(i = 0; i<20; i++) {
+			B oeoeoe = new B();
+		}	
+//		for(i;;i +=1) {
+//			i = 10;	
 //			i++;
-//			int j = 5;
-//		}
-//		int k = j;
-//		int j = 5;
-//		int i = 0;
-////int k = j/0;
-//		try {
-//			int l = j/0;
-//		}
-//		catch(NullPointerException npe) {
-////			printf("");
-//		}
-//		catch(ArithmeticException e) {
-//			int variabmearithemetic = 60;
-//		}
-//		finally {
-//			int finalllll = 8;
-//		}
-//		try {
-//			throw new MyException();
-//		}
-//		catch(MyException e) {
-//			int catchee = 30;
-//			catchee = e.testException();
+//			newobject.test();
 //		}
 
-//		B b = new B();
-//		int ksks = 3;
-////		C newc = (C) ksks;
-//		String f = (String) ksks;
-//		if(f instanceof String) {
-//			int fstring = 5;
-//		}
-//boolean a2 = false;
-//		String s = b.method();
-//		String s2 = b.method2(3);
+		while(i < 50) {
+			i++;
+//			int j = 5;
+		}
+		int j = 2;
+		try {
+			int l = j/0;
+		}
+		catch(NullPointerException npe) {
+//			printf("");
+		}
+		catch(ArithmeticException e) {
+			int variabmearithemetic = 60;
+		}
+		finally {
+			int finalllll = 8;
+		}
+		try {
+			throw new MyException();
+		}
+		catch(MyException e) {
+			int catchee = 30;
+			catchee = e.testException();
+		}
+
+		A a = new A();
+		B tstb = new B(4);
+		int c = tstb.getAge(4);
+		int ksks = 3;
+		String f = (String) ksks;
+		if(f instanceof String) {
+			int fstring = 5;
+		}
+		boolean a2 = false;
 //		int test = (int)  5;
 //		String j = "5m";
-//		int k = (int) j;
+		int k = (int) j;
 //		int castint = (int) bobject;
 
 		int [][] tab = new int [5][5];
 //		tab[2];
 //		tab = new int [5];
+		int[] myInt = new int[]{1,2,3};
 		
-		
+//		Int untestInt = new Int(5);
+//		untestInt.getInt(5);
 	}
 }
 
 public class A {
+	int age;
+	int a1;
+	String s;
+	String bateau = "bateau";
+	boolean myBoolan = true;
+	C myCobject = new C();
+	public A() {
+//		int j = 0;
+	}
 
-    int a1;
-//    int[] a = { 3,4,5 };
-//    Bool a2 = false;
-//    String a6 = "jsdjkndjk\njdsdjkf";
+	public A(int j) {
+		age = j;
+		a1 = 33;
+	}
 
+	public A(int age1, int a11, String s1, String bateau1, boolean myBoolan1) {
+		age = age1;
+		a1 = a11;
+		s = s1;
+		bateau = bateau1;
+		myBoolan = myBoolan1;
+//		myCobject = myCobject;
+	}
+
+    
     private String method() {
         B b = new B();
         B bage = new B(20);
@@ -167,49 +186,6 @@ public class A {
             float t = .1;
             t *= 5.;
         }
-    }
-
-    int test() {
- 
-        4 = 3;
-        43.0 = (float)43;
-
-        int[] myIntArray = new int[3];
-        int[] myArray = {1,2,a1};
-        int[] myInt = new int[]{1,2,3};
-        float[] a = { 1.2, 2.3, 3.4 };
-        String[] str = { "str", method() };
-
-        4++;
-        --27.;
-
-        int c = (3 + 3);
-        if (true) {
-          (true? c: 2);
-        }
-
-        String call = method();
-
-        // "void.class" = void.class;
-        // "int.class" = int.class;
-        // "intarray.class" = int[].class;
-        // "Instanceof" = 23 instanceof Double;
-
-        throw 45=3;
-
-        if (43==3) {
-          int d = 3;
-            d++;
-        } else {
-            43--;
-            c--;
-        }
-
-        while(true) {
-            43++;
-        }
-
-        return 34;
     }
 
 }
