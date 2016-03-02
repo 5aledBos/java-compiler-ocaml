@@ -11,12 +11,15 @@ type globalScope =
 (*  scope : exec_scope list*)
 }
 
+exception ReturnStatementException of exec_Value
 exception NullPointerException
 exception InvalideOperationException
 exception ArithmeticException
 exception RuntimeException
 exception ClassCastException
 exception Exception of string * exec_Value
+exception MainFound of string
+exception NoMainFoundException
 
 let printHeap heap =
    Hashtbl.iter (fun key value -> (Printf.printf "%i " key; printObjectDescriptor(value); print_endline(""))) heap
@@ -175,12 +178,18 @@ and eval_pre_op op v1 globalScope scope = match op, v1 with
 (*  | Op_plus*)
 
 and execute_method m globalScope scope params_evaluated =
-	  print_endline("*********executing method" ^ m.mname ^"**************");
+	 print_endline("*********executing method" ^ m.mname ^"**************");
 	 List.iter2 (addParameterToScope globalScope scope) m.margstype params_evaluated;
-	 List.iter (evaluate_statement globalScope scope) m.mbody;
-	 print_endline("*********End of method**************");
-	if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) "return" <> true then VNull else
-	 let a = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return" in print_endline("return fonction: " ^ string_execvalue a); a
+	 try
+	 	List.iter (evaluate_statement globalScope scope) m.mbody;
+		VNull
+	with ReturnStatementException(execvalue) -> match execvalue with
+													| VName(name) -> find_execvalue_in_scope scope name
+													| VAttr(oname, aname) -> find_attribute_value globalScope scope oname aname
+													| _ -> execvalue
+	
+(*	if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) "return" <> true then VNull else*)
+(*	 let a = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return" in print_endline("return fonction: " ^ string_execvalue a); a*)
 
 and execute_constructor c globalScope scope params_evaluated =
 	  print_endline("*********executing constructor" ^ c.cname ^"**************");
@@ -205,8 +214,8 @@ and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
   | Expr e -> evaluate_expression globalScope scope e; ()
   | Nop -> ()
-  | Return Some(e) -> add_variable_to_scope globalScope scope "return" (evaluate_expression globalScope scope e)
-  | Return None -> add_variable_to_scope globalScope scope "return" VNull
+  | Return Some(e) -> add_variable_to_scope globalScope scope "return" (evaluate_expression globalScope scope e); raise(ReturnStatementException(evaluate_expression globalScope scope e))
+  | Return None -> add_variable_to_scope globalScope scope "return" VNull; raise(ReturnStatementException(VNull))
   | If(e, s, None) -> let execvalue = evaluate_expression globalScope scope e in print_endline(string_execvalue(execvalue));(match execvalue with
 		| VBool(b) -> if b then evaluate_statement globalScope scope s
 		| VName(name) -> let vbool = find_execvalue_in_scope scope name in (match vbool with
@@ -297,7 +306,7 @@ then match scope.currentobject with
 					| ObjectDescriptor(od) -> Hashtbl.find od.oattributes name
 (*  					| IntegerDescriptor(i) ->*)
 					| StringDescriptor(s) -> VString(s)
-(*  					| NullObject -> Hashtbl.find *)
+  					| NullObject -> VNull
 else Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name
 
 
@@ -353,8 +362,28 @@ and setInt globalScope scope execvalue exps  = let e = evaluate_expression globa
 
 
 
-let execute_program ast compilationData =
-  let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in
+and hashtbl_keys h = Hashtbl.fold (fun key _ l -> key :: l) h []
+and hashtbl_values h = Hashtbl.fold (fun _ value l -> value :: l) h []
+
+
+
+and find_get_method_in_file compilationData  =
+  let mainClassName = "None" in
+	try
+	Hashtbl.iter (fun key value -> (match value with
+											| ClassDescriptor(cd) -> print_endline(key);if Hashtbl.mem cd.cdmethods "main" then raise(MainFound(key))
+											| _ -> () ) ) compilationData.classDescriptorTable;
+	None
+	with MainFound(name) -> Some(Hashtbl.find compilationData.methodTable (name ^ "_main"))
+
+
+let execute_program ast compilationData = 
+	
+(*  let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in*)
+  let m = find_get_method_in_file compilationData in
+  match m with
+    | None -> print_endline("No main method to execute")
+    | Some(mainMethod) ->
   print_method "" mainMethod;
   let globalScope = { data = compilationData; currentClassScoped = "B"; heap = Hashtbl.create 20; free_adress = 1 } in
   Hashtbl.add globalScope.heap 0 NullObject;

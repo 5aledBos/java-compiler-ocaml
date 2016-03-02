@@ -4,61 +4,23 @@ public class C extends B {
 	public String method() {
    		return "result method c";
     }
-    public void cmethod() {
-		B test = new B();
-		test.getAge(3);
-	}
-}
-
-public class B {
-
-    private int age;
-	private A a;
-    B() {
-        age = 5;
-    }
-    public B(int bint) {
-        age = bint;
-//		C c = new C();
-		a = new A(age, 100, "hello world", "bateau mouche", true);
-    }
-
-//    public String b = "coucou";
-
-	public int getAge(int age1) {
-	    age = 8;
-		return age;
-	}
-    public String method() {
-        return "result method b";
-    }
-
-    public String method2(int a) {
-	  
-      return "coucou";
-    }
-
-    public String test() {
-      return method();
-    }
-
-    public String test2() {
-      return method2(2);
-    }
-
-	public void printf(String s) {
+    public int cmethod() {
+		B test = new B(4);
+		return test.getAge(3);
 	}
 
 	public static void main(String [] args) {
         B bobject = new B();
+		bobject.teststatic();
 		C cobject = new C();
-		cobject.cmethod();
+		int aaaaage = bobject.getAge(5);
 		bobject.age++;
 		String s;
 		s = "testmodifie";
-		int age5 = 10;
-		age5 = bobject.getAge(5);
+		int age5 = bobject.getAge(5);
 		int chiffre = bobject.getAge(2);
+		String f = bobject.getString(false);
+		String t = bobject.getString(true);
 		String result = "test";
 		result += "test";
   		s += "test";
@@ -115,11 +77,10 @@ public class B {
 		A a = new A();
 		a.age;
 		a.age =3333;
-//		a.age =b.age;
 		B tstb = new B(4);
 		int ksks = 3;
-		String f = (String) ksks;
-		if(f instanceof String) {
+		String fee = (String) ksks;
+		if(fee instanceof String) {
 			int fstring = 5;
 		}
 		boolean a2 = false;
@@ -136,6 +97,65 @@ public class B {
 //		Int untestInt = new Int(5);
 //		untestInt.getInt(5);
 	}
+
+
+}
+
+public class B {
+
+    private int age;
+	private A a;
+    B() {
+        age = 5;
+    }
+    public B(int bint) {
+        age = bint;
+//		C c = new C();
+		a = new A(age, 100, "hello world", "bateau mouche", true);
+    }
+
+//    public String b = "coucou";
+
+	public int getAge(int bint) {
+//	    age = 8;
+		return age;
+	}
+
+	public String getString(boolean b) {
+	if(b)
+		return "true";
+	else {
+
+	B coucou = new B(5);
+	return "false";
+	}
+	
+	}
+
+    public String method() {
+        return "result method b";
+    }
+
+	public static void teststatic() {
+	}
+
+    public String method2(int a) {
+	  
+      return "coucou";
+    }
+
+    public String test() {
+      return method();
+    }
+
+    public String test2() {
+      return method2(2);
+    }
+
+	public void printf(String s) {
+	}
+
+	
 }
 
 public class A {
