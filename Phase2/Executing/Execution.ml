@@ -11,6 +11,7 @@ type globalScope =
 (*  scope : exec_scope list*)
 }
 
+(* tous les types d'exception acceptée dans un fichier java'*)
 exception ReturnStatementException of exec_Value
 exception NullPointerException
 exception InvalideOperationException
@@ -18,6 +19,8 @@ exception ArithmeticException
 exception RuntimeException
 exception ClassCastException
 exception Exception of string * exec_Value
+
+(* exceptions utilisées dans ce fichier pour trouver une méthode main dans la table des méthodes*)
 exception MainFound of string
 exception NoMainFoundException
 
@@ -25,35 +28,27 @@ let printHeap heap =
    Hashtbl.iter (fun key value -> (Printf.printf "%i " key; printObjectDescriptor(value); print_endline(""))) heap
 
 
-type type_for_catch =
-{ pident : string; statements : statement list }
 
+(* *)
 type exec_scope =
 {
   mutable currentscope : int;
   mutable currentobject : globalObjectDescriptor;
-  mutable scopelist : (string, exec_Value) Hashtbl.t list;
-  mutable catchException : (string, type_for_catch) Hashtbl.t
-}
+  mutable scopelist : (string, exec_Value) Hashtbl.t list;	(* ça fonctionne un peu comme une pile dans un programme. On a d'un côté le 																nom des variables et de l'autres leurs valeurs, une valeur de type 																	primitif ou de type référence. Lorsqu'on appelle une fonction on crée une 																	nouvelle table et puis lorsque l'on sort de cette fonction on l'enlève*)
+  mutable catchException : (string, type_for_catch) Hashtbl.t		(* utilisé pour catcher des exceptions lorsqu'on les traite 																		correctement dans le fichier*)
+}	
+
+and type_for_catch =
+{ pident : string; statements : statement list }
 
 let printScope scope =
 	Hashtbl.iter (fun key value -> print_string("object: " ^ key); print_string(", value "^ string_execvalue(value)); print_endline("")) (List.nth scope.scopelist  scope.currentscope)
 
-(* constructor calls *)
-(*let compare_args_function_args args constargs = *)
-(*  let isEqual = true in*)
-(*      List.iter2 (compare_args isEqual) args constargs; isEqual*)
-
-(*let compare_args isEqual a.etype b.ptype = if (a.pident == b.pidend) <> true then isEqual = true else isEqual = false*)
-
-(*let rec findConstructor constructors exps = match constructors with*)
-(*  | (head::liste) -> if (compare_args_function_args exps head.cargstype) then head else findConstructor liste exps*)
-(*let (last, lst) = ListII.extract_last l =  in globalScope.currentClassScoped <- last; let cd = Hashtbl.find globalScope.classDescriptorTable l in let constr = findConstructor cd exps;*) 
 
 
 let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | New(None, l, exps) -> (match expr.etype with Some(Ref(ref_type)) -> addObject (Ref(ref_type)) globalScope scope; let ref_nb = (globalScope.free_adress-1) and o = find_object_in_heap globalScope.heap (VRef(globalScope.free_adress-1)) and cd = Hashtbl.find globalScope.data.classDescriptorTable ref_type.tid and arg_list_str = get_list_arg_from_type exps "" in (match cd with 
-				| ClassDescriptor(cdescr) -> print_endline(ref_type.tid ^ "_" ^ arg_list_str ^"djdjjdjjdjdjdjdj");
+				| ClassDescriptor(cdescr) ->
 					let c = Hashtbl.find cdescr.cdconstructors (ref_type.tid ^ "_" ^ arg_list_str)
 					and params_evaluated = evaluate_parameters_fonction globalScope scope exps []
 					and lastobject = scope.currentobject 
@@ -68,7 +63,7 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
  							scope.currentscope <- scope.currentscope-1;
 				| IntegerClass -> setInt globalScope scope (VRef(ref_nb)) exps );
   VRef(ref_nb) )
-(*  | New(Some(str), l, exps) -> print_endline("ici"); VInt (int_of_string "55")*)
+(*  | New(Some(str), l, exps) -> *)
   | Val v -> (match v with
 				| Int(i) -> VInt (int_of_string i)
 				| Boolean(b) -> VBool(b)
@@ -78,9 +73,9 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
   | Op(e1, op, e2) -> eval_normal_op op (evaluate_expression globalScope scope e1) (evaluate_expression globalScope scope e2) globalScope scope
   | Post(exp, op) -> eval_post_op op (evaluate_expression globalScope scope exp) globalScope scope
   | Pre(op, exp) -> eval_pre_op op (evaluate_expression globalScope scope exp) globalScope scope
-  | Name(name) -> (*let execvalue = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) name in print_endline("found ref: "); execvalue;*) VName(name)
+  | Name(name) -> VName(name)
 
-(*  | ArrayInit(exp) -> VNull*)
+(*  | ArrayInit(exp) -> *)
   | NewArray(t, l, None) -> create_empty_tab globalScope scope t l
   | NewArray(t, l, Some(exp)) -> let vref = create_empty_tab globalScope scope t l in initiate_empty_tab vref exp; vref
   | Attr(exp, str) -> let value = evaluate_expression globalScope scope exp in (match value with VName(name) -> VAttr(name, str))
@@ -110,7 +105,6 @@ let rec evaluate_expression globalScope scope expr = match expr.edesc with
 														| VRef(i) -> VRef(i)
 														| VInt(i) -> if String.compare ref_type.tid "String" == 0 then VString(string_of_int i) else raise(ClassCastException)  )
 			with _ -> raise(ClassCastException)
-(*  | If(e1, e2, e3) -> let vbool = evaluate_expression globalScope scope e1 in (match vbool with VBool(b) -> if b then VNull else VNull)*)
 
 
 and eval_normal_op op v1 v2 globalScope scope = match op, v1, v2 with
@@ -177,6 +171,7 @@ and eval_pre_op op v1 globalScope scope = match op, v1 with
 (*  | Op_bnot -> VNull*)
 (*  | Op_plus*)
 
+	(* on utilise un système avec une exception pour récupérer la valeur d'un return et stopper l'exécution de la méthode*)
 and execute_method m globalScope scope params_evaluated =
 	 print_endline("*********executing method" ^ m.mname ^"**************");
 	 List.iter2 (addParameterToScope globalScope scope) m.margstype params_evaluated;
@@ -187,9 +182,7 @@ and execute_method m globalScope scope params_evaluated =
 													| VName(name) -> find_execvalue_in_scope scope name
 													| VAttr(oname, aname) -> find_attribute_value globalScope scope oname aname
 													| _ -> execvalue
-	
-(*	if Hashtbl.mem (List.nth scope.scopelist  scope.currentscope) "return" <> true then VNull else*)
-(*	 let a = Hashtbl.find (List.nth scope.scopelist  scope.currentscope) "return" in print_endline("return fonction: " ^ string_execvalue a); a*)
+
 
 and execute_constructor c globalScope scope params_evaluated =
 	  print_endline("*********executing constructor" ^ c.cname ^"**************");
@@ -197,18 +190,18 @@ and execute_constructor c globalScope scope params_evaluated =
 	 List.iter (evaluate_statement globalScope scope) c.cbody;
 	 print_endline("*********End of constructor**************");
 
+
 and addParameterToScope globalScope scope marg param_evaluated  =
   add_variable_to_scope globalScope scope marg.pident param_evaluated
 
-(*and evaluate_parameters_fonction globalScope scope params =*)
-(*		List.map (evaluate_expression globalScope scope) params*)
-  
+
 and evaluate_parameters_fonction globalScope scope params params_evaluated = match params with
   | [] -> params_evaluated
   | (param::liste) -> let execvalue = (evaluate_expression globalScope scope param) in (match execvalue with 
 			| VName(name) -> find_execvalue_in_scope scope name
 			| VAttr(oname, aname) -> find_attribute_value globalScope scope oname aname
 			| _ -> execvalue) :: evaluate_parameters_fonction globalScope scope liste params_evaluated
+
 
 and evaluate_statement globalScope scope stmt = match stmt with
   | VarDecl(l) -> List.iter (exec_vardecl globalScope scope) l
@@ -269,6 +262,7 @@ and evaluate_expressions globalScope scope exps = match exps with
 
 
 
+(* méthode pour ajouter des objets à la heap, on crée un objet en ajoutant dans la heap le couple (adresse qui est libre qui correspond à la dernière adresse allouée + 1, objetdescriptor), puis on renvoie la référence pour l'attribuer au nom de l'objet *)
 and addObject typ globalScope scope =
   let addAttributeToObject objectattributes globalScope scope classattribute = match classattribute.adefault with
    			| Some(expr) -> Hashtbl.add objectattributes classattribute.aname (evaluate_expression globalScope scope expr)
@@ -342,11 +336,13 @@ and find_string_value_of_object globalScope execvalue =
 
 
 and create_empty_tab globalScope scope typ l = match typ with
-(*  | Ref(ref_type) -> *)
+(*  | Ref(ref_type) -> ()*)
   | Primitive(Int) -> let vint =  get_nb_ligne_tab globalScope scope l 1 in for i = 1 to vint do addObject (Ref({tpath = [] ; tid = "Int"})) globalScope scope done; VRef(globalScope.free_adress - vint)
 (*  | Primitive(Boolean) ->   *)
 
+
 and initiate_empty_tab vref exp = ()
+
 
 and get_nb_ligne_tab globalScope scope l nbligne = match l with
   | [] -> nbligne
@@ -361,10 +357,9 @@ and setInt globalScope scope execvalue exps  = let e = evaluate_expression globa
   | VRef(ref_nb), VName(name) -> let execvalue = find_execvalue_in_scope scope name in match execvalue with VInt(i) -> Hashtbl.remove globalScope.heap ref_nb; Hashtbl.add globalScope.heap ref_nb (IntegerDescriptor(i))
 
 
-
-and hashtbl_keys h = Hashtbl.fold (fun key _ l -> key :: l) h []
-and hashtbl_values h = Hashtbl.fold (fun _ value l -> value :: l) h []
-
+and remove_at n liste = match liste with
+  | [] -> []
+  | h :: t -> if n = 0 then t else h :: remove_at (n-1) t
 
 
 and find_get_method_in_file compilationData  =
@@ -378,8 +373,7 @@ and find_get_method_in_file compilationData  =
 
 
 let execute_program ast compilationData = 
-	
-(*  let mainMethod = Hashtbl.find compilationData.methodTable "B_main" in*)
+(*  let mainMethod = Hashtbl.find compilationData.methodTable "C_main" in*)
   let m = find_get_method_in_file compilationData in
   match m with
     | None -> print_endline("No main method to execute")

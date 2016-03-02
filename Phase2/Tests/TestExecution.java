@@ -110,6 +110,7 @@ public class B {
     }
     public B(int bint) {
         age = bint;
+//		this.age;
 //		C c = new C();
 		a = new A(age, 100, "hello world", "bateau mouche", true);
     }
@@ -216,7 +217,7 @@ public class A {
 
 
 
-public class MyException {
+public class MyException extends Exception {
 	int i;
 	MyException () {
 	}
